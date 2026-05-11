@@ -3,6 +3,23 @@ import { useDropzone } from 'react-dropzone';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
+const formatSize = (bytes) => {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+};
+
+const mimeMap = {
+  'application/pdf': ['.pdf'],
+  'image/png': ['.png'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/webp': ['.webp'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
+  'text/html': ['.html', '.htm'],
+};
+
 export default function FileUploader({
   onFilesSelected,
   multiple = false,
@@ -65,7 +82,7 @@ export default function FileUploader({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: Object.fromEntries(allowedTypes.map((t) => [t, []])),
+    accept: Object.fromEntries(allowedTypes.map((t) => [t, mimeMap[t] || []])),
     multiple,
     maxFiles,
   });
