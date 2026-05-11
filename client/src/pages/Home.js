@@ -140,7 +140,7 @@ export default function Home() {
               Everything You Need
             </h2>
             <p className="mt-4 text-lg text-gray-500 dark:text-gray-400">
-              From quick edits to full conversions &mdash; 22 powerful tools at your fingertips.
+              From quick edits to full conversions &mdash; 31 powerful tools at your fingertips.
             </p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
