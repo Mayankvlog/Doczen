@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ToolCard from '../components/ToolCard';
 import SEO from '../components/SEO';
 
@@ -42,16 +42,47 @@ const faqs = [
   { q: 'Are my files secure?', a: 'Absolutely. All files are encrypted during upload and automatically deleted from our servers after 24 hours. We never share your data.' },
   { q: 'What file sizes are supported?', a: 'You can upload files up to 50 MB per document.' },
   { q: 'How long does processing take?', a: 'Most operations complete within seconds. Complex conversions may take a bit longer, but we optimize everything for speed.' },
-  { q: 'Is there a daily limit?', a: 'Free users can process up to 10 files per day, which is plenty for most needs.' },
+  { q: 'Is there a daily limit?', a: 'No registration needed — guests can process up to 10 files per hour. Create a free account for higher limits and history tracking.' },
   { q: 'What happens to my data?', a: 'All uploaded files are automatically deleted from our servers within 24 hours. You can also manually delete your history at any time.' },
 ];
 
 export default function Home() {
+  const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
+  const [visibleSections, setVisibleSections] = useState(new Set());
+  const sectionRefs = useRef({});
+
+  const observeSection = useCallback((id) => (el) => {
+    if (el) {
+      sectionRefs.current[id] = el;
+    }
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections((prev) => new Set(prev).add(entry.target.dataset.section));
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    Object.values(sectionRefs.current).forEach((el) => {
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const scrollToTools = () => {
     document.getElementById('tools')?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const handleTryNow = () => navigate('/merge-pdf');
 
   return (
     <>
@@ -80,15 +111,15 @@ export default function Home() {
             documents &mdash; all in your browser, free and secure.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              to="/merge-pdf"
-              className="rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-indigo-600 shadow-lg shadow-indigo-500/25 hover:bg-indigo-50 transition-all hover:scale-105"
+            <button
+              onClick={handleTryNow}
+              className="rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-indigo-600 shadow-lg shadow-indigo-500/25 hover:bg-indigo-50 transition-all hover:scale-105 active:scale-95 cursor-pointer"
             >
               Try Merge PDF
-            </Link>
+            </button>
             <button
               onClick={scrollToTools}
-              className="rounded-xl border border-white/30 px-8 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition-all"
+              className="rounded-xl border border-white/30 px-8 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition-all active:scale-95 cursor-pointer"
             >
               All Tools
             </button>
@@ -100,7 +131,11 @@ export default function Home() {
       {/* Tools Grid */}
       <section id="tools" className="px-4 py-20 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-14">
+          <div
+            ref={observeSection('tools-header')}
+            data-section="tools-header"
+            className={`text-center mb-14 transition-all duration-700 ${visibleSections.has('tools-header') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          >
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
               Everything You Need
             </h2>
@@ -109,8 +144,16 @@ export default function Home() {
             </p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {tools.map((tool) => (
-              <ToolCard key={tool.path} {...tool} />
+            {tools.map((tool, i) => (
+              <div
+                key={tool.path}
+                ref={observeSection(`tool-${i}`)}
+                data-section={`tool-${i}`}
+                className={`transition-all duration-500 ${visibleSections.has(`tool-${i}`) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                style={{ transitionDelay: `${(i % 8) * 60}ms` }}
+              >
+                <ToolCard {...tool} />
+              </div>
             ))}
           </div>
         </div>
@@ -119,31 +162,45 @@ export default function Home() {
       {/* FAQ */}
       <section id="faq" className="px-4 py-20 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <div className="text-center mb-14">
+          <div
+            ref={observeSection('faq-header')}
+            data-section="faq-header"
+            className={`text-center mb-14 transition-all duration-700 ${visibleSections.has('faq-header') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          >
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
               Frequently Asked Questions
             </h2>
           </div>
           <div className="space-y-3">
             {faqs.map((faq, i) => (
-              <div key={i} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
+              <div
+                key={i}
+                ref={observeSection(`faq-${i}`)}
+                data-section={`faq-${i}`}
+                className={`rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden transition-all duration-500 ${visibleSections.has(`faq-${i}`) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+                style={{ transitionDelay: `${i * 80}ms` }}
+              >
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="flex w-full items-center justify-between px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  className="flex w-full items-center justify-between px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                 >
                   <span>{faq.q}</span>
                   <svg
-                    className={`h-5 w-5 text-gray-400 transition-transform ${openFaq === i ? 'rotate-180' : ''}`}
+                    className={`h-5 w-5 text-gray-400 transition-all duration-300 ${openFaq === i ? 'rotate-180 text-indigo-500' : ''}`}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                {openFaq === i && (
+                <div
+                  className={`transition-all duration-300 overflow-hidden ${
+                    openFaq === i ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
                   <div className="px-6 pb-4 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                     {faq.a}
                   </div>
-                )}
+                </div>
               </div>
             ))}
           </div>
@@ -152,26 +209,30 @@ export default function Home() {
 
       {/* Bottom CTA */}
       <section className="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-20 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
+        <div
+          ref={observeSection('cta')}
+          data-section="cta"
+          className={`mx-auto max-w-3xl text-center transition-all duration-700 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+        >
           <h2 className="text-3xl font-bold text-white sm:text-4xl">
             Ready to Simplify Your PDF Workflow?
           </h2>
           <p className="mt-4 text-lg text-indigo-100">
-            Start for free &mdash; no credit card needed.
+            Start for free &mdash; no credit card needed, no sign up required.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              to="/merge-pdf"
-              className="rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-indigo-600 shadow-lg shadow-indigo-500/25 hover:bg-indigo-50 transition-all hover:scale-105"
+            <button
+              onClick={() => navigate('/merge-pdf')}
+              className="rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-indigo-600 shadow-lg shadow-indigo-500/25 hover:bg-indigo-50 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               Start Using Tools
-            </Link>
-            <Link
-              to="/compress-pdf"
-              className="rounded-xl border border-white/30 px-8 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition-all"
+            </button>
+            <button
+              onClick={() => navigate('/compress-pdf')}
+              className="rounded-xl border border-white/30 px-8 py-3.5 text-sm font-semibold text-white hover:bg-white/10 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               Compress a PDF
-            </Link>
+            </button>
           </div>
         </div>
       </section>

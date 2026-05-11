@@ -6,6 +6,19 @@ const pdfParse = require('pdf-parse');
 const { PDFDocument } = require('pdf-lib');
 const mongoose = require('mongoose');
 
+const guestRateLimit = new Map();
+const GUEST_MAX_FILES = 10;
+const GUEST_WINDOW_MS = 60 * 60 * 1000;
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of guestRateLimit.entries()) {
+    if (now > entry.resetAt + GUEST_WINDOW_MS) {
+      guestRateLimit.delete(ip);
+    }
+  }
+}, 10 * 60 * 1000);
+
 const File = require('../models/File');
 const History = require('../models/History');
 const { checkDailyLimit, incrementFileCount } = require('./authController');
@@ -85,6 +98,21 @@ const checkLimits = async (req) => {
     if (!limitCheck.allowed) {
       return { allowed: false, message: limitCheck.reason };
     }
+  } else if (!req.user) {
+    const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+    const now = Date.now();
+    if (!guestRateLimit.has(ip)) {
+      guestRateLimit.set(ip, { count: 0, resetAt: now + GUEST_WINDOW_MS });
+    }
+    const entry = guestRateLimit.get(ip);
+    if (now > entry.resetAt) {
+      entry.count = 0;
+      entry.resetAt = now + GUEST_WINDOW_MS;
+    }
+    entry.count++;
+    if (entry.count > GUEST_MAX_FILES) {
+      return { allowed: false, message: 'Guest limit reached. Please sign up for unlimited access.' };
+    }
   }
   return { allowed: true };
 };
@@ -102,7 +130,7 @@ const processRequest = async (req, res, action, processFn) => {
       return res.status(400).json({ message: 'No files uploaded' });
     }
 
-    if (req.user && isDbConnected()) {
+    if (isDbConnected()) {
       const limitCheck = await checkLimits(req);
       if (!limitCheck.allowed) {
         return res.status(429).json({ message: limitCheck.message });
@@ -667,6 +695,13 @@ exports.getPageCount = async (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
+    if (isDbConnected()) {
+      const limitCheck = await checkLimits(req);
+      if (!limitCheck.allowed) {
+        return res.status(429).json({ message: limitCheck.message });
+      }
+    }
+
     const filePath = req.files[0].path;
     const data = await fs.promises.readFile(filePath);
     const pdfDoc = await PDFDocument.load(data);
@@ -724,6 +759,12 @@ exports.readMetadata = async (req, res) => {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
+    if (isDbConnected()) {
+      const limitCheck = await checkLimits(req);
+      if (!limitCheck.allowed) {
+        return res.status(429).json({ message: limitCheck.message });
+      }
+    }
     const filePath = req.files[0].path;
     const metadata = await getMetadata(filePath);
     res.json({ metadata });
@@ -775,6 +816,12 @@ exports.flatten = async (req, res) => {
 
 exports.htmlToPdf = async (req, res) => {
   try {
+    if (isDbConnected()) {
+      const limitCheck = await checkLimits(req);
+      if (!limitCheck.allowed) {
+        return res.status(429).json({ message: limitCheck.message });
+      }
+    }
     const textContent = req.body.content || '';
     if (!textContent.trim()) {
       return res.status(400).json({ message: 'HTML/text content is required' });
@@ -855,6 +902,12 @@ exports.compare = async (req, res) => {
     req.files = normalizeFiles(req);
     if (!req.files || req.files.length < 2) {
       return res.status(400).json({ message: 'Please upload two PDF files to compare' });
+    }
+    if (isDbConnected()) {
+      const limitCheck = await checkLimits(req);
+      if (!limitCheck.allowed) {
+        return res.status(429).json({ message: limitCheck.message });
+      }
     }
     const result = await comparePDFs(req.files[0].path, req.files[1].path);
     res.json({

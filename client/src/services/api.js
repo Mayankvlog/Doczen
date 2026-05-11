@@ -78,250 +78,260 @@ export const authAPI = {
   changePassword: (data) => api.put('/auth/change-password', data),
 };
 
+const withProgress = (config, onProgress) => {
+  if (onProgress) {
+    config.onUploadProgress = (e) => {
+      const pct = Math.round((e.loaded / e.total) * 100);
+      onProgress(pct);
+    };
+  }
+  return config;
+};
+
 export const pdfAPI = {
-  merge: (files) => {
+  merge: (files, onProgress) => {
     const formData = new FormData();
     files.forEach((f) => formData.append('files', f));
-    return api.post('/pdf/merge', formData, {
+    return api.post('/pdf/merge', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  split: (file) => {
+  split: (file, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/pdf/split', formData, {
+    return api.post('/pdf/split', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  compress: (file, quality = 0.5) => {
+  compress: (file, quality = 0.5, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('quality', quality);
-    return api.post('/pdf/compress', formData, {
+    return api.post('/pdf/compress', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  rotate: (file, degrees = 90) => {
+  rotate: (file, degrees = 90, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('degrees', degrees);
-    return api.post('/pdf/rotate', formData, {
+    return api.post('/pdf/rotate', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  protect: (file, password) => {
+  protect: (file, password, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('password', password);
-    return api.post('/pdf/protect', formData, {
+    return api.post('/pdf/protect', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  unlock: (file, password) => {
+  unlock: (file, password, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('password', password);
-    return api.post('/pdf/unlock', formData, {
+    return api.post('/pdf/unlock', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  addPageNumbers: (file, options = {}) => {
+  addPageNumbers: (file, options = {}, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('startNumber', options.startNumber || 1);
     formData.append('fontSize', options.fontSize || 12);
-    return api.post('/pdf/add-page-numbers', formData, {
+    return api.post('/pdf/add-page-numbers', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  addWatermark: (file, text) => {
+  addWatermark: (file, text, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('text', text);
-    return api.post('/pdf/add-watermark', formData, {
+    return api.post('/pdf/add-watermark', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  extractText: (file) => {
+  extractText: (file, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/pdf/extract-text', formData, {
+    return api.post('/pdf/extract-text', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  reorder: (file, pageOrder) => {
+  reorder: (file, pageOrder, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('pageOrder', JSON.stringify(pageOrder));
-    return api.post('/pdf/reorder', formData, {
+    return api.post('/pdf/reorder', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  deletePages: (file, pagesToDelete) => {
+  deletePages: (file, pagesToDelete, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('pagesToDelete', JSON.stringify(pagesToDelete));
-    return api.post('/pdf/delete-pages', formData, {
+    return api.post('/pdf/delete-pages', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  pdfToJpg: (file) => {
+  pdfToJpg: (file, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/pdf/pdf-to-jpg', formData, {
+    return api.post('/pdf/pdf-to-jpg', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  jpgToPdf: (files) => {
+  jpgToPdf: (files, onProgress) => {
     const formData = new FormData();
     files.forEach((f) => formData.append('files', f));
-    return api.post('/pdf/jpg-to-pdf', formData, {
+    return api.post('/pdf/jpg-to-pdf', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  pdfToTxt: (file) => {
+  pdfToTxt: (file, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/pdf/pdf-to-txt', formData, {
+    return api.post('/pdf/pdf-to-txt', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  getPageCount: (file) => {
+  getPageCount: (file, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/pdf/page-count', formData, {
+    return api.post('/pdf/page-count', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    }, onProgress));
   },
 
   getDownloadUrl: (filename) => `${API_BASE}/api/pdf/download/${filename}`,
 
-  repair: (file) => {
+  repair: (file, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/pdf/repair', formData, {
+    return api.post('/pdf/repair', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  pdfToPdfa: (file, options = {}) => {
+  pdfToPdfa: (file, options = {}, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('title', options.title || '');
     formData.append('author', options.author || '');
     formData.append('subject', options.subject || '');
     formData.append('keywords', options.keywords || '');
-    return api.post('/pdf/pdf-to-pdfa', formData, {
+    return api.post('/pdf/pdf-to-pdfa', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  readMetadata: (file) => {
+  readMetadata: (file, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/pdf/read-metadata', formData, {
+    return api.post('/pdf/read-metadata', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    }, onProgress));
   },
 
-  writeMetadata: (file, metadata) => {
+  writeMetadata: (file, metadata, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('title', metadata.title || '');
     formData.append('author', metadata.author || '');
     formData.append('subject', metadata.subject || '');
     formData.append('keywords', metadata.keywords || '');
-    return api.post('/pdf/write-metadata', formData, {
+    return api.post('/pdf/write-metadata', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  flatten: (file) => {
+  flatten: (file, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/pdf/flatten', formData, {
+    return api.post('/pdf/flatten', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  htmlToPdf: (content, options = {}) => {
+  htmlToPdf: (content, options = {}, onProgress) => {
     return api.post('/pdf/html-to-pdf', {
       content,
       title: options.title || 'Document',
       fontSize: options.fontSize || 12,
-    }, {
+    }, withProgress({
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  redact: (file, redactions) => {
+  redact: (file, redactions, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('redactions', JSON.stringify(redactions));
-    return api.post('/pdf/redact', formData, {
+    return api.post('/pdf/redact', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  removeAnnotations: (file) => {
+  removeAnnotations: (file, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/pdf/remove-annotations', formData, {
+    return api.post('/pdf/remove-annotations', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  removeWatermark: (file) => {
+  removeWatermark: (file, onProgress) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/pdf/remove-watermark', formData, {
+    return api.post('/pdf/remove-watermark', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 
-  compare: (file1, file2) => {
+  compare: (file1, file2, onProgress) => {
     const formData = new FormData();
     formData.append('files', file1);
     formData.append('files', file2);
-    return api.post('/pdf/compare', formData, {
+    return api.post('/pdf/compare', formData, withProgress({
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
-    });
+    }, onProgress));
   },
 };
 

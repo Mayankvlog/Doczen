@@ -1,7 +1,8 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -42,54 +43,71 @@ import RemoveAnnotations from './pages/tools/RemoveAnnotations';
 import ComparePDF from './pages/tools/ComparePDF';
 import RemoveWatermark from './pages/tools/RemoveWatermark';
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [pathname]);
+  return null;
+}
+
+function AppContent() {
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <ScrollToTop />
+      <Navbar />
+      <main className="flex-1 page-enter-active">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+          <Route path="/merge-pdf" element={<MergePDF />} />
+          <Route path="/split-pdf" element={<SplitPDF />} />
+          <Route path="/compress-pdf" element={<CompressPDF />} />
+          <Route path="/rotate-pdf" element={<RotatePDF />} />
+          <Route path="/protect-pdf" element={<ProtectPDF />} />
+          <Route path="/unlock-pdf" element={<UnlockPDF />} />
+          <Route path="/add-page-numbers" element={<AddPageNumbers />} />
+          <Route path="/add-watermark" element={<AddWatermark />} />
+          <Route path="/extract-text" element={<ExtractText />} />
+          <Route path="/reorder-pages" element={<ReorderPages />} />
+          <Route path="/delete-pages" element={<DeletePages />} />
+          <Route path="/pdf-to-jpg" element={<PDFToJPG />} />
+          <Route path="/jpg-to-pdf" element={<JPGToPDF />} />
+          <Route path="/pdf-to-txt" element={<PDFToTXT />} />
+          <Route path="/pdf-to-word" element={<PDFToWord />} />
+          <Route path="/word-to-pdf" element={<WordToPDF />} />
+          <Route path="/pdf-to-ppt" element={<PDFToPPT />} />
+          <Route path="/ppt-to-pdf" element={<PPTToPDF />} />
+          <Route path="/pdf-to-excel" element={<PDFToExcel />} />
+          <Route path="/excel-to-pdf" element={<ExcelToPDF />} />
+          <Route path="/edit-pdf" element={<EditPDF />} />
+          <Route path="/sign-pdf" element={<SignPDF />} />
+          <Route path="/repair-pdf" element={<RepairPDF />} />
+          <Route path="/pdf-to-pdfa" element={<PDFToPDFA />} />
+          <Route path="/pdf-metadata" element={<Metadata />} />
+          <Route path="/flatten-pdf" element={<FlattenPDF />} />
+          <Route path="/html-to-pdf" element={<HTMLToPDF />} />
+          <Route path="/redact-pdf" element={<RedactPDF />} />
+          <Route path="/remove-annotations" element={<RemoveAnnotations />} />
+          <Route path="/compare-pdf" element={<ComparePDF />} />
+          <Route path="/remove-watermark" element={<RemoveWatermark />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
 function App() {
   return (
     <HelmetProvider>
     <AuthProvider>
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Navbar />
-        <main className="flex-1">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
-            <Route path="/merge-pdf" element={<MergePDF />} />
-            <Route path="/split-pdf" element={<SplitPDF />} />
-            <Route path="/compress-pdf" element={<CompressPDF />} />
-            <Route path="/rotate-pdf" element={<RotatePDF />} />
-            <Route path="/protect-pdf" element={<ProtectPDF />} />
-            <Route path="/unlock-pdf" element={<UnlockPDF />} />
-            <Route path="/add-page-numbers" element={<AddPageNumbers />} />
-            <Route path="/add-watermark" element={<AddWatermark />} />
-            <Route path="/extract-text" element={<ExtractText />} />
-            <Route path="/reorder-pages" element={<ReorderPages />} />
-            <Route path="/delete-pages" element={<DeletePages />} />
-            <Route path="/pdf-to-jpg" element={<PDFToJPG />} />
-            <Route path="/jpg-to-pdf" element={<JPGToPDF />} />
-            <Route path="/pdf-to-txt" element={<PDFToTXT />} />
-            <Route path="/pdf-to-word" element={<PDFToWord />} />
-            <Route path="/word-to-pdf" element={<WordToPDF />} />
-            <Route path="/pdf-to-ppt" element={<PDFToPPT />} />
-            <Route path="/ppt-to-pdf" element={<PPTToPDF />} />
-            <Route path="/pdf-to-excel" element={<PDFToExcel />} />
-            <Route path="/excel-to-pdf" element={<ExcelToPDF />} />
-            <Route path="/edit-pdf" element={<EditPDF />} />
-            <Route path="/sign-pdf" element={<SignPDF />} />
-            <Route path="/repair-pdf" element={<RepairPDF />} />
-            <Route path="/pdf-to-pdfa" element={<PDFToPDFA />} />
-            <Route path="/pdf-metadata" element={<Metadata />} />
-            <Route path="/flatten-pdf" element={<FlattenPDF />} />
-            <Route path="/html-to-pdf" element={<HTMLToPDF />} />
-            <Route path="/redact-pdf" element={<RedactPDF />} />
-            <Route path="/remove-annotations" element={<RemoveAnnotations />} />
-            <Route path="/compare-pdf" element={<ComparePDF />} />
-            <Route path="/remove-watermark" element={<RemoveWatermark />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
     </AuthProvider>
     </HelmetProvider>
   );
