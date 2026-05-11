@@ -124,25 +124,6 @@ function TermsOfService() {
   );
 }
 
-function Contact() {
-  return (
-    <div className="max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold text-gray-900 mb-6">Contact Us</h1>
-      <p className="text-gray-600 mb-8">Have questions, feedback, or need help? We'd love to hear from you.</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">Email</h2>
-          <p className="text-gray-600">support@doczen.com</p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">Social</h2>
-          <p className="text-gray-600">YouTube: @doczen</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -162,7 +143,6 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

@@ -62,7 +62,7 @@ export default function Footer() {
               Company
             </h3>
             <ul className="space-y-2.5">
-              {['About', 'Privacy Policy', 'Terms of Service', 'Contact'].map((item) => (
+              {['About', 'Privacy Policy', 'Terms of Service'].map((item) => (
                 <li key={item}>
                   <Link to={`/${item.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm text-gray-400 hover:text-indigo-400 transition-colors">
                     {item}
