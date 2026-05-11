@@ -43,6 +43,106 @@ import RemoveAnnotations from './pages/tools/RemoveAnnotations';
 import ComparePDF from './pages/tools/ComparePDF';
 import RemoveWatermark from './pages/tools/RemoveWatermark';
 
+function About() {
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-16">
+      <h1 className="text-4xl font-bold text-gray-900 mb-6">About Doczen</h1>
+      <div className="prose prose-gray max-w-none space-y-4 text-gray-600">
+        <p>Doczen is a free, powerful online PDF editor designed to make document management simple and accessible for everyone. Whether you need to merge, split, compress, convert, or edit PDFs, Doczen provides all the tools you need right in your browser — no downloads, no installations.</p>
+        <p>Our mission is to democratize PDF editing by offering a comprehensive suite of tools that are completely free to use. We believe that essential document management should not require expensive software subscriptions.</p>
+        <p>Every tool on Doczen is built with modern web technologies to ensure fast, secure, and reliable processing. Your privacy is our priority — all files are encrypted during upload and automatically deleted from our servers within 24 hours.</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Why Doczen?</h2>
+        <ul className="list-disc pl-6 space-y-2">
+          <li><strong>100% Free</strong> — No hidden charges, no credit card required</li>
+          <li><strong>30+ Tools</strong> — From merging to converting, we've got you covered</li>
+          <li><strong>Secure</strong> — Encrypted uploads and automatic file deletion</li>
+          <li><strong>Fast</strong> — Optimized processing for quick results</li>
+          <li><strong>No Registration</strong> — Start using tools immediately</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function PrivacyPolicy() {
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-16">
+      <h1 className="text-4xl font-bold text-gray-900 mb-6">Privacy Policy</h1>
+      <div className="prose prose-gray max-w-none space-y-4 text-gray-600">
+        <p>Last updated: January 2025</p>
+        <p>Doczen ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Information We Collect</h2>
+        <p>We collect minimal information necessary to provide our PDF editing services:</p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li><strong>Files You Upload:</strong> PDFs and documents you upload for processing are temporarily stored on our servers.</li>
+          <li><strong>Account Information:</strong> If you create an account, we collect your name and email address.</li>
+          <li><strong>Usage Data:</strong> Anonymous usage statistics to improve our service.</li>
+        </ul>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">How We Handle Your Files</h2>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>All uploaded files are encrypted during transmission and at rest.</li>
+          <li>Files are automatically and permanently deleted from our servers within 24 hours.</li>
+          <li>We do not access, view, or share your uploaded documents.</li>
+          <li>Processed files are available for download for a limited time before automatic deletion.</li>
+        </ul>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Cookies</h2>
+        <p>We use essential cookies for authentication and service functionality. We do not use tracking cookies for advertising purposes.</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Third-Party Services</h2>
+        <p>We do not sell, trade, or transfer your information to third parties. We may share anonymized data with service providers who assist us in operating our website and improving our service.</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Contact</h2>
+        <p>If you have questions about this Privacy Policy, please contact us at support@doczen.com.</p>
+      </div>
+    </div>
+  );
+}
+
+function TermsOfService() {
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-16">
+      <h1 className="text-4xl font-bold text-gray-900 mb-6">Terms of Service</h1>
+      <div className="prose prose-gray max-w-none space-y-4 text-gray-600">
+        <p>Last updated: January 2025</p>
+        <p>By using Doczen, you agree to these Terms of Service. If you do not agree, please do not use our service.</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Use of Service</h2>
+        <p>Doczen provides free online PDF editing tools for personal and business use. You agree to:</p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>Not upload malicious files or content that violates any law.</li>
+          <li>Not attempt to disrupt or overload our servers.</li>
+          <li>Not use the service for any unlawful purpose.</li>
+          <li>Comply with all applicable laws and regulations.</li>
+        </ul>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Intellectual Property</h2>
+        <p>You retain all rights to your uploaded documents. Doczen claims no ownership over your files. Our software, brand, and website content are protected by applicable intellectual property laws.</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Limitation of Liability</h2>
+        <p>Doczen is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the service. We do not guarantee that the service will be uninterrupted or error-free.</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">File Storage</h2>
+        <p>Uploaded files are automatically deleted within 24 hours. We recommend downloading your processed files promptly. We are not responsible for data loss.</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Changes to Terms</h2>
+        <p>We reserve the right to modify these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.</p>
+      </div>
+    </div>
+  );
+}
+
+function Contact() {
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-16">
+      <h1 className="text-4xl font-bold text-gray-900 mb-6">Contact Us</h1>
+      <p className="text-gray-600 mb-8">Have questions, feedback, or need help? We'd love to hear from you.</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Email</h2>
+          <p className="text-gray-600">support@doczen.com</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Social</h2>
+          <p className="text-gray-600">YouTube: @doczen</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -59,6 +159,10 @@ function AppContent() {
       <main className="flex-1 page-enter-active">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
