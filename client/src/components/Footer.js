@@ -11,10 +11,6 @@ const quickLinks = [
   { label: 'Add Watermark', path: '/add-watermark' },
 ];
 
-const socialLinks = [
-  { label: 'YouTube', icon: '▶', href: 'https://youtube.com/@doczen' },
-];
-
 export default function Footer() {
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-indigo-950 text-gray-300">
@@ -24,26 +20,11 @@ export default function Footer() {
 
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <span className="text-2xl">📄</span>
               <span className="text-xl font-bold text-white">Doczen</span>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
               The simplest way to edit, convert, and manage your PDF documents online. Fast, secure, and free.
             </p>
-            <div className="flex items-center gap-3 mt-5">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={social.label}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-indigo-600 text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  {social.icon}
-                </a>
-              ))}
-            </div>
           </div>
 
           <div>
