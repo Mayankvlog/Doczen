@@ -5,7 +5,15 @@ const fs = require('fs');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 
-dotenv.config({ path: path.join(__dirname, '../.env') });
+const envPath = path.join(__dirname, '../.env');
+const envResult = dotenv.config({ path: envPath });
+if (envResult.error || !process.env.MONGO_URI) {
+  const localEnv = path.join(__dirname, '.env');
+  dotenv.config({ path: localEnv });
+}
+if (!process.env.MONGO_URI) {
+  console.warn('WARNING: MONGO_URI not found in .env. Create a .env file with MONGO_URI=mongodb+srv://...');
+}
 
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
