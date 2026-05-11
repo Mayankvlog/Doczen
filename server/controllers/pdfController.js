@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const archiver = require('archiver');
 const pdfParse = require('pdf-parse');
 const { PDFDocument } = require('pdf-lib');
+const mongoose = require('mongoose');
 
 const File = require('../models/File');
 const History = require('../models/History');
@@ -27,6 +28,7 @@ const getOutputPath = (originalName, suffix) => {
 const getOutputDir = () => path.join(__dirname, '../uploads');
 
 const createHistory = async (userId, action, inputFiles, outputFiles, status, error = null) => {
+  if (!isDbConnected()) return;
   try {
     await History.create({
       user: userId,
@@ -51,6 +53,7 @@ const createHistory = async (userId, action, inputFiles, outputFiles, status, er
 };
 
 const trackFile = async (userId, file) => {
+  if (!isDbConnected()) return;
   try {
     await File.create({
       user: userId,
@@ -74,8 +77,10 @@ const cleanupFiles = (filePaths) => {
   }
 };
 
+const isDbConnected = () => mongoose.connection.readyState === 1;
+
 const checkLimits = async (req) => {
-  if (req.user) {
+  if (req.user && isDbConnected()) {
     const limitCheck = await checkDailyLimit(req.user._id);
     if (!limitCheck.allowed) {
       return { allowed: false, message: limitCheck.reason };
@@ -84,13 +89,20 @@ const checkLimits = async (req) => {
   return { allowed: true };
 };
 
+const normalizeFiles = (req) => {
+  if (req.files && req.files.length > 0) return req.files;
+  if (req.file) return [req.file];
+  return [];
+};
+
 const processRequest = async (req, res, action, processFn) => {
   try {
+    req.files = normalizeFiles(req);
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: 'No files uploaded' });
     }
 
-    if (req.user) {
+    if (req.user && isDbConnected()) {
       const limitCheck = await checkLimits(req);
       if (!limitCheck.allowed) {
         return res.status(429).json({ message: limitCheck.message });
@@ -99,7 +111,7 @@ const processRequest = async (req, res, action, processFn) => {
 
     const result = await processFn(req);
 
-    if (req.user) {
+    if (req.user && isDbConnected()) {
       await incrementFileCount(req.user._id);
     }
 
@@ -140,6 +152,7 @@ exports.merge = async (req, res) => {
       fileName: outputName,
       originalName: 'merged.pdf',
       size: outStat.size,
+      originalSize: totalSize,
       downloadUrl: `/api/pdf/download/${outputName}`
     };
   });
@@ -184,6 +197,7 @@ exports.split = async (req, res) => {
       fileName: zipName,
       originalName: 'split_pages.zip',
       size: outStat.size,
+      originalSize: totalSize,
       downloadUrl: `/api/pdf/download/${zipName}`
     };
   });
@@ -248,6 +262,7 @@ exports.rotate = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `rotated_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
@@ -278,6 +293,7 @@ exports.protect = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `protected_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
@@ -308,6 +324,7 @@ exports.unlock = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `unlocked_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
@@ -338,6 +355,7 @@ exports.addPageNumbers = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `numbered_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
@@ -365,6 +383,7 @@ exports.addWatermark = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `watermarked_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
@@ -422,6 +441,7 @@ exports.reorder = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `reordered_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
@@ -449,6 +469,7 @@ exports.deletePages = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `cleaned_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
@@ -584,6 +605,7 @@ exports.jpgToPdf = async (req, res) => {
       fileName: outputName,
       originalName: 'converted.pdf',
       size: outStat.size,
+      originalSize: totalSize,
       downloadUrl: `/api/pdf/download/${outputName}`
     };
   });
@@ -640,6 +662,7 @@ exports.download = async (req, res) => {
 
 exports.getPageCount = async (req, res) => {
   try {
+    req.files = normalizeFiles(req);
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
@@ -666,6 +689,7 @@ exports.repair = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `repaired_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
@@ -688,6 +712,7 @@ exports.pdfToPdfa = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `pdfa_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
@@ -695,6 +720,7 @@ exports.pdfToPdfa = async (req, res) => {
 
 exports.readMetadata = async (req, res) => {
   try {
+    req.files = normalizeFiles(req);
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
@@ -723,6 +749,7 @@ exports.writeMetadata = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `metadata_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       metadata: result.metadata,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
@@ -740,16 +767,17 @@ exports.flatten = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `flattened_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
 };
 
 exports.htmlToPdf = async (req, res) => {
-  await processRequest(req, res, 'htmlToPdf', async (req) => {
+  try {
     const textContent = req.body.content || '';
     if (!textContent.trim()) {
-      throw new Error('HTML/text content is required');
+      return res.status(400).json({ message: 'HTML/text content is required' });
     }
     const outputName = `html_to_pdf_${uuidv4()}.pdf`;
     const outputPath = path.join(getOutputDir(), outputName);
@@ -758,14 +786,16 @@ exports.htmlToPdf = async (req, res) => {
       fontSize: parseInt(req.body.fontSize) || 12
     });
     const outStat = fs.statSync(outputPath);
-    return {
+    res.json({
       message: 'HTML converted to PDF successfully',
       fileName: outputName,
       originalName: 'converted.pdf',
       size: outStat.size,
       downloadUrl: `/api/pdf/download/${outputName}`
-    };
-  });
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Processing failed', error: error.message });
+  }
 };
 
 exports.redact = async (req, res) => {
@@ -780,6 +810,7 @@ exports.redact = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `redacted_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
@@ -796,6 +827,7 @@ exports.removeAnnotations = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `cleaned_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
@@ -812,6 +844,7 @@ exports.removeWatermark = async (req, res) => {
       fileName: path.basename(outputPath),
       originalName: `clean_${req.files[0].originalname}`,
       size: outStat.size,
+      originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
     };
   });
@@ -819,11 +852,15 @@ exports.removeWatermark = async (req, res) => {
 
 exports.compare = async (req, res) => {
   try {
+    req.files = normalizeFiles(req);
     if (!req.files || req.files.length < 2) {
       return res.status(400).json({ message: 'Please upload two PDF files to compare' });
     }
     const result = await comparePDFs(req.files[0].path, req.files[1].path);
-    res.json(result);
+    res.json({
+      ...result,
+      originalSize: req.files.reduce((s, f) => s + f.size, 0)
+    });
   } catch (error) {
     res.status(500).json({ message: 'Comparison failed', error: error.message });
   }

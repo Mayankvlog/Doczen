@@ -81,16 +81,16 @@ export default function Home() {
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
-              to="/register"
+              to="/merge-pdf"
               className="rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-indigo-600 shadow-lg shadow-indigo-500/25 hover:bg-indigo-50 transition-all hover:scale-105"
             >
-              Get Started Free
+              Try Merge PDF
             </Link>
             <button
               onClick={scrollToTools}
               className="rounded-xl border border-white/30 px-8 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition-all"
             >
-              See Tools
+              All Tools
             </button>
           </div>
         </div>

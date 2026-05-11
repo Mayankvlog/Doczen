@@ -58,9 +58,6 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
-        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -280,11 +277,11 @@ export const pdfAPI = {
   },
 
   htmlToPdf: (content, options = {}) => {
-    const formData = new URLSearchParams();
-    formData.append('content', content);
-    formData.append('title', options.title || 'Document');
-    formData.append('fontSize', options.fontSize || 12);
-    return api.post('/pdf/html-to-pdf', formData, {
+    return api.post('/pdf/html-to-pdf', {
+      content,
+      title: options.title || 'Document',
+      fontSize: options.fontSize || 12,
+    }, {
       timeout: 300000,
     });
   },
