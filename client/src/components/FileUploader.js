@@ -9,16 +9,7 @@ const formatSize = (bytes) => {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 };
 
-const mimeMap = {
-  'application/pdf': ['.pdf'],
-  'image/png': ['.png'],
-  'image/jpeg': ['.jpg', '.jpeg'],
-  'image/webp': ['.webp'],
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
-  'text/html': ['.html', '.htm'],
-};
+const allowedExtensions = ['.pdf'];
 
 export default function FileUploader({
   onFilesSelected,
@@ -32,17 +23,20 @@ export default function FileUploader({
   const [error, setError] = useState('');
   const [shakeKey, setShakeKey] = useState(0);
 
-  const allowedTypes = accept.split(',').map((t) => t.trim());
-
   const triggerShake = () => setShakeKey((k) => k + 1);
+
+  const hasValidExtension = (file) => {
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    return allowedExtensions.some(e => e === ext);
+  };
 
   const onDrop = useCallback(
     (accepted, rejected) => {
       setError('');
 
-      if (rejected.length > 0) {
-        const msg = rejected[0].errors?.[0]?.message || 'Invalid file type or size.';
-        setError(msg);
+      const invalid = accepted.filter(f => !hasValidExtension(f));
+      if (invalid.length > 0 || rejected.length > 0) {
+        setError(`Invalid file type. Please upload a PDF file.`);
         triggerShake();
         return;
       }
@@ -82,7 +76,6 @@ export default function FileUploader({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: Object.fromEntries(allowedTypes.map((t) => [t, mimeMap[t] || []])),
     multiple,
     maxFiles,
   });
@@ -100,7 +93,7 @@ export default function FileUploader({
         } ${error ? 'animate-shake' : ''}`}
         key={shakeKey}
       >
-        <input {...getInputProps()} />
+        <input {...getInputProps({ accept: '.pdf' })} />
         <div className={`flex flex-col items-center gap-2 transition-colors ${isDragActive ? 'text-indigo-600' : files.length > 0 ? 'text-green-600' : 'text-gray-500'}`}>
           {isDragActive ? (
             <svg className="w-10 h-10 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">

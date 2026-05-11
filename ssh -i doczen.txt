@@ -1,0 +1,1 @@
+ssh -i doczen.pem ubuntu@23.22.249.239
