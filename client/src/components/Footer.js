@@ -12,9 +12,6 @@ const quickLinks = [
 ];
 
 const socialLinks = [
-  { label: 'Twitter', icon: '𝕏', href: 'https://twitter.com/doczen' },
-  { label: 'GitHub', icon: '🐙', href: 'https://github.com/doczen' },
-  { label: 'LinkedIn', icon: '🔗', href: 'https://linkedin.com/company/doczen' },
   { label: 'YouTube', icon: '▶', href: 'https://youtube.com/@doczen' },
 ];
 

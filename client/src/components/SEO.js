@@ -51,13 +51,6 @@ export default function SEO({
       <meta property="og:image:height" content="630" />
       <meta property="og:locale" content="en_US" />
 
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={pageTitle} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={`${BASE_URL}${image}`} />
-      <meta name="twitter:site" content="@doczenapp" />
-      <meta name="twitter:creator" content="@doczenapp" />
-
       {publishedTime && (
         <meta property="article:published_time" content={publishedTime} />
       )}
