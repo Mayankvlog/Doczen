@@ -531,10 +531,9 @@ exports.pdfToJpg = async (req, res) => {
     const outputDir = getOutputDir();
     const outputFiles = [];
 
-    // Extract text content to show in images
     let pageTexts = [];
     try {
-      const result = await pdfParse(data);
+      const result = await pdfParse(new Uint8Array(data));
       pageTexts = result.text.split('\n').filter(l => l.trim());
     } catch (e) {
       pageTexts = [];

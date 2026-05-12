@@ -193,7 +193,7 @@ const addWatermark = async (filePath, outputPath, watermarkText, options = {}) =
 const extractText = async (filePath) => {
   const data = await fs.promises.readFile(filePath);
   const pdfParse = require('pdf-parse');
-  const result = await pdfParse(data);
+  const result = await pdfParse(new Uint8Array(data));
   return result.text;
 };
 
@@ -435,7 +435,7 @@ const redactText = async (filePath, outputPath, redactions = []) => {
     let pageTexts = [];
     try {
       const pdfParse = require('pdf-parse');
-      const result = await pdfParse(pdfData);
+      const result = await pdfParse(new Uint8Array(pdfData));
       pageTexts = result.text.split('\n').filter(l => l.trim());
     } catch (e) {
       pageTexts = [];
@@ -588,62 +588,42 @@ const comparePDFs = async (filePath1, filePath2) => {
 };
 
 const pdfToWord = async (filePath, outputPath) => {
-  const mammoth = require('mammoth');
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel } = require('docx');
   const pdfData = await fs.promises.readFile(filePath);
   const pdfParse = require('pdf-parse');
   
   try {
-    const result = await pdfParse(pdfData);
+    const result = await pdfParse(new Uint8Array(pdfData));
     const text = result.text;
     
-    // Create a simple Word-like document using mammoth
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Converted Document</title>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }
-          h1 { font-size: 18px; margin-bottom: 20px; }
-          p { margin-bottom: 12px; text-align: justify; }
-        </style>
-      </head>
-      <body>
-        <h1>Converted PDF Document</h1>
-        ${text.split('\n').map(line => `<p>${line || '&nbsp;'}</p>`).join('')}
-      </body>
-      </html>
-    `;
+    const lines = text.split('\n');
+    const children = [];
     
-    const result2 = await mammoth.convertToHtml({ html: htmlContent });
-    const docxBuffer = await mammoth.convertToMarkdown({ html: htmlContent });
+    children.push(
+      new Paragraph({
+        text: 'Converted PDF Document',
+        heading: HeadingLevel.HEADING_1,
+        spacing: { after: 300 },
+      })
+    );
     
-    // Create a simple DOCX file structure
-    const docxContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-      <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-        <w:body>
-          <w:p>
-            <w:pPr>
-              <w:pStyle w:val="Heading1"/>
-            </w:pPr>
-            <w:r>
-              <w:t>Converted PDF Document</w:t>
-            </w:r>
-          </w:p>
-          ${text.split('\n').filter(line => line.trim()).map(line => `
-            <w:p>
-              <w:r>
-                <w:t>${line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</w:t>
-              </w:r>
-            </w:p>
-          `).join('')}
-        </w:body>
-      </w:document>`;
+    for (const line of lines) {
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: line || ' ', size: 22, font: 'Arial' })],
+          spacing: { after: 120 },
+        })
+      );
+    }
     
-    // For now, create a simple text file with .docx extension
-    // In production, you'd use a proper DOCX library like docx
-    await fs.promises.writeFile(outputPath, text, 'utf-8');
+    const doc = new Document({
+      title: 'Converted PDF Document',
+      creator: 'Doczen',
+      sections: [{ children }],
+    });
+    
+    const buffer = await Packer.toBuffer(doc);
+    await fs.promises.writeFile(outputPath, buffer);
     return outputPath;
   } catch (error) {
     throw new Error(`Failed to convert PDF to Word: ${error.message}`);
@@ -656,7 +636,7 @@ const pdfToExcel = async (filePath, outputPath) => {
   const pdfParse = require('pdf-parse');
   
   try {
-    const result = await pdfParse(pdfData);
+    const result = await pdfParse(new Uint8Array(pdfData));
     const text = result.text;
     
     // Split text into lines and try to detect tabular data
@@ -738,10 +718,9 @@ const excelToPdf = async (filePath, outputPath) => {
         
         y -= 20; // Move to next row
         
-        // Add new page if needed
         if (y < 50) {
           y = 750;
-          const newPage = pdfDoc.addPage([612, 792]);
+          page = pdfDoc.addPage([612, 792]);
         }
       }
     }
@@ -758,32 +737,31 @@ const pdfToPpt = async (filePath, outputPath) => {
   const pdfParse = require('pdf-parse');
   
   try {
-    const result = await pdfParse(pdfData);
+    const result = await pdfParse(new Uint8Array(pdfData));
     const text = result.text;
     
-    // Create a simple PPTX-like structure (JSON format that can be converted to PPTX)
-    const pptxContent = {
-      slides: [
-        {
-          title: "Converted PDF Document",
-          content: text.split('\n').filter(line => line.trim()).slice(0, 10)
-        }
-      ]
-    };
+    const pptxgen = require('pptxgenjs');
+    const pptx = new pptxgen();
     
-    // For now, create a text file with PPT content
-    // In production, you'd use a proper PPTX library like pptxgenjs
-    const content = `PowerPoint Presentation - Converted from PDF
-
-Slide 1: Converted PDF Document
-${text.split('\n').filter(line => line.trim()).slice(0, 10).join('\n')}
-
----
-Note: This is a basic text representation. For full PowerPoint functionality, 
-consider using a dedicated PPTX library in production.
-`;
+    const lines = text.split('\n').filter(line => line.trim());
+    const linesPerSlide = 15;
     
-    await fs.promises.writeFile(outputPath, content, 'utf-8');
+    if (lines.length === 0) {
+      const slide = pptx.addSlide();
+      slide.addText('Converted PDF Document', { x: 1, y: 0.5, w: 8, h: 1, fontSize: 28, bold: true, color: '333333' });
+      slide.addText('No text content found in PDF.', { x: 1, y: 2, w: 8, h: 1, fontSize: 16, color: '666666' });
+    } else {
+      for (let i = 0; i < Math.ceil(lines.length / linesPerSlide); i++) {
+        const slide = pptx.addSlide();
+        const chunk = lines.slice(i * linesPerSlide, (i + 1) * linesPerSlide);
+        
+        slide.addText('Converted PDF Document', { x: 0.5, y: 0.3, w: 9, h: 0.7, fontSize: 24, bold: true, color: '333333' });
+        slide.addText(chunk.join('\n'), { x: 0.5, y: 1.2, w: 9, h: 5.5, fontSize: 14, color: '444444', lineSpacing: 22 });
+        slide.addText(`Slide ${i + 1} of ${Math.ceil(lines.length / linesPerSlide)}`, { x: 0.5, y: 6.8, w: 9, h: 0.4, fontSize: 10, color: '999999', align: 'right' });
+      }
+    }
+    
+    await pptx.writeFile({ fileName: outputPath });
     return outputPath;
   } catch (error) {
     throw new Error(`Failed to convert PDF to PPT: ${error.message}`);
