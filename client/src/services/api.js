@@ -354,6 +354,24 @@ export const pdfAPI = {
       timeout: 300000,
     }, onProgress));
   },
+
+  editPdf: (file, edits, onProgress) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('edits', JSON.stringify(edits));
+    return api.post('/pdf/edit-pdf', formData, withProgress({
+      timeout: 300000,
+    }, onProgress));
+  },
+
+  signPdf: (file, signature, onProgress) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('signature', JSON.stringify(signature));
+    return api.post('/pdf/sign-pdf', formData, withProgress({
+      timeout: 300000,
+    }, onProgress));
+  },
 };
 
 export const historyAPI = {
