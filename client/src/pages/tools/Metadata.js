@@ -27,7 +27,7 @@ export default function Metadata() {
     setMetadataData(null);
     try {
       const { data } = await pdfAPI.readMetadata(file);
-      setMetadataData(data);
+      setMetadataData(data.metadata);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to read metadata. Please try again.');
     } finally {

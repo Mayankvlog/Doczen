@@ -24,7 +24,7 @@ export default function ExtractText() {
     try {
       const { data } = await pdfAPI.extractText(file);
       setExtractedText(data.text || '');
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to extract text. Please try again.');
     } finally {

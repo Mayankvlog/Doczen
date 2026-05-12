@@ -22,7 +22,7 @@ export default function HTMLToPDF() {
     setResult(null);
     try {
       const { data } = await pdfAPI.htmlToPdf(content.trim(), { title, fontSize });
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to convert to PDF. Please try again.');
     } finally {
