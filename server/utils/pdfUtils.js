@@ -65,7 +65,10 @@ const compressPDF = async (filePath, outputPath, quality = 0.5) => {
   if (title) newPdf.setTitle(title);
   if (author) newPdf.setAuthor(author);
 
-  const data = await newPdf.save({ useObjectStreams: true });
+  const data = await newPdf.save({ 
+    useObjectStreams: true,
+    compress: true
+  });
   await fs.promises.writeFile(outputPath, data);
   return outputPath;
 };
@@ -231,30 +234,56 @@ const repairPDF = async (filePath, outputPath) => {
   try {
     let pdfDoc;
     try {
-      pdfDoc = await loadPdf(filePath);
+      pdfDoc = await loadPdf(filePath, { ignoreEncryption: true });
     } catch (loadErr) {
-      const data = await fs.promises.readFile(filePath);
-      pdfDoc = await PDFDocument.load(data, { ignoreEncryption: true });
+      try {
+        const data = await fs.promises.readFile(filePath);
+        pdfDoc = await PDFDocument.load(data, { ignoreEncryption: true });
+      } catch (secondErr) {
+        throw new Error('PDF file is too corrupted to repair');
+      }
     }
+    
     const newPdf = await PDFDocument.create();
     const indices = pdfDoc.getPageIndices();
     const pages = await newPdf.copyPages(pdfDoc, indices);
     pages.forEach((page) => newPdf.addPage(page));
+    
+    // Copy metadata if available
+    const title = pdfDoc.getTitle();
+    const author = pdfDoc.getAuthor();
+    const subject = pdfDoc.getSubject();
+    const keywords = pdfDoc.getKeywords();
+    if (title) newPdf.setTitle(title);
+    if (author) newPdf.setAuthor(author);
+    if (subject) newPdf.setSubject(subject);
+    if (keywords) newPdf.setKeywords(keywords);
+    
     await savePdf(newPdf, outputPath);
     return outputPath;
   } catch (err) {
-    const data = await fs.promises.readFile(filePath);
-    const newPdf = await PDFDocument.create();
-    const fonts = [StandardFonts.Helvetica, StandardFonts.Courier, StandardFonts.TimesRoman];
-    const font = await newPdf.embedFont(fonts[0]);
-    const text = data.toString('utf-8').match(/\/Type\s*\/Page[^}]+}/g) || [];
-    const pageCount = Math.min(text.length || 1, 50);
-    for (let i = 0; i < pageCount; i++) {
-      const page = newPdf.addPage([612, 792]);
-      page.drawText(`Repaired page ${i + 1} of ${pageCount}`, { x: 50, y: 700, size: 14, font });
+    // Create a basic PDF as last resort
+    try {
+      const data = await fs.promises.readFile(filePath);
+      const newPdf = await PDFDocument.create();
+      const font = await newPdf.embedFont(StandardFonts.Helvetica);
+      
+      // Try to estimate page count from raw data
+      const text = data.toString('utf-8');
+      const pageMatches = text.match(/\/Type\s*\/Page[^}]+}/g) || [];
+      const pageCount = Math.min(pageMatches.length || 1, 50);
+      
+      for (let i = 0; i < pageCount; i++) {
+        const page = newPdf.addPage([612, 792]);
+        page.drawText(`Repaired page ${i + 1} of ${pageCount}`, { x: 50, y: 700, size: 14, font });
+        page.drawText('Original PDF was corrupted and could not be fully repaired', { x: 50, y: 670, size: 12, font });
+      }
+      
+      await savePdf(newPdf, outputPath);
+      return outputPath;
+    } catch (finalErr) {
+      throw new Error('Unable to repair PDF file');
     }
-    await savePdf(newPdf, outputPath);
-    return outputPath;
   }
 };
 
@@ -401,6 +430,7 @@ const redactText = async (filePath, outputPath, redactions = []) => {
   }
 
   if (typeof redactions[0] === 'string') {
+    // Text-based redaction
     const pdfData = await fs.promises.readFile(filePath);
     let pageTexts = [];
     try {
@@ -410,6 +440,7 @@ const redactText = async (filePath, outputPath, redactions = []) => {
     } catch (e) {
       pageTexts = [];
     }
+    
     let termIndex = 0;
     for (const term of redactions) {
       const foundOnPage = [];
@@ -438,16 +469,17 @@ const redactText = async (filePath, outputPath, redactions = []) => {
       termIndex++;
     }
   } else {
+    // Coordinate-based redaction
     for (const redact of redactions) {
       const { pageIndex = 0, x, y, width, height, color = [0, 0, 0] } = redact;
       if (pageIndex < pages.length) {
         const page = pages[pageIndex];
         const { width: pageW, height: pageH } = page.getSize();
         page.drawRectangle({
-          x: x || pageW * 0.1,
-          y: y || pageH * 0.5,
-          width: width || pageW * 0.8,
-          height: height || 20,
+          x: x !== undefined ? x : pageW * 0.1,
+          y: y !== undefined ? y : pageH * 0.5,
+          width: width !== undefined ? width : pageW * 0.8,
+          height: height !== undefined ? height : 20,
           color: rgb(color[0], color[1], color[2])
         });
       }

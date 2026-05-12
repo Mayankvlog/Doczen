@@ -156,11 +156,14 @@ const processRequest = async (req, res, action, processFn) => {
       await incrementFileCount(req.user._id);
     }
 
+    // Schedule cleanup for later instead of immediate cleanup
+    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000)); // 30 minutes
+    
     res.json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Processing failed', error: error.message });
-  } finally {
+    // Only cleanup on error
     cleanupFiles(sourcePaths);
+    res.status(500).json({ message: 'Processing failed', error: error.message });
   }
 };
 
@@ -527,6 +530,7 @@ exports.pdfToJpg = async (req, res) => {
     const outputDir = getOutputDir();
     const outputFiles = [];
 
+    // Extract text content to show in images
     let pageTexts = [];
     try {
       const result = await pdfParse(data);
@@ -545,29 +549,28 @@ exports.pdfToJpg = async (req, res) => {
       const imgW = Math.round(width * scale);
       const imgH = Math.round(height * scale);
 
+      // Get text for this page
       const pageTextLines = pageTexts.slice(i * 50, (i + 1) * 50).slice(0, 30);
       const textElements = pageTextLines.map((line, idx) =>
-        `<text x="${40}" y="${60 + idx * 22}" font-size="${14}" font-family="sans-serif" fill="#333">${line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</text>`
+        `<text x="${40}" y="${80 + idx * 22}" font-size="${14}" font-family="sans-serif" fill="#333">${line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</text>`
       ).join('');
 
       const svgContent = `<svg width="${imgW}" height="${imgH}" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="white"/>
         <rect x="${20}" y="${20}" width="${imgW - 40}" height="${imgH - 40}" fill="none" stroke="#ddd" stroke-width="1"/>
-        <text x="${imgW/2}" y="${40}" text-anchor="middle" font-size="${16}" font-weight="bold" font-family="sans-serif" fill="#999">Page ${i + 1}</text>
+        <text x="${imgW/2}" y="${50}" text-anchor="middle" font-size="${18}" font-weight="bold" font-family="sans-serif" fill="#666">Page ${i + 1} of ${pageCount}</text>
         ${textElements}
       </svg>`;
 
-      const svgPath = jpgPath.replace('.jpg', '.svg');
-      fs.writeFileSync(svgPath, svgContent);
       try {
         await sharp(Buffer.from(svgContent))
           .resize(imgW, imgH)
           .jpeg({ quality: 90 })
           .toFile(jpgPath);
-      } finally {
-        if (fs.existsSync(svgPath)) fs.unlinkSync(svgPath);
+        outputFiles.push(jpgPath);
+      } catch (err) {
+        console.error('Error creating image for page', i + 1, ':', err);
       }
-      outputFiles.push(jpgPath);
     }
 
     if (outputFiles.length === 1) {
@@ -751,11 +754,14 @@ exports.getPageCount = async (req, res) => {
     const pdfDoc = await PDFDocument.load(data);
     const pageCount = pdfDoc.getPageCount();
 
+    // Schedule cleanup for later instead of immediate cleanup
+    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000)); // 30 minutes
+
     res.json({ pageCount });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to get page count', error: error.message });
-  } finally {
+    // Only cleanup on error
     cleanupFiles(sourcePaths);
+    res.status(500).json({ message: 'Failed to get page count', error: error.message });
   }
 };
 
@@ -816,11 +822,15 @@ exports.readMetadata = async (req, res) => {
     }
     const filePath = req.files[0].path;
     const metadata = await getMetadata(filePath);
+    
+    // Schedule cleanup for later instead of immediate cleanup
+    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000)); // 30 minutes
+    
     res.json({ metadata });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to read metadata', error: error.message });
-  } finally {
+    // Only cleanup on error
     cleanupFiles(sourcePaths);
+    res.status(500).json({ message: 'Failed to read metadata', error: error.message });
   }
 };
 
@@ -964,13 +974,17 @@ exports.compare = async (req, res) => {
       }
     }
     const result = await comparePDFs(req.files[0].path, req.files[1].path);
+    
+    // Schedule cleanup for later instead of immediate cleanup
+    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000)); // 30 minutes
+    
     res.json({
       ...result,
       originalSize: req.files.reduce((s, f) => s + f.size, 0)
     });
   } catch (error) {
-    res.status(500).json({ message: 'Comparison failed', error: error.message });
-  } finally {
+    // Only cleanup on error
     cleanupFiles(sourcePaths);
+    res.status(500).json({ message: 'Comparison failed', error: error.message });
   }
 };
