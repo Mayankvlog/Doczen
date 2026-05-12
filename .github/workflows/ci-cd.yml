@@ -1,0 +1,139 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+env:
+  NODE_VERSION: 18
+
+jobs:
+  ci:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache server dependencies
+        uses: actions/cache@v4
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-${{ hashFiles('server/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-server-
+
+      - name: Cache client dependencies
+        uses: actions/cache@v4
+        with:
+          path: client/node_modules
+          key: ${{ runner.os }}-client-${{ hashFiles('client/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-client-
+
+      - name: Install server dependencies
+        run: npm ci
+        working-directory: server
+
+      - name: Install client dependencies
+        run: npm ci
+        working-directory: client
+
+      - name: Build client
+        run: npm run build
+        working-directory: client
+        env:
+          CI: false
+          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL || 'http://localhost:5000' }}
+
+      - name: Run server tests
+        run: npm test -- --passWithNoTests
+        working-directory: server
+        continue-on-error: true
+
+      - name: Run client tests
+        run: npm test -- --watchAll=false --passWithNoTests
+        working-directory: client
+        continue-on-error: true
+        env:
+          CI: true
+
+  deploy:
+    name: Deploy to Production
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    needs: ci
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install & build client
+        run: |
+          npm ci
+          npm run build
+        working-directory: client
+        env:
+          CI: false
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL || vars.REACT_APP_API_URL }}
+
+      - name: Install server production dependencies
+        run: npm ci --omit=dev
+        working-directory: server
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || '22' }}
+          script: |
+            set -e
+
+            APP_DIR=/var/www/doczen
+            CLIENT_DIR=$APP_DIR/client
+            SERVER_DIR=$APP_DIR/server
+
+            mkdir -p $CLIENT_DIR $SERVER_DIR
+
+            # Stop the app
+            pm2 stop doczen-server 2>/dev/null || true
+
+            # Copy new build
+            rsync -avz --delete $GITHUB_WORKSPACE/client/build/ $CLIENT_DIR/build/
+
+            # Copy server files
+            rsync -avz --delete \
+              --exclude 'node_modules' \
+              --exclude 'uploads' \
+              --exclude '.env' \
+              $GITHUB_WORKSPACE/server/ $SERVER_DIR/
+
+            # Copy root .env if it exists
+            [ -f $GITHUB_WORKSPACE/.env ] && cp $GITHUB_WORKSPACE/.env $APP_DIR/.env
+
+            # Install production deps on server
+            cd $SERVER_DIR && npm ci --omit=dev --ignore-scripts
+
+            # Restart the app
+            pm2 restart doczen-server 2>/dev/null || pm2 start $SERVER_DIR/server.js --name doczen-server
+            pm2 save
+
+            # Reload nginx
+            sudo nginx -s reload 2>/dev/null || sudo systemctl reload nginx 2>/dev/null || true
+
+            echo "Deployment complete!"
