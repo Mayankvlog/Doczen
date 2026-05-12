@@ -194,7 +194,7 @@ const processRequest = async (req, res, action, processFn) => {
   } catch (error) {
     console.error(`Processing failed for action "${action}":`, error.message);
     cleanupFiles(sourcePaths);
-    res.status(500).json({ success: false, message: 'Processing failed', error: error.message });
+    res.status(500).json({ success: false, message: error.message || 'Processing failed' });
   }
 };
 

@@ -18,9 +18,30 @@ export default function PDFToExcel() {
     setError('');
     try {
       const response = await pdfAPI.pdfToExcel(file);
+      const { fileName } = response.data;
+
+      const blob = await pdfAPI.downloadAsBlob(fileName);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
       setResult(response.data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong.');
+      let msg = 'Something went wrong.';
+      if (err.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          msg = JSON.parse(text).message || msg;
+        } catch (e) { /* ignore */ }
+      } else {
+        msg = err.response?.data?.message || err.message || msg;
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }

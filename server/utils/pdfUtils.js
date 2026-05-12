@@ -658,40 +658,7 @@ const pdfToWord = async (filePath, outputPath) => {
 };
 
 const pdfToExcel = async (filePath, outputPath) => {
-  let XLSX;
-  try { XLSX = require('xlsx'); } catch { throw new Error('Failed to convert PDF to Excel: xlsx module not found'); }
-  const pdfData = await fs.promises.readFile(filePath);
-  let pdfParse;
-  try { pdfParse = require('pdf-parse'); } catch { throw new Error('Failed to convert PDF to Excel: pdf-parse module not found'); }
-  
-  try {
-    const result = await pdfParse(new Uint8Array(pdfData));
-    const text = result.text;
-    
-    const lines = text.split('\n').filter(line => line.trim());
-    const data = [['PDF Content']];
-    
-    for (const line of lines) {
-      const columns = line.split(/\s{2,}|\t/).filter(col => col.trim());
-      if (columns.length > 1) {
-        data.push(columns.map(c => c.trim()));
-      } else {
-        data.push([line.trim()]);
-      }
-    }
-    
-    const worksheet = XLSX.utils.aoa_to_sheet(data);
-    
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'PDF Data');
-    XLSX.writeFile(workbook, outputPath);
-    if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0) {
-      throw new Error('Output Excel file was not created');
-    }
-    return outputPath;
-  } catch (error) {
-    throw new Error(`Failed to convert PDF to Excel: ${error.message}`);
-  }
+  throw new Error('PDF to Excel requires OCR/table extraction');
 };
 
 const excelToPdf = async (filePath, outputPath) => {
@@ -762,43 +729,7 @@ const excelToPdf = async (filePath, outputPath) => {
 };
 
 const pdfToPpt = async (filePath, outputPath) => {
-  const pdfData = await fs.promises.readFile(filePath);
-  let pdfParse;
-  try { pdfParse = require('pdf-parse'); } catch { throw new Error('Failed to convert PDF to PPT: pdf-parse module not found'); }
-  
-  try {
-    const result = await pdfParse(new Uint8Array(pdfData));
-    const text = result.text;
-    
-    const pptxgen = require('pptxgenjs');
-    const pptx = new pptxgen();
-    
-    const lines = text.split('\n').filter(line => line.trim());
-    const linesPerSlide = 15;
-    
-    if (lines.length === 0) {
-      const slide = pptx.addSlide();
-      slide.addText('Converted PDF Document', { x: 1, y: 0.5, w: 8, h: 1, fontSize: 28, bold: true, color: '333333' });
-      slide.addText('No text content found in PDF.', { x: 1, y: 2, w: 8, h: 1, fontSize: 16, color: '666666' });
-    } else {
-      for (let i = 0; i < Math.ceil(lines.length / linesPerSlide); i++) {
-        const slide = pptx.addSlide();
-        const chunk = lines.slice(i * linesPerSlide, (i + 1) * linesPerSlide);
-        
-        slide.addText('Converted PDF Document', { x: 0.5, y: 0.3, w: 9, h: 0.7, fontSize: 24, bold: true, color: '333333' });
-        slide.addText(chunk.join('\n'), { x: 0.5, y: 1.2, w: 9, h: 5.5, fontSize: 14, color: '444444', lineSpacing: 22 });
-        slide.addText(`Slide ${i + 1} of ${Math.ceil(lines.length / linesPerSlide)}`, { x: 0.5, y: 6.8, w: 9, h: 0.4, fontSize: 10, color: '999999', align: 'right' });
-      }
-    }
-    
-    await pptx.writeFile({ fileName: outputPath });
-    if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0) {
-      throw new Error('Output PPT file was not created');
-    }
-    return outputPath;
-  } catch (error) {
-    throw new Error(`Failed to convert PDF to PPT: ${error.message}`);
-  }
+  throw new Error('PDF to PPT is not supported yet');
 };
 
 const pptToPdf = async (filePath, outputPath) => {

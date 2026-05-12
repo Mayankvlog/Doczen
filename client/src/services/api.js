@@ -85,6 +85,19 @@ const withProgress = (config, onProgress) => {
   return config;
 };
 
+const downloadAsBlob = async (filename) => {
+  const response = await api.get(`/pdf/download/${filename}`, {
+    responseType: 'blob',
+    timeout: 300000,
+  });
+  if (response.data.type === 'application/json') {
+    const text = await response.data.text();
+    const error = JSON.parse(text);
+    throw new Error(error.message || 'Download failed');
+  }
+  return response.data;
+};
+
 export const pdfAPI = {
   merge: (files, onProgress) => {
     const formData = new FormData();
@@ -372,6 +385,8 @@ export const pdfAPI = {
       timeout: 300000,
     }, onProgress));
   },
+
+  downloadAsBlob,
 };
 
 export const historyAPI = {
