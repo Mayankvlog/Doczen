@@ -616,12 +616,21 @@ exports.jpgToPdf = async (req, res) => {
     const pdfDoc = await PDFDocument.create();
 
     for (const file of req.files) {
-      const imageBytes = await fs.promises.readFile(file.path);
+      let imageBytes;
+      try {
+        imageBytes = await fs.promises.readFile(file.path);
+      } catch {
+        throw new Error(`Could not read file: ${file.originalname}`);
+      }
       let image;
-      if (file.mimetype === 'image/png') {
-        image = await pdfDoc.embedPng(imageBytes);
-      } else {
-        image = await pdfDoc.embedJpg(imageBytes);
+      try {
+        if (file.mimetype === 'image/png') {
+          image = await pdfDoc.embedPng(imageBytes);
+        } else {
+          image = await pdfDoc.embedJpg(imageBytes);
+        }
+      } catch {
+        throw new Error(`Invalid or corrupted image: ${file.originalname}. Only JPEG and PNG files are supported.`);
       }
       const page = pdfDoc.addPage([image.width, image.height]);
       page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });

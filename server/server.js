@@ -78,8 +78,20 @@ app.use((err, req, res, next) => {
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(413).json({ message: 'File too large. Maximum size is 50MB' });
   }
+  if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+    return res.status(400).json({ message: 'Unexpected file field. Please check the field name.' });
+  }
+  if (err.code === 'LIMIT_FIELD_COUNT' || err.code === 'LIMIT_FIELD_KEY' || err.code === 'LIMIT_FIELD_VALUE') {
+    return res.status(400).json({ message: 'Too many form fields or invalid form data.' });
+  }
+  if (err.code === 'LIMIT_PART_COUNT') {
+    return res.status(400).json({ message: 'Too many multipart parts.' });
+  }
   if (err.message && err.message.includes('File type')) {
     return res.status(400).json({ message: err.message });
+  }
+  if (err.name === 'MulterError') {
+    return res.status(400).json({ message: `Upload error: ${err.message}` });
   }
   console.error('Unhandled error:', err);
   res.status(500).json({ message: 'Internal server error' });
