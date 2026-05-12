@@ -30,7 +30,7 @@ const {
   repairPDF, pdfToPdfa, setMetadata, getMetadata,
   flattenPDF, htmlToPdf, redactText, removeAnnotations,
   removeWatermarkFromPdf, comparePDFs, pdfToWord, pdfToExcel, excelToPdf,
-  pdfToPpt, pptToPdf, wordToPdf
+  pdfToPpt, pptToPdf, wordToPdf, editPdf, signPdf
 } = require('../utils/pdfUtils');
 
 const getOutputPath = (originalName, suffix, customExt) => {
@@ -919,6 +919,7 @@ exports.flatten = async (req, res) => {
 };
 
 exports.htmlToPdf = async (req, res) => {
+  let sourcePaths = [];
   try {
     if (isDbConnected()) {
       const limitCheck = await checkLimits(req);
@@ -958,6 +959,7 @@ exports.htmlToPdf = async (req, res) => {
     });
   } catch (error) {
     console.error('HTML to PDF failed:', error.message);
+    cleanupFiles(sourcePaths);
     res.status(500).json({ success: false, message: 'Processing failed', error: error.message });
   }
 };
@@ -1246,6 +1248,65 @@ exports.wordToPdf = async (req, res) => {
       message: 'Word document converted to PDF successfully',
       fileName: path.basename(outputPath),
       originalName: `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}.pdf`,
+      size: outStat.size,
+      originalSize: req.files[0].size,
+      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+    };
+  });
+};
+
+exports.editPdf = async (req, res) => {
+  await processRequest(req, res, 'editPdf', async (req) => {
+    const filePath = req.files[0].path;
+    const outputPath = getOutputPath(req.files[0].originalname, 'edited');
+    const edits = JSON.parse(req.body.edits || '[]');
+    await editPdf(filePath, outputPath, edits);
+
+    const outStat = fs.statSync(outputPath);
+
+    if (req.user) {
+      await createHistory(req.user._id, 'editPdf',
+        req.files.map(f => ({ originalName: f.originalname, storedName: f.filename, size: f.size })),
+        [{ originalName: `edited_${req.files[0].originalname}`, storedName: path.basename(outputPath), size: outStat.size, path: outputPath }],
+        'completed'
+      );
+    }
+
+    return {
+      message: 'PDF edited successfully',
+      fileName: path.basename(outputPath),
+      originalName: `edited_${req.files[0].originalname}`,
+      size: outStat.size,
+      originalSize: req.files[0].size,
+      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+    };
+  });
+};
+
+exports.signPdf = async (req, res) => {
+  await processRequest(req, res, 'signPdf', async (req) => {
+    const filePath = req.files[0].path;
+    const outputPath = getOutputPath(req.files[0].originalname, 'signed');
+    const signatureData = JSON.parse(req.body.signature || '{}');
+    if (!signatureData.text) {
+      throw new Error('Signature text is required');
+    }
+    await signPdf(filePath, outputPath, signatureData);
+
+    const outStat = fs.statSync(outputPath);
+
+    if (req.user) {
+      await createHistory(req.user._id, 'signPdf',
+        req.files.map(f => ({ originalName: f.originalname, storedName: f.filename, size: f.size })),
+        [{ originalName: `signed_${req.files[0].originalname}`, storedName: path.basename(outputPath), size: outStat.size, path: outputPath }],
+        'completed'
+      );
+    }
+
+    return {
+      message: 'PDF signed successfully',
+      fileName: path.basename(outputPath),
+      originalName: `signed_${req.files[0].originalname}`,
       size: outStat.size,
       originalSize: req.files[0].size,
       downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`

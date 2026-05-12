@@ -10,7 +10,8 @@ const {
   download, getPageCount, repair, pdfToPdfa,
   readMetadata, writeMetadata, flatten, htmlToPdf,
   redact, removeAnnotations, removeWatermark, compare,
-  pdfToWord, pdfToExcel, excelToPdf, pdfToPpt, pptToPdf, wordToPdf
+  pdfToWord, pdfToExcel, excelToPdf, pdfToPpt, pptToPdf, wordToPdf,
+  editPdf, signPdf
 } = require('../controllers/pdfController');
 
 router.post('/merge', optionalAuth, upload.array('files', 20), merge);
@@ -45,5 +46,7 @@ router.post('/excel-to-pdf', optionalAuth, upload.single('file'), excelToPdf);
 router.post('/pdf-to-ppt', optionalAuth, upload.single('file'), pdfToPpt);
 router.post('/ppt-to-pdf', optionalAuth, upload.single('file'), pptToPdf);
 router.post('/word-to-pdf', optionalAuth, upload.single('file'), wordToPdf);
+router.post('/edit-pdf', optionalAuth, upload.single('file'), editPdf);
+router.post('/sign-pdf', optionalAuth, upload.single('file'), signPdf);
 
 module.exports = router;
