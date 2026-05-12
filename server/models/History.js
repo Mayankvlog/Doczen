@@ -14,7 +14,10 @@ const historySchema = new mongoose.Schema({
       'addPageNumbers', 'addWatermark', 'extractText',
       'pdfToWord', 'wordToPdf', 'pdfToJpg', 'jpgToPdf',
       'pdfToPpt', 'pptToPdf', 'pdfToExcel', 'excelToPdf',
-      'pdfToTxt', 'edit', 'sign', 'reorder', 'deletePages'
+      'pdfToTxt', 'edit', 'sign', 'reorder', 'deletePages',
+      'repair', 'pdfToPdfa', 'flatten', 'htmlToPdf', 'redact',
+      'removeAnnotations', 'removeWatermark', 'compare',
+      'metadata', 'getPageCount'
     ]
   },
   inputFiles: [{

@@ -1,11 +1,19 @@
 const { PDFDocument, StandardFonts, rgb, degrees } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 
-const loadPdf = async (filePath) => {
+const loadPdf = async (filePath, options = {}) => {
   const data = await fs.promises.readFile(filePath);
-  return await PDFDocument.load(data);
+  try {
+    return await PDFDocument.load(data, options);
+  } catch (err) {
+    if (options.ignoreEncryption) throw err;
+    try {
+      return await PDFDocument.load(data, { ignoreEncryption: true });
+    } catch (e) {
+      throw new Error(`Failed to load PDF: ${err.message}`);
+    }
+  }
 };
 
 const savePdf = async (pdfDoc, outputPath) => {
@@ -75,38 +83,46 @@ const rotatePDF = async (filePath, outputPath, rotationDegrees = 90) => {
   return outputPath;
 };
 
-const encryptBuffer = (data, password) => {
-  const key = crypto.scryptSync(password, 'doczen-pdf-salt', 32);
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-  return Buffer.concat([iv, cipher.update(data), cipher.final()]);
-};
-
-const decryptBuffer = (data, password) => {
-  const key = crypto.scryptSync(password, 'doczen-pdf-salt', 32);
-  const iv = data.slice(0, 16);
-  const encrypted = data.slice(16);
-  const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-  return Buffer.concat([decipher.update(encrypted), decipher.final()]);
-};
-
 const protectPDF = async (filePath, outputPath, password) => {
-  const data = await fs.promises.readFile(filePath);
-  const encrypted = encryptBuffer(data, password);
-  await fs.promises.writeFile(outputPath, encrypted);
+  const pdfDoc = await loadPdf(filePath);
+  const encryptedBytes = await pdfDoc.save({
+    userPassword: password,
+    ownerPassword: password,
+    permissions: {
+      printing: 'highResolution',
+      modifying: false,
+      copying: false,
+      annotating: false,
+      fillingForms: false,
+      contentAccessibility: true,
+      documentAssembly: false
+    }
+  });
+  await fs.promises.writeFile(outputPath, encryptedBytes);
   return outputPath;
 };
 
 const unlockPDF = async (filePath, outputPath, password) => {
   const data = await fs.promises.readFile(filePath);
-  if (data.slice(0, 5).toString() === '%PDF-') {
+  if (data.slice(0, 5).toString() === '%PDF-' && !data.includes('/Encrypt')) {
     throw new Error('This file is not encrypted. Upload a password-protected file.');
   }
   try {
-    const decrypted = decryptBuffer(data, password);
-    await fs.promises.writeFile(outputPath, decrypted);
+    const pdfDoc = await PDFDocument.load(data, { password });
+    const newPdf = await PDFDocument.create();
+    const indices = pdfDoc.getPageIndices();
+    const pages = await newPdf.copyPages(pdfDoc, indices);
+    pages.forEach((page) => newPdf.addPage(page));
+    const title = pdfDoc.getTitle();
+    const author = pdfDoc.getAuthor();
+    if (title) newPdf.setTitle(title);
+    if (author) newPdf.setAuthor(author);
+    await savePdf(newPdf, outputPath);
     return outputPath;
   } catch (err) {
+    if (err.message && err.message.includes('Incorrect password')) {
+      throw err;
+    }
     throw new Error('Incorrect password. Please try again.');
   }
 };
@@ -307,13 +323,24 @@ const getMetadata = async (filePath) => {
 
 const flattenPDF = async (filePath, outputPath) => {
   const pdfDoc = await loadPdf(filePath);
+  const { PDFName } = require('pdf-lib');
+  const pages = pdfDoc.getPages();
+  for (const page of pages) {
+    try {
+      if (page.node.get(PDFName.of('Annots'))) {
+        page.node.delete(PDFName.of('Annots'));
+      }
+    } catch (e) { }
+  }
   const newPdf = await PDFDocument.create();
   const indices = pdfDoc.getPageIndices();
-  const pages = await newPdf.copyPages(pdfDoc, indices);
-  pages.forEach((page) => newPdf.addPage(page));
+  const newPages = await newPdf.copyPages(pdfDoc, indices);
+  newPages.forEach((p) => newPdf.addPage(p));
   await savePdf(newPdf, outputPath);
   return outputPath;
 };
+
+const stripHtml = (text) => text.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
 
 const htmlToPdf = async (textContent, outputPath, options = {}) => {
   const pdfDoc = await PDFDocument.create();
@@ -327,7 +354,8 @@ const htmlToPdf = async (textContent, outputPath, options = {}) => {
   const lineHeight = fontSize * 1.5;
   const maxLinesPerPage = Math.floor((pageHeight - margin * 2) / lineHeight);
 
-  const lines = textContent.split('\n').flatMap(line => {
+  const cleanText = stripHtml(textContent);
+  const lines = cleanText.split('\n').flatMap(line => {
     const words = line.split(' ');
     const wrapped = [];
     let current = '';
@@ -367,18 +395,62 @@ const redactText = async (filePath, outputPath, redactions = []) => {
   const pdfDoc = await loadPdf(filePath);
   const pages = pdfDoc.getPages();
 
-  for (const redact of redactions) {
-    const { pageIndex = 0, x, y, width, height, color = [0, 0, 0] } = redact;
-    if (pageIndex < pages.length) {
-      const page = pages[pageIndex];
-      const { width: pageW, height: pageH } = page.getSize();
-      page.drawRectangle({
-        x: x || pageW * 0.1,
-        y: y || pageH * 0.5,
-        width: width || pageW * 0.8,
-        height: height || 20,
-        color: rgb(color[0], color[1], color[2])
-      });
+  if (redactions.length === 0) {
+    await savePdf(pdfDoc, outputPath);
+    return outputPath;
+  }
+
+  if (typeof redactions[0] === 'string') {
+    const pdfData = await fs.promises.readFile(filePath);
+    let pageTexts = [];
+    try {
+      const pdfParse = require('pdf-parse');
+      const result = await pdfParse(pdfData);
+      pageTexts = result.text.split('\n').filter(l => l.trim());
+    } catch (e) {
+      pageTexts = [];
+    }
+    let termIndex = 0;
+    for (const term of redactions) {
+      const foundOnPage = [];
+      for (let i = 0; i < pages.length; i++) {
+        const pageText = pageTexts[i] || '';
+        if (pageText.toLowerCase().includes(term.toLowerCase())) {
+          foundOnPage.push(i);
+        }
+      }
+      const targetPages = foundOnPage.length > 0 ? foundOnPage : [0];
+      for (const pi of targetPages) {
+        if (pi < pages.length) {
+          const page = pages[pi];
+          const { width: pageW, height: pageH } = page.getSize();
+          const barHeight = 18;
+          const yPos = pageH * 0.1 + (termIndex * (barHeight + 4));
+          page.drawRectangle({
+            x: pageW * 0.05,
+            y: yPos,
+            width: pageW * 0.9,
+            height: barHeight,
+            color: rgb(0, 0, 0)
+          });
+        }
+      }
+      termIndex++;
+    }
+  } else {
+    for (const redact of redactions) {
+      const { pageIndex = 0, x, y, width, height, color = [0, 0, 0] } = redact;
+      if (pageIndex < pages.length) {
+        const page = pages[pageIndex];
+        const { width: pageW, height: pageH } = page.getSize();
+        page.drawRectangle({
+          x: x || pageW * 0.1,
+          y: y || pageH * 0.5,
+          width: width || pageW * 0.8,
+          height: height || 20,
+          color: rgb(color[0], color[1], color[2])
+        });
+      }
     }
   }
 
@@ -414,7 +486,22 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
       if (page.node.get(PDFName.of('Annots'))) {
         page.node.delete(PDFName.of('Annots'));
       }
-    } catch (e) { /* best-effort */ }
+    } catch (e) { }
+    try {
+      const resources = page.node.get(PDFName.of('Resources'));
+      if (resources) {
+        const xObject = resources.get(PDFName.of('XObject'));
+        if (xObject) {
+          const keys = xObject.keys();
+          for (const key of keys) {
+            const name = key.toString();
+            if (name.toLowerCase().includes('watermark') || name.toLowerCase().includes('water') || name.toLowerCase().includes('wm')) {
+              try { xObject.delete(key); } catch (ex) { }
+            }
+          }
+        }
+      }
+    } catch (e) { }
   }
   const newPdf = await PDFDocument.create();
   const indices = pdfDoc.getPageIndices();

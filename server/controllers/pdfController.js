@@ -118,10 +118,10 @@ const checkLimits = async (req) => {
       entry.count = 0;
       entry.resetAt = now + GUEST_WINDOW_MS;
     }
-    entry.count++;
-    if (entry.count > GUEST_MAX_FILES) {
+    if (entry.count >= GUEST_MAX_FILES) {
       return { allowed: false, message: 'Guest limit reached. Please sign up for unlimited access.' };
     }
+    entry.count++;
   }
   return { allowed: true };
 };
@@ -318,7 +318,7 @@ exports.protect = async (req, res) => {
     if (!password) {
       throw new Error('Password is required');
     }
-    const outputPath = getOutputPath(req.files[0].originalname, 'protected', '.enc');
+    const outputPath = getOutputPath(req.files[0].originalname, 'protected');
     await protectPDF(filePath, outputPath, password);
 
     const outStat = fs.statSync(outputPath);
@@ -527,28 +527,41 @@ exports.pdfToJpg = async (req, res) => {
     const outputDir = getOutputDir();
     const outputFiles = [];
 
+    let pageTexts = [];
+    try {
+      const result = await pdfParse(data);
+      pageTexts = result.text.split('\n').filter(l => l.trim());
+    } catch (e) {
+      pageTexts = [];
+    }
+
     for (let i = 0; i < Math.min(pageCount, 10); i++) {
       const jpgName = `page_${i + 1}_${uuidv4()}.jpg`;
       const jpgPath = path.join(outputDir, jpgName);
 
       const page = pdfDoc.getPage(i);
       const { width, height } = page.getSize();
+      const scale = Math.min(1200 / width, 1200 / height);
+      const imgW = Math.round(width * scale);
+      const imgH = Math.round(height * scale);
 
-      const svgContent = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      const pageTextLines = pageTexts.slice(i * 50, (i + 1) * 50).slice(0, 30);
+      const textElements = pageTextLines.map((line, idx) =>
+        `<text x="${40}" y="${60 + idx * 22}" font-size="${14}" font-family="sans-serif" fill="#333">${line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</text>`
+      ).join('');
+
+      const svgContent = `<svg width="${imgW}" height="${imgH}" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="white"/>
-        <text x="${width/2}" y="${height/2}" text-anchor="middle" font-size="24" fill="#333">
-          Doczen - Page ${i + 1}
-        </text>
-        <text x="${width/2}" y="${height/2 + 30}" text-anchor="middle" font-size="14" fill="#666">
-          Original: ${width.toFixed(0)} x ${height.toFixed(0)}
-        </text>
+        <rect x="${20}" y="${20}" width="${imgW - 40}" height="${imgH - 40}" fill="none" stroke="#ddd" stroke-width="1"/>
+        <text x="${imgW/2}" y="${40}" text-anchor="middle" font-size="${16}" font-weight="bold" font-family="sans-serif" fill="#999">Page ${i + 1}</text>
+        ${textElements}
       </svg>`;
 
       const svgPath = jpgPath.replace('.jpg', '.svg');
       fs.writeFileSync(svgPath, svgContent);
       try {
         await sharp(Buffer.from(svgContent))
-          .resize(Math.round(width), Math.round(height))
+          .resize(imgW, imgH)
           .jpeg({ quality: 90 })
           .toFile(jpgPath);
       } finally {
