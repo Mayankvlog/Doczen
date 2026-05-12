@@ -681,7 +681,7 @@ const excelToPdf = async (filePath, outputPath) => {
     
     for (const worksheet of workbook.worksheets) {
       let y = 750;
-      const page = pdfDoc.addPage([612, 792]);
+      let page = pdfDoc.addPage([612, 792]);
       
       // Add worksheet title
       page.drawText(`Worksheet: ${worksheet.name}`, {

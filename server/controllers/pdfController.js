@@ -154,7 +154,11 @@ const processRequest = async (req, res, action, processFn) => {
     const result = await processFn(req);
 
     if (req.user && isDbConnected()) {
-      await incrementFileCount(req.user._id);
+      try {
+        await incrementFileCount(req.user._id);
+      } catch (e) {
+        console.error('Failed to increment file count:', e.message);
+      }
     }
 
     // Schedule cleanup for later instead of immediate cleanup
