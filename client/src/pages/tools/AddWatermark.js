@@ -116,7 +116,7 @@ export default function AddWatermark() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="watermarked" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setWatermarkText(''); }} action="watermarked" />
           </div>
         )}
       </div>

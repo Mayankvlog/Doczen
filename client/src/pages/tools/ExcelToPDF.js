@@ -49,7 +49,7 @@ export default function ExcelToPDF() {
         <FileUploader
           accept=".xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           label="Upload Excel file"
-          onFilesSelected={(f) => { setFile(f); setError(''); setResult(null); }}
+          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); }}
         />
 
         {file && !loading && (

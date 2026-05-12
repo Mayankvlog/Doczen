@@ -92,7 +92,7 @@ export default function SplitPDF() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="split" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="split" />
           </div>
         )}
       </div>

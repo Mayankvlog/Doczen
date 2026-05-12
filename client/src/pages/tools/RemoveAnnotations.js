@@ -101,7 +101,7 @@ export default function RemoveAnnotations() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="cleaned" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="cleaned" />
           </div>
         )}
       </div>

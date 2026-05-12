@@ -49,7 +49,7 @@ export default function WordToPDF() {
         <FileUploader
           accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
           label="Upload Word document"
-          onFilesSelected={(f) => { setFile(f); setError(''); setResult(null); }}
+          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); }}
         />
 
         {file && !loading && (

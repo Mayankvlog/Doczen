@@ -115,7 +115,7 @@ export default function ExtractText() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="processed" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setExtractedText(''); }} action="processed" />
           </div>
         )}
       </div>

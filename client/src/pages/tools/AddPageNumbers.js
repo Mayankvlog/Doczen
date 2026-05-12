@@ -129,7 +129,7 @@ export default function AddPageNumbers() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="numbered" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="numbered" />
           </div>
         )}
       </div>

@@ -126,7 +126,7 @@ export default function HTMLToPDF() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="converted to PDF" />
+            <ResultCard result={result} onReset={() => { setResult(null); setContent(''); }} action="converted to PDF" />
           </div>
         )}
       </div>

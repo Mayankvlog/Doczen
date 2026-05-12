@@ -128,7 +128,7 @@ export default function DeletePages() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="cleaned" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setPagesToDelete(''); }} action="cleaned" />
           </div>
         )}
       </div>

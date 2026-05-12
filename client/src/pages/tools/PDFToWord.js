@@ -53,7 +53,7 @@ export default function PDFToWord() {
         <FileUploader
           accept=".pdf"
           label="Upload PDF file"
-          onFilesSelected={(f) => { setFile(f); setError(''); setResult(null); }}
+          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); }}
         />
 
         {file && !loading && (

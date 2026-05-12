@@ -101,7 +101,7 @@ export default function FlattenPDF() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="flattened" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="flattened" />
           </div>
         )}
       </div>

@@ -61,7 +61,7 @@ export default function JPGToPDF() {
           </div>
         )}
 
-        {result && <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="converted to PDF" />}
+        {result && <ResultCard result={result} onReset={() => { setResult(null); setFiles([]); }} action="converted to PDF" />}
       </div>
     </div>
     </>

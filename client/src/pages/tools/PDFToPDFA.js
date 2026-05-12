@@ -142,7 +142,7 @@ export default function PDFToPDFA() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="converted to PDF/A" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="converted to PDF/A" />
           </div>
         )}
       </div>

@@ -111,7 +111,7 @@ export default function UnlockPDF() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="unlocked" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setPassword(''); }} action="unlocked" />
           </div>
         )}
       </div>

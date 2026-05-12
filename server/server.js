@@ -20,6 +20,26 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
+// Periodic cleanup of files older than 24 hours
+const cleanupOldFiles = () => {
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  try {
+    const files = fs.readdirSync(uploadsDir);
+    for (const file of files) {
+      const filePath = path.join(uploadsDir, file);
+      try {
+        const stat = fs.statSync(filePath);
+        if (now - stat.mtimeMs > ONE_DAY) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (e) { /* ignore */ }
+    }
+  } catch (e) { /* ignore */ }
+};
+cleanupOldFiles();
+setInterval(cleanupOldFiles, 60 * 60 * 1000);
+
 const connectDB = require('./config/db');
 
 connectDB();

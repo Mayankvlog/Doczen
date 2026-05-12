@@ -8,8 +8,8 @@ const connectDB = async () => {
     return;
   }
   try {
-    const conn = await mongoose.connect(uri);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    await mongoose.connect(uri);
+    console.log('MongoDB Connected');
   } catch (error) {
     console.error(`MongoDB connection error: ${error.message}`);
     console.log('Server will continue without database. PDF tools will work without user features.');

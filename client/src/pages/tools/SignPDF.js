@@ -40,7 +40,7 @@ export default function SignPDF() {
         <FileUploader
           accept=".pdf"
           label="Upload PDF to sign"
-          onFilesSelected={(f) => { setFile(f); setError(''); setResult(null); }}
+          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); }}
         />
 
         {file && !loading && (

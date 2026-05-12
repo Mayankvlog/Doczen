@@ -128,7 +128,7 @@ export default function ReorderPages() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="reordered" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setPageOrder(''); }} action="reordered" />
           </div>
         )}
       </div>

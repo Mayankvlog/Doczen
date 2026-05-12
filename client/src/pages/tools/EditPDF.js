@@ -43,7 +43,7 @@ export default function EditPDF() {
         <FileUploader
           accept=".pdf"
           label="Upload PDF to edit"
-          onFilesSelected={(f) => { setFile(f); setError(''); setResult(null); }}
+          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); }}
         />
 
         {file && !loading && (

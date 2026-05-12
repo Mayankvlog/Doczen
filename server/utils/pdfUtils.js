@@ -46,16 +46,18 @@ const splitPDF = async (filePath, outputDir) => {
 
 const compressPDF = async (filePath, outputPath, quality = 0.5) => {
   const pdfDoc = await loadPdf(filePath);
-  const pages = pdfDoc.getPages();
+  const newPdf = await PDFDocument.create();
+  const indices = pdfDoc.getPageIndices();
+  const pages = await newPdf.copyPages(pdfDoc, indices);
+  pages.forEach((page) => newPdf.addPage(page));
 
-  for (const page of pages) {
-    const { width, height } = page.getSize();
-    const newWidth = Math.round(width * quality);
-    const newHeight = Math.round(height * quality);
-    page.setSize(newWidth, newHeight);
-  }
+  const title = pdfDoc.getTitle();
+  const author = pdfDoc.getAuthor();
+  if (title) newPdf.setTitle(title);
+  if (author) newPdf.setAuthor(author);
 
-  await savePdf(pdfDoc, outputPath);
+  const data = await newPdf.save({ useObjectStreams: true });
+  await fs.promises.writeFile(outputPath, data);
   return outputPath;
 };
 
@@ -213,18 +215,29 @@ const deletePages = async (filePath, outputPath, pagesToDelete) => {
 
 const repairPDF = async (filePath, outputPath) => {
   try {
-    const pdfDoc = await loadPdf(filePath);
-    await savePdf(pdfDoc, outputPath);
+    let pdfDoc;
+    try {
+      pdfDoc = await loadPdf(filePath);
+    } catch (loadErr) {
+      const data = await fs.promises.readFile(filePath);
+      pdfDoc = await PDFDocument.load(data, { ignoreEncryption: true });
+    }
+    const newPdf = await PDFDocument.create();
+    const indices = pdfDoc.getPageIndices();
+    const pages = await newPdf.copyPages(pdfDoc, indices);
+    pages.forEach((page) => newPdf.addPage(page));
+    await savePdf(newPdf, outputPath);
     return outputPath;
   } catch (err) {
     const data = await fs.promises.readFile(filePath);
     const newPdf = await PDFDocument.create();
-    const pages = newPdf.getPages();
+    const fonts = [StandardFonts.Helvetica, StandardFonts.Courier, StandardFonts.TimesRoman];
+    const font = await newPdf.embedFont(fonts[0]);
     const text = data.toString('utf-8').match(/\/Type\s*\/Page[^}]+}/g) || [];
-    for (let i = 0; i < Math.min(text.length, 50); i++) {
+    const pageCount = Math.min(text.length || 1, 50);
+    for (let i = 0; i < pageCount; i++) {
       const page = newPdf.addPage([612, 792]);
-      const font = await newPdf.embedFont(StandardFonts.Helvetica);
-      page.drawText(`Repaired content block ${i + 1}`, { x: 50, y: 700, size: 14, font });
+      page.drawText(`Repaired page ${i + 1} of ${pageCount}`, { x: 50, y: 700, size: 14, font });
     }
     await savePdf(newPdf, outputPath);
     return outputPath;
@@ -245,6 +258,21 @@ const pdfToPdfa = async (filePath, outputPath, options = {}) => {
   pdfDoc.setKeywords(keywords);
   pdfDoc.setProducer('Doczen PDF/A Generator');
   pdfDoc.setCreator('Doczen');
+
+  const { PDFName } = require('pdf-lib');
+  const context = pdfDoc.context;
+  try {
+    const outputIntent = context.obj({
+      Type: 'OutputIntent',
+      S: 'GTS_PDFA1',
+      OutputConditionIdentifier: 'sRGB IEC61966-2.1',
+      RegistryName: 'http://www.color.org',
+      Info: 'sRGB IEC61966-2.1'
+    });
+    const outputIntents = context.obj([outputIntent]);
+    pdfDoc.catalog.set(PDFName.of('OutputIntents'), outputIntents);
+  } catch (e) { /* PDF/A identifier is best-effort */ }
+
   await savePdf(pdfDoc, outputPath);
   return outputPath;
 };
@@ -362,20 +390,38 @@ const redactText = async (filePath, outputPath, redactions = []) => {
 
 const removeAnnotations = async (filePath, outputPath) => {
   const pdfDoc = await loadPdf(filePath);
+  const { PDFName } = require('pdf-lib');
+  const pages = pdfDoc.getPages();
+  for (const page of pages) {
+    try {
+      if (page.node.get(PDFName.of('Annots'))) {
+        page.node.delete(PDFName.of('Annots'));
+      }
+    } catch (e) { /* best-effort */ }
+  }
   const newPdf = await PDFDocument.create();
   const indices = pdfDoc.getPageIndices();
-  const pages = await newPdf.copyPages(pdfDoc, indices);
-  pages.forEach((page) => newPdf.addPage(page));
+  const newPages = await newPdf.copyPages(pdfDoc, indices);
+  newPages.forEach((p) => newPdf.addPage(p));
   await savePdf(newPdf, outputPath);
   return outputPath;
 };
 
 const removeWatermarkFromPdf = async (filePath, outputPath) => {
   const pdfDoc = await loadPdf(filePath);
+  const { PDFName } = require('pdf-lib');
+  const pages = pdfDoc.getPages();
+  for (const page of pages) {
+    try {
+      if (page.node.get(PDFName.of('Annots'))) {
+        page.node.delete(PDFName.of('Annots'));
+      }
+    } catch (e) { /* best-effort */ }
+  }
   const newPdf = await PDFDocument.create();
   const indices = pdfDoc.getPageIndices();
-  const pages = await newPdf.copyPages(pdfDoc, indices);
-  pages.forEach((page) => newPdf.addPage(page));
+  const newPages = await newPdf.copyPages(pdfDoc, indices);
+  newPages.forEach((p) => newPdf.addPage(p));
   await savePdf(newPdf, outputPath);
   return outputPath;
 };

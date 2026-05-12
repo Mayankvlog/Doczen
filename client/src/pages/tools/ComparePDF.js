@@ -30,6 +30,13 @@ export default function ComparePDF() {
     }
   };
 
+  const formatSize = (bytes) => {
+    if (!bytes) return 'N/A';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
   return (
     <>
     <SEO title="Compare PDF Files Online Free" description="Compare two PDF files online for free. Find differences in page count, size, and structure with Doczen's PDF comparison tool." keywords="compare PDF, PDF comparison, diff PDF, PDF differences, compare two PDF files" canonical="/compare-pdf" />
@@ -116,35 +123,31 @@ export default function ComparePDF() {
             <div className="space-y-3">
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-500">Page Count (File 1)</span>
-                <span className="text-sm font-medium text-gray-900">{comparison.pageCount1 || 'N/A'}</span>
+                <span className="text-sm font-medium text-gray-900">{comparison.file1?.pageCount || 'N/A'}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-500">Page Count (File 2)</span>
-                <span className="text-sm font-medium text-gray-900">{comparison.pageCount2 || 'N/A'}</span>
+                <span className="text-sm font-medium text-gray-900">{comparison.file2?.pageCount || 'N/A'}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-500">File Size (File 1)</span>
-                <span className="text-sm font-medium text-gray-900">{comparison.size1 || 'N/A'}</span>
+                <span className="text-sm text-gray-500">File Size</span>
+                <span className="text-sm font-medium text-gray-900">{formatSize(comparison.originalSize)}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-500">File Size (File 2)</span>
-                <span className="text-sm font-medium text-gray-900">{comparison.size2 || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-500">Pages Match</span>
-                <span className={`text-sm font-medium ${comparison.pagesMatch ? 'text-green-600' : 'text-red-600'}`}>
-                  {comparison.pagesMatch ? 'Yes' : 'No'}
+                <span className="text-sm text-gray-500">Identical</span>
+                <span className={`text-sm font-medium ${comparison.isIdentical ? 'text-green-600' : 'text-red-600'}`}>
+                  {comparison.isIdentical ? 'Yes' : 'No'}
                 </span>
               </div>
               <div className="flex justify-between py-2">
                 <span className="text-sm text-gray-500">Differences Found</span>
-                <span className="text-sm font-medium text-gray-900">{comparison.differences || 'N/A'}</span>
+                <span className="text-sm font-medium text-gray-900">{comparison.differences?.length || 0}</span>
               </div>
-              {comparison.differenceList && comparison.differenceList.length > 0 && (
+              {comparison.differences && comparison.differences.length > 0 && (
                 <div className="mt-4">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Differences:</h3>
                   <ul className="space-y-1">
-                    {comparison.differenceList.map((diff, idx) => (
+                    {comparison.differences.map((diff, idx) => (
                       <li key={idx} className="text-xs text-gray-600 bg-gray-50 rounded px-3 py-1.5">
                         {diff}
                       </li>

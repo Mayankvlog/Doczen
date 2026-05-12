@@ -127,7 +127,7 @@ export default function RotatePDF() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="rotated" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="rotated" />
           </div>
         )}
       </div>

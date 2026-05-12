@@ -118,7 +118,7 @@ export default function RedactPDF() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="redacted" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setTerms(''); }} action="redacted" />
           </div>
         )}
       </div>

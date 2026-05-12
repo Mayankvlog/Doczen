@@ -9,7 +9,10 @@ const formatSize = (bytes) => {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 };
 
-const allowedExtensions = ['.pdf'];
+const parseAcceptExtensions = (accept) => {
+  if (!accept) return ['.pdf'];
+  return accept.split(',').map(s => s.trim()).filter(s => s.startsWith('.'));
+};
 
 export default function FileUploader({
   onFilesSelected,
@@ -25,9 +28,11 @@ export default function FileUploader({
 
   const triggerShake = () => setShakeKey((k) => k + 1);
 
+  const allowedExts = parseAcceptExtensions(accept);
+
   const hasValidExtension = (file) => {
     const ext = '.' + file.name.split('.').pop().toLowerCase();
-    return allowedExtensions.some(e => e === ext);
+    return allowedExts.some(e => e === ext);
   };
 
   const onDrop = useCallback(
@@ -93,7 +98,7 @@ export default function FileUploader({
         } ${error ? 'animate-shake' : ''}`}
         key={shakeKey}
       >
-        <input {...getInputProps({ accept: '.pdf' })} />
+        <input {...getInputProps({ accept })} />
         <div className={`flex flex-col items-center gap-2 transition-colors ${isDragActive ? 'text-indigo-600' : files.length > 0 ? 'text-green-600' : 'text-gray-500'}`}>
           {isDragActive ? (
             <svg className="w-10 h-10 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">

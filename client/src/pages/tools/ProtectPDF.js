@@ -132,7 +132,7 @@ export default function ProtectPDF() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="protected with password" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setPassword(''); setConfirmPassword(''); }} action="protected with password" />
           </div>
         )}
       </div>

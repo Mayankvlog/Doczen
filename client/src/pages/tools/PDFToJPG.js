@@ -40,7 +40,7 @@ export default function PDFToJPG() {
         <FileUploader
           accept=".pdf"
           label="Upload PDF file"
-          onFilesSelected={(f) => { setFile(f); setError(''); }}
+          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); }}
         />
 
         {file && !loading && (

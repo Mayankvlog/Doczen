@@ -1,3 +1,5 @@
+import { pdfAPI } from '../services/api';
+
 function formatSize(bytes) {
   if (!bytes || bytes === 0) return '0 B';
   const k = 1024;
@@ -62,7 +64,7 @@ export default function ResultCard({ result, onReset, action = 'processed' }) {
       <div className="flex flex-col sm:flex-row gap-3">
         {downloadUrl && (
           <a
-            href={downloadUrl}
+            href={pdfAPI.getDownloadUrl(fileName)}
             download
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md shadow-indigo-500/25"
           >

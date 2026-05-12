@@ -101,7 +101,7 @@ export default function RepairPDF() {
 
         {result && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => setResult(null)} action="repaired" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="repaired" />
           </div>
         )}
       </div>

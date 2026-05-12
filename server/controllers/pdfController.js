@@ -13,7 +13,7 @@ const GUEST_WINDOW_MS = 60 * 60 * 1000;
 setInterval(() => {
   const now = Date.now();
   for (const [ip, entry] of guestRateLimit.entries()) {
-    if (now > entry.resetAt + GUEST_WINDOW_MS) {
+    if (now > entry.resetAt) {
       guestRateLimit.delete(ip);
     }
   }
@@ -90,6 +90,14 @@ const cleanupFiles = (filePaths) => {
   }
 };
 
+const scheduleFileCleanup = (filePath, delayMs = 24 * 60 * 60 * 1000) => {
+  setTimeout(() => {
+    try {
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    } catch (e) { /* ignore */ }
+  }, delayMs);
+};
+
 const isDbConnected = () => mongoose.connection.readyState === 1;
 
 const checkLimits = async (req) => {
@@ -124,15 +132,19 @@ const normalizeFiles = (req) => {
 };
 
 const processRequest = async (req, res, action, processFn) => {
+  let sourcePaths = [];
   try {
     req.files = normalizeFiles(req);
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: 'No files uploaded' });
     }
 
+    sourcePaths = req.files.map(f => f.path);
+
     if (isDbConnected()) {
       const limitCheck = await checkLimits(req);
       if (!limitCheck.allowed) {
+        cleanupFiles(sourcePaths);
         return res.status(429).json({ message: limitCheck.message });
       }
     }
@@ -146,6 +158,8 @@ const processRequest = async (req, res, action, processFn) => {
     res.json(result);
   } catch (error) {
     res.status(500).json({ message: 'Processing failed', error: error.message });
+  } finally {
+    cleanupFiles(sourcePaths);
   }
 };
 
@@ -682,6 +696,7 @@ exports.download = async (req, res) => {
       if (err) {
         console.error('Download error:', err);
       }
+      scheduleFileCleanup(filePath, 60 * 60 * 1000);
     });
   } catch (error) {
     res.status(500).json({ message: 'Download failed', error: error.message });
