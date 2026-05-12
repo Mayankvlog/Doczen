@@ -153,6 +153,18 @@ const processRequest = async (req, res, action, processFn) => {
 
     const result = await processFn(req);
 
+    if (result && result.fileName) {
+      const outputPath = path.join(getOutputDir(), path.basename(result.fileName));
+      if (!fs.existsSync(outputPath)) {
+        cleanupFiles(sourcePaths);
+        return res.status(500).json({
+          success: false,
+          message: 'Conversion failed - output file was not created'
+        });
+      }
+      scheduleFileCleanup(outputPath, 60 * 60 * 1000);
+    }
+
     if (req.user && isDbConnected()) {
       try {
         await incrementFileCount(req.user._id);
@@ -161,12 +173,10 @@ const processRequest = async (req, res, action, processFn) => {
       }
     }
 
-    // Schedule cleanup for later instead of immediate cleanup
-    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000)); // 30 minutes
+    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000));
     
     res.json(result);
   } catch (error) {
-    // Only cleanup on error
     cleanupFiles(sourcePaths);
     res.status(500).json({ message: 'Processing failed', error: error.message });
   }
@@ -898,6 +908,7 @@ exports.htmlToPdf = async (req, res) => {
       fontSize: parseInt(req.body.fontSize) || 12
     });
     const outStat = fs.statSync(outputPath);
+    scheduleFileCleanup(outputPath, 60 * 60 * 1000);
     res.json({
       message: 'HTML converted to PDF successfully',
       fileName: outputName,

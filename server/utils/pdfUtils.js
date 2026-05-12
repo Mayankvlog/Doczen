@@ -192,7 +192,8 @@ const addWatermark = async (filePath, outputPath, watermarkText, options = {}) =
 
 const extractText = async (filePath) => {
   const data = await fs.promises.readFile(filePath);
-  const pdfParse = require('pdf-parse');
+  let pdfParse;
+  try { pdfParse = require('pdf-parse'); } catch { throw new Error('Dependency missing: pdf-parse module not found'); }
   const result = await pdfParse(new Uint8Array(data));
   return result.text;
 };
@@ -588,9 +589,15 @@ const comparePDFs = async (filePath1, filePath2) => {
 };
 
 const pdfToWord = async (filePath, outputPath) => {
-  const { Document, Packer, Paragraph, TextRun, HeadingLevel } = require('docx');
+  let Document, Packer, Paragraph, TextRun, HeadingLevel;
+  try {
+    ({ Document, Packer, Paragraph, TextRun, HeadingLevel } = require('docx'));
+  } catch {
+    throw new Error('Failed to convert PDF to Word: docx module not found');
+  }
   const pdfData = await fs.promises.readFile(filePath);
-  const pdfParse = require('pdf-parse');
+  let pdfParse;
+  try { pdfParse = require('pdf-parse'); } catch { throw new Error('Failed to convert PDF to Word: pdf-parse module not found'); }
   
   try {
     const result = await pdfParse(new Uint8Array(pdfData));
@@ -631,30 +638,28 @@ const pdfToWord = async (filePath, outputPath) => {
 };
 
 const pdfToExcel = async (filePath, outputPath) => {
-  const XLSX = require('xlsx');
+  let XLSX;
+  try { XLSX = require('xlsx'); } catch { throw new Error('Failed to convert PDF to Excel: xlsx module not found'); }
   const pdfData = await fs.promises.readFile(filePath);
-  const pdfParse = require('pdf-parse');
+  let pdfParse;
+  try { pdfParse = require('pdf-parse'); } catch { throw new Error('Failed to convert PDF to Excel: pdf-parse module not found'); }
   
   try {
     const result = await pdfParse(new Uint8Array(pdfData));
     const text = result.text;
     
-    // Split text into lines and try to detect tabular data
     const lines = text.split('\n').filter(line => line.trim());
     const worksheet = XLSX.utils.aoa_to_sheet([['PDF Content']]);
     
     let rowNum = 1;
     for (const line of lines) {
-      // Try to detect table rows by looking for multiple spaces or tabs
       const columns = line.split(/\s{2,}|\t/).filter(col => col.trim());
       
       if (columns.length > 1) {
-        // Likely a table row
         columns.forEach((col, index) => {
           worksheet[XLSX.utils.encode_cell({ r: rowNum, c: index })] = { v: col.trim() };
         });
       } else {
-        // Regular text line
         worksheet[XLSX.utils.encode_cell({ r: rowNum, c: 0 })] = { v: line.trim() };
       }
       rowNum++;
@@ -670,7 +675,8 @@ const pdfToExcel = async (filePath, outputPath) => {
 };
 
 const excelToPdf = async (filePath, outputPath) => {
-  const ExcelJS = require('exceljs');
+  let ExcelJS;
+  try { ExcelJS = require('exceljs'); } catch { throw new Error('Failed to convert Excel to PDF: exceljs module not found'); }
   
   try {
     const workbook = new ExcelJS.Workbook();
@@ -734,7 +740,8 @@ const excelToPdf = async (filePath, outputPath) => {
 
 const pdfToPpt = async (filePath, outputPath) => {
   const pdfData = await fs.promises.readFile(filePath);
-  const pdfParse = require('pdf-parse');
+  let pdfParse;
+  try { pdfParse = require('pdf-parse'); } catch { throw new Error('Failed to convert PDF to PPT: pdf-parse module not found'); }
   
   try {
     const result = await pdfParse(new Uint8Array(pdfData));
@@ -770,15 +777,12 @@ const pdfToPpt = async (filePath, outputPath) => {
 
 const pptToPdf = async (filePath, outputPath) => {
   try {
-    // For PPT/PPTX files, we'll extract text and create a PDF
-    // In production, you'd use a proper library like aspose or office-converter
-    
     let content = '';
     const ext = path.extname(filePath).toLowerCase();
     
     if (ext === '.pptx') {
-      // Try to read PPTX as ZIP and extract text
-      const JSZip = require('jszip');
+      let JSZip;
+      try { JSZip = require('jszip'); } catch { throw new Error('Failed to convert PPT to PDF: jszip module not found'); }
       const data = await fs.promises.readFile(filePath);
       const zip = await JSZip.loadAsync(data);
       
@@ -858,15 +862,12 @@ const pptToPdf = async (filePath, outputPath) => {
 
 const wordToPdf = async (filePath, outputPath) => {
   try {
-    // For Word documents, we'll extract text and create a PDF
-    // In production, you'd use a proper library like mammoth for DOCX
-    
     let content = '';
     const ext = path.extname(filePath).toLowerCase();
     
     if (ext === '.docx') {
-      // Use mammoth to extract text from DOCX
-      const mammoth = require('mammoth');
+      let mammoth;
+      try { mammoth = require('mammoth'); } catch { throw new Error('Failed to convert Word to PDF: mammoth module not found'); }
       const data = await fs.promises.readFile(filePath);
       const result = await mammoth.extractRawText({ buffer: data });
       content = result.value;

@@ -65,13 +65,20 @@ app.get('/api/health', (req, res) => {
 });
 
 const clientBuild = path.join(__dirname, '../client/build');
-app.use(express.static(clientBuild));
+const hasClientBuild = fs.existsSync(path.join(clientBuild, 'index.html'));
+if (hasClientBuild) {
+  app.use(express.static(clientBuild));
+}
 
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ message: 'API route not found' });
   }
-  res.sendFile(path.join(clientBuild, 'index.html'));
+  if (hasClientBuild) {
+    res.sendFile(path.join(clientBuild, 'index.html'));
+  } else {
+    res.status(200).json({ message: 'Doczen API server is running. Frontend not built yet. Run: cd client && npm run build' });
+  }
 });
 
 app.use((err, req, res, next) => {
