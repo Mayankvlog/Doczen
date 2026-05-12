@@ -68,14 +68,17 @@ const compressPDF = async (filePath, outputPath, quality = 0.5) => {
   const pages = await newPdf.copyPages(pdfDoc, indices);
   pages.forEach((page) => newPdf.addPage(page));
 
-  const title = pdfDoc.getTitle();
-  const author = pdfDoc.getAuthor();
-  if (title) newPdf.setTitle(title);
-  if (author) newPdf.setAuthor(author);
+  if (quality > 0.3) {
+    const title = pdfDoc.getTitle();
+    const author = pdfDoc.getAuthor();
+    if (title) newPdf.setTitle(title);
+    if (author) newPdf.setAuthor(author);
+  }
 
   const data = await newPdf.save({ 
-    useObjectStreams: true,
-    compress: true
+    useObjectStreams: quality < 0.8,
+    compress: true,
+    objectsPerTick: quality < 0.3 ? 10 : 50
   });
   await fs.promises.writeFile(outputPath, data);
   return outputPath;
@@ -115,8 +118,13 @@ const protectPDF = async (filePath, outputPath, password) => {
 
 const unlockPDF = async (filePath, outputPath, password) => {
   const data = await fs.promises.readFile(filePath);
-  if (data.slice(0, 5).toString() === '%PDF-' && !data.includes('/Encrypt')) {
+  try {
+    await PDFDocument.load(data);
     throw new Error('This file is not encrypted. Upload a password-protected file.');
+  } catch (notEncrypted) {
+    if (notEncrypted.message === 'This file is not encrypted. Upload a password-protected file.') {
+      throw notEncrypted;
+    }
   }
   try {
     const pdfDoc = await PDFDocument.load(data, { password });
@@ -212,8 +220,9 @@ const reorderPages = async (filePath, outputPath, pageOrder) => {
   const newPdf = await PDFDocument.create();
 
   for (const pageNum of pageOrder) {
-    if (pageNum >= 0 && pageNum < totalPages) {
-      const [page] = await newPdf.copyPages(pdfDoc, [pageNum]);
+    const idx = pageNum - 1;
+    if (idx >= 0 && idx < totalPages) {
+      const [page] = await newPdf.copyPages(pdfDoc, [idx]);
       newPdf.addPage(page);
     }
   }
@@ -226,7 +235,7 @@ const deletePages = async (filePath, outputPath, pagesToDelete) => {
   const pdfDoc = await loadPdf(filePath);
   const totalPages = pdfDoc.getPageCount();
   const newPdf = await PDFDocument.create();
-  const deleteSet = new Set(pagesToDelete);
+  const deleteSet = new Set(pagesToDelete.map(p => p - 1));
 
   for (let i = 0; i < totalPages; i++) {
     if (!deleteSet.has(i)) {
@@ -660,21 +669,18 @@ const pdfToExcel = async (filePath, outputPath) => {
     const text = result.text;
     
     const lines = text.split('\n').filter(line => line.trim());
-    const worksheet = XLSX.utils.aoa_to_sheet([['PDF Content']]);
+    const data = [['PDF Content']];
     
-    let rowNum = 1;
     for (const line of lines) {
       const columns = line.split(/\s{2,}|\t/).filter(col => col.trim());
-      
       if (columns.length > 1) {
-        columns.forEach((col, index) => {
-          worksheet[XLSX.utils.encode_cell({ r: rowNum, c: index })] = { v: col.trim() };
-        });
+        data.push(columns.map(c => c.trim()));
       } else {
-        worksheet[XLSX.utils.encode_cell({ r: rowNum, c: 0 })] = { v: line.trim() };
+        data.push([line.trim()]);
       }
-      rowNum++;
     }
+    
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
     
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'PDF Data');

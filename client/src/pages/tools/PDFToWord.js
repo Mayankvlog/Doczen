@@ -10,7 +10,6 @@ export default function PDFToWord() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
-  const [email, setEmail] = useState('');
 
   const handleProcess = async () => {
     if (!file) return;

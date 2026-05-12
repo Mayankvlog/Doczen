@@ -569,7 +569,8 @@ exports.pdfToJpg = async (req, res) => {
       pageTexts = [];
     }
 
-    for (let i = 0; i < Math.min(pageCount, 10); i++) {
+    const maxPages = Math.min(pageCount, 20);
+    for (let i = 0; i < maxPages; i++) {
       const jpgName = `page_${i + 1}_${uuidv4()}.jpg`;
       const jpgPath = path.join(outputDir, jpgName);
 
@@ -579,16 +580,26 @@ exports.pdfToJpg = async (req, res) => {
       const imgW = Math.round(width * scale);
       const imgH = Math.round(height * scale);
 
-      const pageTextLines = pageTexts.slice(i * 50, (i + 1) * 50).slice(0, 30);
-      const textElements = pageTextLines.map((line, idx) =>
-        `<text x="${40}" y="${80 + idx * 22}" font-size="${14}" font-family="sans-serif" fill="#333">${line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</text>`
-      ).join('');
+      const linesPerPage = Math.max(20, Math.floor((imgH - 120) / 24));
+      const pageTextLines = pageTexts.slice(i * linesPerPage, (i + 1) * linesPerPage);
+      const textElements = pageTextLines.map((line, idx) => {
+        const escaped = line
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+        const maxChars = Math.floor((imgW - 80) / 8);
+        const displayText = escaped.length > maxChars ? escaped.substring(0, maxChars - 3) + '...' : escaped;
+        return `<text x="40" y="${90 + idx * 24}" font-size="14" font-family="sans-serif" fill="#333">${displayText}</text>`;
+      }).join('');
 
       const svgContent = `<svg width="${imgW}" height="${imgH}" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="white"/>
-        <rect x="${20}" y="${20}" width="${imgW - 40}" height="${imgH - 40}" fill="none" stroke="#ddd" stroke-width="1"/>
-        <text x="${imgW/2}" y="${50}" text-anchor="middle" font-size="${18}" font-weight="bold" font-family="sans-serif" fill="#666">Page ${i + 1} of ${pageCount}</text>
+        <rect x="20" y="20" width="${imgW - 40}" height="${imgH - 40}" fill="none" stroke="#ddd" stroke-width="1"/>
+        <text x="${imgW/2}" y="50" text-anchor="middle" font-size="18" font-weight="bold" font-family="sans-serif" fill="#333">Page ${i + 1} of ${pageCount}</text>
+        <line x1="30" y1="65" x2="${imgW - 30}" y2="65" stroke="#eee" stroke-width="1"/>
         ${textElements}
+        ${pageTextLines.length === 0 ? `<text x="${imgW/2}" y="${imgH/2}" text-anchor="middle" font-size="16" font-family="sans-serif" fill="#999">No extractable text on this page</text>` : ''}
       </svg>`;
 
       try {
