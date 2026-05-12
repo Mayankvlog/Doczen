@@ -40,4 +40,9 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 }
 });
 
-module.exports = upload;
+const permissiveUpload = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 }
+});
+
+module.exports = { upload, permissiveUpload };

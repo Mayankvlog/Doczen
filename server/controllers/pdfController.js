@@ -31,9 +31,9 @@ const {
   removeWatermarkFromPdf, comparePDFs
 } = require('../utils/pdfUtils');
 
-const getOutputPath = (originalName, suffix) => {
-  const ext = path.extname(originalName);
-  const base = path.basename(originalName, ext);
+const getOutputPath = (originalName, suffix, customExt) => {
+  const ext = customExt || path.extname(originalName);
+  const base = path.basename(originalName, path.extname(originalName));
   const dir = path.join(__dirname, '../uploads');
   return path.join(dir, `${base}_${suffix}_${uuidv4()}${ext}`);
 };
@@ -317,7 +317,7 @@ exports.protect = async (req, res) => {
     if (!password) {
       throw new Error('Password is required');
     }
-    const outputPath = getOutputPath(req.files[0].originalname, 'protected');
+    const outputPath = getOutputPath(req.files[0].originalname, 'protected', '.enc');
     await protectPDF(filePath, outputPath, password);
 
     const outStat = fs.statSync(outputPath);

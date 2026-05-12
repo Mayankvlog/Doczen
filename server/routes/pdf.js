@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../middleware/upload');
+const { upload, permissiveUpload } = require('../middleware/upload');
 const { optionalAuth } = require('../middleware/auth');
 
 const {
@@ -17,7 +17,7 @@ router.post('/split', optionalAuth, upload.single('file'), split);
 router.post('/compress', optionalAuth, upload.single('file'), compress);
 router.post('/rotate', optionalAuth, upload.single('file'), rotate);
 router.post('/protect', optionalAuth, upload.single('file'), protectPdf);
-router.post('/unlock', optionalAuth, upload.single('file'), unlock);
+router.post('/unlock', optionalAuth, permissiveUpload.single('file'), unlock);
 router.post('/add-page-numbers', optionalAuth, upload.single('file'), addPageNumbers);
 router.post('/add-watermark', optionalAuth, upload.single('file'), addWatermark);
 router.post('/extract-text', optionalAuth, upload.single('file'), extractText);

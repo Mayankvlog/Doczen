@@ -1,6 +1,7 @@
 const { PDFDocument, StandardFonts, rgb, degrees } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const loadPdf = async (filePath) => {
   const data = await fs.promises.readFile(filePath);
@@ -74,43 +75,40 @@ const rotatePDF = async (filePath, outputPath, rotationDegrees = 90) => {
   return outputPath;
 };
 
-const protectPDF = async (filePath, outputPath, password) => {
-  const pdfDoc = await loadPdf(filePath);
-  pdfDoc.encrypt({
-    userPassword: password,
-    ownerPassword: process.env.OWNER_PASSWORD || 'doczen-admin',
-    permissions: {
-      printing: 'lowResolution',
-      modifying: false,
-      copying: false,
-      annotating: false,
-      fillingForms: false,
-      contentAccessibility: true,
-      documentAssembly: false
-    }
-  });
+const encryptBuffer = (data, password) => {
+  const key = crypto.scryptSync(password, 'doczen-pdf-salt', 32);
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+  return Buffer.concat([iv, cipher.update(data), cipher.final()]);
+};
 
-  await savePdf(pdfDoc, outputPath);
+const decryptBuffer = (data, password) => {
+  const key = crypto.scryptSync(password, 'doczen-pdf-salt', 32);
+  const iv = data.slice(0, 16);
+  const encrypted = data.slice(16);
+  const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+  return Buffer.concat([decipher.update(encrypted), decipher.final()]);
+};
+
+const protectPDF = async (filePath, outputPath, password) => {
+  const data = await fs.promises.readFile(filePath);
+  const encrypted = encryptBuffer(data, password);
+  await fs.promises.writeFile(outputPath, encrypted);
   return outputPath;
 };
 
 const unlockPDF = async (filePath, outputPath, password) => {
-  const pdfData = await fs.promises.readFile(filePath);
-
-  let pdfDoc;
-  try {
-    pdfDoc = await PDFDocument.load(pdfData, { password });
-  } catch (err) {
-    throw new Error('Incorrect password or file is not password-protected');
+  const data = await fs.promises.readFile(filePath);
+  if (data.slice(0, 5).toString() === '%PDF-') {
+    throw new Error('This file is not encrypted. Upload a password-protected file.');
   }
-
-  const newPdf = await PDFDocument.create();
-  const indices = pdfDoc.getPageIndices();
-  const pages = await newPdf.copyPages(pdfDoc, indices);
-  pages.forEach((page) => newPdf.addPage(page));
-
-  await savePdf(newPdf, outputPath);
-  return outputPath;
+  try {
+    const decrypted = decryptBuffer(data, password);
+    await fs.promises.writeFile(outputPath, decrypted);
+    return outputPath;
+  } catch (err) {
+    throw new Error('Incorrect password. Please try again.');
+  }
 };
 
 const addPageNumbers = async (filePath, outputPath, options = {}) => {
