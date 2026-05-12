@@ -5,6 +5,7 @@ const archiver = require('archiver');
 const pdfParse = require('pdf-parse');
 const { PDFDocument } = require('pdf-lib');
 const mongoose = require('mongoose');
+const sharp = require('sharp');
 
 const guestRateLimit = new Map();
 const GUEST_MAX_FILES = 10;
@@ -216,9 +217,9 @@ exports.split = async (req, res) => {
       for (const f of outputFiles) {
         archive.file(f, { name: path.basename(f) });
       }
-      archive.finalize();
       stream.on('close', resolve);
       archive.on('error', reject);
+      archive.finalize();
     });
 
     cleanupFiles(outputFiles);
@@ -543,14 +544,16 @@ exports.pdfToJpg = async (req, res) => {
         </text>
       </svg>`;
 
-      fs.writeFileSync(jpgPath.replace('.jpg', '.svg'), svgContent);
-      const sharp = require('sharp');
-      await sharp(Buffer.from(svgContent))
-        .resize(Math.round(width), Math.round(height))
-        .jpeg({ quality: 90 })
-        .toFile(jpgPath);
-
-      fs.unlinkSync(jpgPath.replace('.jpg', '.svg'));
+      const svgPath = jpgPath.replace('.jpg', '.svg');
+      fs.writeFileSync(svgPath, svgContent);
+      try {
+        await sharp(Buffer.from(svgContent))
+          .resize(Math.round(width), Math.round(height))
+          .jpeg({ quality: 90 })
+          .toFile(jpgPath);
+      } finally {
+        if (fs.existsSync(svgPath)) fs.unlinkSync(svgPath);
+      }
       outputFiles.push(jpgPath);
     }
 
@@ -584,9 +587,9 @@ exports.pdfToJpg = async (req, res) => {
       for (const f of outputFiles) {
         archive.file(f, { name: path.basename(f) });
       }
-      archive.finalize();
       stream.on('close', resolve);
       archive.on('error', reject);
+      archive.finalize();
     });
 
     cleanupFiles(outputFiles);
@@ -713,15 +716,19 @@ exports.download = async (req, res) => {
 };
 
 exports.getPageCount = async (req, res) => {
+  let sourcePaths = [];
   try {
     req.files = normalizeFiles(req);
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
+    sourcePaths = req.files.map(f => f.path);
+
     if (isDbConnected()) {
       const limitCheck = await checkLimits(req);
       if (!limitCheck.allowed) {
+        cleanupFiles(sourcePaths);
         return res.status(429).json({ message: limitCheck.message });
       }
     }
@@ -734,6 +741,8 @@ exports.getPageCount = async (req, res) => {
     res.json({ pageCount });
   } catch (error) {
     res.status(500).json({ message: 'Failed to get page count', error: error.message });
+  } finally {
+    cleanupFiles(sourcePaths);
   }
 };
 
@@ -778,14 +787,17 @@ exports.pdfToPdfa = async (req, res) => {
 };
 
 exports.readMetadata = async (req, res) => {
+  let sourcePaths = [];
   try {
     req.files = normalizeFiles(req);
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
+    sourcePaths = req.files.map(f => f.path);
     if (isDbConnected()) {
       const limitCheck = await checkLimits(req);
       if (!limitCheck.allowed) {
+        cleanupFiles(sourcePaths);
         return res.status(429).json({ message: limitCheck.message });
       }
     }
@@ -794,6 +806,8 @@ exports.readMetadata = async (req, res) => {
     res.json({ metadata });
   } catch (error) {
     res.status(500).json({ message: 'Failed to read metadata', error: error.message });
+  } finally {
+    cleanupFiles(sourcePaths);
   }
 };
 
@@ -922,14 +936,17 @@ exports.removeWatermark = async (req, res) => {
 };
 
 exports.compare = async (req, res) => {
+  let sourcePaths = [];
   try {
     req.files = normalizeFiles(req);
     if (!req.files || req.files.length < 2) {
       return res.status(400).json({ message: 'Please upload two PDF files to compare' });
     }
+    sourcePaths = req.files.map(f => f.path);
     if (isDbConnected()) {
       const limitCheck = await checkLimits(req);
       if (!limitCheck.allowed) {
+        cleanupFiles(sourcePaths);
         return res.status(429).json({ message: limitCheck.message });
       }
     }
@@ -940,5 +957,7 @@ exports.compare = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: 'Comparison failed', error: error.message });
+  } finally {
+    cleanupFiles(sourcePaths);
   }
 };
