@@ -9,7 +9,8 @@ const {
   reorder, deletePages, pdfToJpg, jpgToPdf, pdfToTxt,
   download, getPageCount, repair, pdfToPdfa,
   readMetadata, writeMetadata, flatten, htmlToPdf,
-  redact, removeAnnotations, removeWatermark, compare
+  redact, removeAnnotations, removeWatermark, compare,
+  pdfToWord, pdfToExcel, excelToPdf, pdfToPpt, pptToPdf, wordToPdf
 } = require('../controllers/pdfController');
 
 router.post('/merge', optionalAuth, upload.array('files', 20), merge);
@@ -38,5 +39,11 @@ router.post('/redact', optionalAuth, upload.single('file'), redact);
 router.post('/remove-annotations', optionalAuth, upload.single('file'), removeAnnotations);
 router.post('/remove-watermark', optionalAuth, upload.single('file'), removeWatermark);
 router.post('/compare', optionalAuth, upload.array('files', 2), compare);
+router.post('/pdf-to-word', optionalAuth, upload.single('file'), pdfToWord);
+router.post('/pdf-to-excel', optionalAuth, upload.single('file'), pdfToExcel);
+router.post('/excel-to-pdf', optionalAuth, upload.single('file'), excelToPdf);
+router.post('/pdf-to-ppt', optionalAuth, upload.single('file'), pdfToPpt);
+router.post('/ppt-to-pdf', optionalAuth, upload.single('file'), pptToPdf);
+router.post('/word-to-pdf', optionalAuth, upload.single('file'), wordToPdf);
 
 module.exports = router;

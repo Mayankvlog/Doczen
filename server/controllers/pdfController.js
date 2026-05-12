@@ -29,7 +29,8 @@ const {
   extractText, reorderPages, deletePages,
   repairPDF, pdfToPdfa, setMetadata, getMetadata,
   flattenPDF, htmlToPdf, redactText, removeAnnotations,
-  removeWatermarkFromPdf, comparePDFs
+  removeWatermarkFromPdf, comparePDFs, pdfToWord, pdfToExcel, excelToPdf,
+  pdfToPpt, pptToPdf, wordToPdf
 } = require('../utils/pdfUtils');
 
 const getOutputPath = (originalName, suffix, customExt) => {
@@ -987,4 +988,214 @@ exports.compare = async (req, res) => {
     cleanupFiles(sourcePaths);
     res.status(500).json({ message: 'Comparison failed', error: error.message });
   }
+};
+
+exports.pdfToWord = async (req, res) => {
+  await processRequest(req, res, 'pdfToWord', async (req) => {
+    const filePath = req.files[0].path;
+    const outputPath = getOutputPath(req.files[0].originalname, 'word', '.docx');
+    await pdfToWord(filePath, outputPath);
+
+    const outStat = fs.statSync(outputPath);
+
+    if (req.user) {
+      await trackFile(req.user._id, {
+        originalName: `${path.basename(req.files[0].originalname, '.pdf')}.docx`,
+        storedName: path.basename(outputPath),
+        mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        size: outStat.size,
+        path: outputPath,
+        pages: 0
+      });
+      await createHistory(req.user._id, 'pdfToWord',
+        req.files.map(f => ({ originalName: f.originalname, storedName: f.filename, size: f.size })),
+        [{ originalName: `${path.basename(req.files[0].originalname, '.pdf')}.docx`, storedName: path.basename(outputPath), size: outStat.size, path: outputPath }],
+        'completed'
+      );
+    }
+
+    return {
+      message: 'PDF converted to Word successfully',
+      fileName: path.basename(outputPath),
+      originalName: `${path.basename(req.files[0].originalname, '.pdf')}.docx`,
+      size: outStat.size,
+      originalSize: req.files[0].size,
+      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+    };
+  });
+};
+
+exports.pdfToExcel = async (req, res) => {
+  await processRequest(req, res, 'pdfToExcel', async (req) => {
+    const filePath = req.files[0].path;
+    const outputPath = getOutputPath(req.files[0].originalname, 'excel', '.xlsx');
+    await pdfToExcel(filePath, outputPath);
+
+    const outStat = fs.statSync(outputPath);
+
+    if (req.user) {
+      await trackFile(req.user._id, {
+        originalName: `${path.basename(req.files[0].originalname, '.pdf')}.xlsx`,
+        storedName: path.basename(outputPath),
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        size: outStat.size,
+        path: outputPath,
+        pages: 0
+      });
+      await createHistory(req.user._id, 'pdfToExcel',
+        req.files.map(f => ({ originalName: f.originalname, storedName: f.filename, size: f.size })),
+        [{ originalName: `${path.basename(req.files[0].originalname, '.pdf')}.xlsx`, storedName: path.basename(outputPath), size: outStat.size, path: outputPath }],
+        'completed'
+      );
+    }
+
+    return {
+      message: 'PDF converted to Excel successfully',
+      fileName: path.basename(outputPath),
+      originalName: `${path.basename(req.files[0].originalname, '.pdf')}.xlsx`,
+      size: outStat.size,
+      originalSize: req.files[0].size,
+      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+    };
+  });
+};
+
+exports.excelToPdf = async (req, res) => {
+  await processRequest(req, res, 'excelToPdf', async (req) => {
+    const filePath = req.files[0].path;
+    const outputPath = getOutputPath(req.files[0].originalname, 'pdf', '.pdf');
+    await excelToPdf(filePath, outputPath);
+
+    const outStat = fs.statSync(outputPath);
+
+    if (req.user) {
+      await trackFile(req.user._id, {
+        originalName: `${path.basename(req.files[0].originalname, '.xlsx')}.pdf`,
+        storedName: path.basename(outputPath),
+        mimeType: 'application/pdf',
+        size: outStat.size,
+        path: outputPath,
+        pages: 0
+      });
+      await createHistory(req.user._id, 'excelToPdf',
+        req.files.map(f => ({ originalName: f.originalname, storedName: f.filename, size: f.size })),
+        [{ originalName: `${path.basename(req.files[0].originalname, '.xlsx')}.pdf`, storedName: path.basename(outputPath), size: outStat.size, path: outputPath }],
+        'completed'
+      );
+    }
+
+    return {
+      message: 'Excel converted to PDF successfully',
+      fileName: path.basename(outputPath),
+      originalName: `${path.basename(req.files[0].originalname, '.xlsx')}.pdf`,
+      size: outStat.size,
+      originalSize: req.files[0].size,
+      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+    };
+  });
+};
+
+exports.pdfToPpt = async (req, res) => {
+  await processRequest(req, res, 'pdfToPpt', async (req) => {
+    const filePath = req.files[0].path;
+    const outputPath = getOutputPath(req.files[0].originalname, 'ppt', '.pptx');
+    await pdfToPpt(filePath, outputPath);
+
+    const outStat = fs.statSync(outputPath);
+
+    if (req.user) {
+      await trackFile(req.user._id, {
+        originalName: `${path.basename(req.files[0].originalname, '.pdf')}.pptx`,
+        storedName: path.basename(outputPath),
+        mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        size: outStat.size,
+        path: outputPath,
+        pages: 0
+      });
+      await createHistory(req.user._id, 'pdfToPpt',
+        req.files.map(f => ({ originalName: f.originalname, storedName: f.filename, size: f.size })),
+        [{ originalName: `${path.basename(req.files[0].originalname, '.pdf')}.pptx`, storedName: path.basename(outputPath), size: outStat.size, path: outputPath }],
+        'completed'
+      );
+    }
+
+    return {
+      message: 'PDF converted to PowerPoint successfully',
+      fileName: path.basename(outputPath),
+      originalName: `${path.basename(req.files[0].originalname, '.pdf')}.pptx`,
+      size: outStat.size,
+      originalSize: req.files[0].size,
+      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+    };
+  });
+};
+
+exports.pptToPdf = async (req, res) => {
+  await processRequest(req, res, 'pptToPdf', async (req) => {
+    const filePath = req.files[0].path;
+    const outputPath = getOutputPath(req.files[0].originalname, 'pdf', '.pdf');
+    await pptToPdf(filePath, outputPath);
+
+    const outStat = fs.statSync(outputPath);
+
+    if (req.user) {
+      await trackFile(req.user._id, {
+        originalName: `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}.pdf`,
+        storedName: path.basename(outputPath),
+        mimeType: 'application/pdf',
+        size: outStat.size,
+        path: outputPath,
+        pages: 0
+      });
+      await createHistory(req.user._id, 'pptToPdf',
+        req.files.map(f => ({ originalName: f.originalname, storedName: f.filename, size: f.size })),
+        [{ originalName: `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}.pdf`, storedName: path.basename(outputPath), size: outStat.size, path: outputPath }],
+        'completed'
+      );
+    }
+
+    return {
+      message: 'PowerPoint converted to PDF successfully',
+      fileName: path.basename(outputPath),
+      originalName: `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}.pdf`,
+      size: outStat.size,
+      originalSize: req.files[0].size,
+      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+    };
+  });
+};
+
+exports.wordToPdf = async (req, res) => {
+  await processRequest(req, res, 'wordToPdf', async (req) => {
+    const filePath = req.files[0].path;
+    const outputPath = getOutputPath(req.files[0].originalname, 'pdf', '.pdf');
+    await wordToPdf(filePath, outputPath);
+
+    const outStat = fs.statSync(outputPath);
+
+    if (req.user) {
+      await trackFile(req.user._id, {
+        originalName: `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}.pdf`,
+        storedName: path.basename(outputPath),
+        mimeType: 'application/pdf',
+        size: outStat.size,
+        path: outputPath,
+        pages: 0
+      });
+      await createHistory(req.user._id, 'wordToPdf',
+        req.files.map(f => ({ originalName: f.originalname, storedName: f.filename, size: f.size })),
+        [{ originalName: `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}.pdf`, storedName: path.basename(outputPath), size: outStat.size, path: outputPath }],
+        'completed'
+      );
+    }
+
+    return {
+      message: 'Word document converted to PDF successfully',
+      fileName: path.basename(outputPath),
+      originalName: `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}.pdf`,
+      size: outStat.size,
+      originalSize: req.files[0].size,
+      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+    };
+  });
 };

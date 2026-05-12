@@ -306,6 +306,54 @@ export const pdfAPI = {
       timeout: 300000,
     }, onProgress));
   },
+
+  pdfToWord: (file, onProgress) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/pdf/pdf-to-word', formData, withProgress({
+      timeout: 300000,
+    }, onProgress));
+  },
+
+  pdfToExcel: (file, onProgress) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/pdf/pdf-to-excel', formData, withProgress({
+      timeout: 300000,
+    }, onProgress));
+  },
+
+  excelToPdf: (file, onProgress) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/pdf/excel-to-pdf', formData, withProgress({
+      timeout: 300000,
+    }, onProgress));
+  },
+
+  pdfToPpt: (file, onProgress) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/pdf/pdf-to-ppt', formData, withProgress({
+      timeout: 300000,
+    }, onProgress));
+  },
+
+  pptToPdf: (file, onProgress) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/pdf/ppt-to-pdf', formData, withProgress({
+      timeout: 300000,
+    }, onProgress));
+  },
+
+  wordToPdf: (file, onProgress) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/pdf/word-to-pdf', formData, withProgress({
+      timeout: 300000,
+    }, onProgress));
+  },
 };
 
 export const historyAPI = {

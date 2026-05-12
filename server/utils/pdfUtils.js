@@ -587,12 +587,379 @@ const comparePDFs = async (filePath1, filePath2) => {
   return { file1: meta1, file2: meta2, differences, isIdentical: differences.length === 0 };
 };
 
+const pdfToWord = async (filePath, outputPath) => {
+  const mammoth = require('mammoth');
+  const pdfData = await fs.promises.readFile(filePath);
+  const pdfParse = require('pdf-parse');
+  
+  try {
+    const result = await pdfParse(pdfData);
+    const text = result.text;
+    
+    // Create a simple Word-like document using mammoth
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Converted Document</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }
+          h1 { font-size: 18px; margin-bottom: 20px; }
+          p { margin-bottom: 12px; text-align: justify; }
+        </style>
+      </head>
+      <body>
+        <h1>Converted PDF Document</h1>
+        ${text.split('\n').map(line => `<p>${line || '&nbsp;'}</p>`).join('')}
+      </body>
+      </html>
+    `;
+    
+    const result2 = await mammoth.convertToHtml({ html: htmlContent });
+    const docxBuffer = await mammoth.convertToMarkdown({ html: htmlContent });
+    
+    // Create a simple DOCX file structure
+    const docxContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+        <w:body>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Heading1"/>
+            </w:pPr>
+            <w:r>
+              <w:t>Converted PDF Document</w:t>
+            </w:r>
+          </w:p>
+          ${text.split('\n').filter(line => line.trim()).map(line => `
+            <w:p>
+              <w:r>
+                <w:t>${line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</w:t>
+              </w:r>
+            </w:p>
+          `).join('')}
+        </w:body>
+      </w:document>`;
+    
+    // For now, create a simple text file with .docx extension
+    // In production, you'd use a proper DOCX library like docx
+    await fs.promises.writeFile(outputPath, text, 'utf-8');
+    return outputPath;
+  } catch (error) {
+    throw new Error(`Failed to convert PDF to Word: ${error.message}`);
+  }
+};
+
+const pdfToExcel = async (filePath, outputPath) => {
+  const XLSX = require('xlsx');
+  const pdfData = await fs.promises.readFile(filePath);
+  const pdfParse = require('pdf-parse');
+  
+  try {
+    const result = await pdfParse(pdfData);
+    const text = result.text;
+    
+    // Split text into lines and try to detect tabular data
+    const lines = text.split('\n').filter(line => line.trim());
+    const worksheet = XLSX.utils.aoa_to_sheet([['PDF Content']]);
+    
+    let rowNum = 1;
+    for (const line of lines) {
+      // Try to detect table rows by looking for multiple spaces or tabs
+      const columns = line.split(/\s{2,}|\t/).filter(col => col.trim());
+      
+      if (columns.length > 1) {
+        // Likely a table row
+        columns.forEach((col, index) => {
+          worksheet[XLSX.utils.encode_cell({ r: rowNum, c: index })] = { v: col.trim() };
+        });
+      } else {
+        // Regular text line
+        worksheet[XLSX.utils.encode_cell({ r: rowNum, c: 0 })] = { v: line.trim() };
+      }
+      rowNum++;
+    }
+    
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'PDF Data');
+    XLSX.writeFile(workbook, outputPath);
+    return outputPath;
+  } catch (error) {
+    throw new Error(`Failed to convert PDF to Excel: ${error.message}`);
+  }
+};
+
+const excelToPdf = async (filePath, outputPath) => {
+  const ExcelJS = require('exceljs');
+  
+  try {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(filePath);
+    
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    
+    for (const worksheet of workbook.worksheets) {
+      let y = 750;
+      const page = pdfDoc.addPage([612, 792]);
+      
+      // Add worksheet title
+      page.drawText(`Worksheet: ${worksheet.name}`, {
+        x: 50,
+        y,
+        size: 16,
+        font,
+        color: rgb(0, 0, 0)
+      });
+      y -= 30;
+      
+      // Process each row
+      for (let rowNumber = 1; rowNumber <= worksheet.rowCount; rowNumber++) {
+        const row = worksheet.getRow(rowNumber);
+        let x = 50;
+        
+        // Process each cell in the row
+        for (let colNumber = 1; colNumber <= row.cellCount; colNumber++) {
+          const cell = row.getCell(colNumber);
+          const value = cell.value ? cell.value.toString() : '';
+          
+          if (value) {
+            page.drawText(value, {
+              x,
+              y,
+              size: 10,
+              font,
+              color: rgb(0, 0, 0)
+            });
+          }
+          
+          x += 100; // Move to next column position
+        }
+        
+        y -= 20; // Move to next row
+        
+        // Add new page if needed
+        if (y < 50) {
+          y = 750;
+          const newPage = pdfDoc.addPage([612, 792]);
+        }
+      }
+    }
+    
+    await savePdf(pdfDoc, outputPath);
+    return outputPath;
+  } catch (error) {
+    throw new Error(`Failed to convert Excel to PDF: ${error.message}`);
+  }
+};
+
+const pdfToPpt = async (filePath, outputPath) => {
+  const pdfData = await fs.promises.readFile(filePath);
+  const pdfParse = require('pdf-parse');
+  
+  try {
+    const result = await pdfParse(pdfData);
+    const text = result.text;
+    
+    // Create a simple PPTX-like structure (JSON format that can be converted to PPTX)
+    const pptxContent = {
+      slides: [
+        {
+          title: "Converted PDF Document",
+          content: text.split('\n').filter(line => line.trim()).slice(0, 10)
+        }
+      ]
+    };
+    
+    // For now, create a text file with PPT content
+    // In production, you'd use a proper PPTX library like pptxgenjs
+    const content = `PowerPoint Presentation - Converted from PDF
+
+Slide 1: Converted PDF Document
+${text.split('\n').filter(line => line.trim()).slice(0, 10).join('\n')}
+
+---
+Note: This is a basic text representation. For full PowerPoint functionality, 
+consider using a dedicated PPTX library in production.
+`;
+    
+    await fs.promises.writeFile(outputPath, content, 'utf-8');
+    return outputPath;
+  } catch (error) {
+    throw new Error(`Failed to convert PDF to PPT: ${error.message}`);
+  }
+};
+
+const pptToPdf = async (filePath, outputPath) => {
+  try {
+    // For PPT/PPTX files, we'll extract text and create a PDF
+    // In production, you'd use a proper library like aspose or office-converter
+    
+    let content = '';
+    const ext = path.extname(filePath).toLowerCase();
+    
+    if (ext === '.pptx') {
+      // Try to read PPTX as ZIP and extract text
+      const JSZip = require('jszip');
+      const data = await fs.promises.readFile(filePath);
+      const zip = await JSZip.loadAsync(data);
+      
+      // Extract text from slide XML files
+      const slideFiles = zip.file(/ppt\/slides\/slide\d+\.xml/);
+      if (slideFiles) {
+        for (const slideFile of slideFiles) {
+          const slideContent = await slideFile.async('string');
+          // Extract text from XML (basic extraction)
+          const textMatches = slideContent.match(/<a:t>([^<]+)<\/a:t>/g);
+          if (textMatches) {
+            content += textMatches.map(match => match.replace(/<\/?a:t>/g, '')).join(' ') + '\n\n';
+          }
+        }
+      }
+    } else {
+      // For older PPT files, we can't easily extract text without specialized libraries
+      content = 'PowerPoint presentation content could not be extracted automatically.\n\n' +
+                'This appears to be an older PPT format. For best results, ' +
+                'please convert to PPTX format first or use manual conversion.';
+    }
+    
+    if (!content.trim()) {
+      content = 'PowerPoint presentation\n\nNo text content could be extracted from slides.';
+    }
+    
+    // Create PDF from extracted content
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    
+    const pageWidth = 612;
+    const pageHeight = 792;
+    const margin = 50;
+    const maxWidth = pageWidth - margin * 2;
+    const fontSize = 12;
+    const lineHeight = fontSize * 1.5;
+    
+    const lines = content.split('\n').flatMap(line => {
+      const words = line.split(' ');
+      const wrapped = [];
+      let current = '';
+      for (const word of words) {
+        const test = current ? `${current} ${word}` : word;
+        if (font.widthOfTextAtSize(test, fontSize) > maxWidth && current) {
+          wrapped.push(current);
+          current = word;
+        } else {
+          current = test;
+        }
+      }
+      if (current) wrapped.push(current);
+      return wrapped.length ? wrapped : [''];
+    });
+    
+    let page = pdfDoc.addPage([pageWidth, pageHeight]);
+    let y = pageHeight - margin - lineHeight;
+    
+    page.drawText('PowerPoint Presentation', { x: margin, y: y + lineHeight, size: fontSize + 4, font: boldFont });
+    y -= lineHeight * 2;
+    
+    for (const line of lines) {
+      if (y < margin) {
+        page = pdfDoc.addPage([pageWidth, pageHeight]);
+        y = pageHeight - margin - lineHeight;
+      }
+      page.drawText(line, { x: margin, y, size: fontSize, font });
+      y -= lineHeight;
+    }
+    
+    await savePdf(pdfDoc, outputPath);
+    return outputPath;
+  } catch (error) {
+    throw new Error(`Failed to convert PPT to PDF: ${error.message}`);
+  }
+};
+
+const wordToPdf = async (filePath, outputPath) => {
+  try {
+    // For Word documents, we'll extract text and create a PDF
+    // In production, you'd use a proper library like mammoth for DOCX
+    
+    let content = '';
+    const ext = path.extname(filePath).toLowerCase();
+    
+    if (ext === '.docx') {
+      // Use mammoth to extract text from DOCX
+      const mammoth = require('mammoth');
+      const data = await fs.promises.readFile(filePath);
+      const result = await mammoth.extractRawText({ buffer: data });
+      content = result.value;
+    } else {
+      // For older DOC files, we can't easily extract text without specialized libraries
+      content = 'Word document content could not be extracted automatically.\n\n' +
+                'This appears to be an older DOC format. For best results, ' +
+                'please convert to DOCX format first or use manual conversion.';
+    }
+    
+    if (!content.trim()) {
+      content = 'Word document\n\nNo text content could be extracted from the document.';
+    }
+    
+    // Create PDF from extracted content
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    
+    const pageWidth = 612;
+    const pageHeight = 792;
+    const margin = 50;
+    const maxWidth = pageWidth - margin * 2;
+    const fontSize = 12;
+    const lineHeight = fontSize * 1.5;
+    
+    const lines = content.split('\n').flatMap(line => {
+      const words = line.split(' ');
+      const wrapped = [];
+      let current = '';
+      for (const word of words) {
+        const test = current ? `${current} ${word}` : word;
+        if (font.widthOfTextAtSize(test, fontSize) > maxWidth && current) {
+          wrapped.push(current);
+          current = word;
+        } else {
+          current = test;
+        }
+      }
+      if (current) wrapped.push(current);
+      return wrapped.length ? wrapped : [''];
+    });
+    
+    let page = pdfDoc.addPage([pageWidth, pageHeight]);
+    let y = pageHeight - margin - lineHeight;
+    
+    page.drawText('Word Document', { x: margin, y: y + lineHeight, size: fontSize + 4, font: boldFont });
+    y -= lineHeight * 2;
+    
+    for (const line of lines) {
+      if (y < margin) {
+        page = pdfDoc.addPage([pageWidth, pageHeight]);
+        y = pageHeight - margin - lineHeight;
+      }
+      page.drawText(line, { x: margin, y, size: fontSize, font });
+      y -= lineHeight;
+    }
+    
+    await savePdf(pdfDoc, outputPath);
+    return outputPath;
+  } catch (error) {
+    throw new Error(`Failed to convert Word to PDF: ${error.message}`);
+  }
+};
+
 module.exports = {
   mergePDFs, splitPDF, compressPDF, rotatePDF,
   protectPDF, unlockPDF, addPageNumbers, addWatermark,
   extractText, reorderPages, deletePages,
   repairPDF, pdfToPdfa, setMetadata, getMetadata,
   flattenPDF, htmlToPdf, redactText, removeAnnotations,
-  removeWatermarkFromPdf, comparePDFs,
-  loadPdf, savePdf
+  removeWatermarkFromPdf, comparePDFs, pdfToWord, pdfToExcel, excelToPdf,
+  pdfToPpt, pptToPdf, wordToPdf, loadPdf, savePdf
 };

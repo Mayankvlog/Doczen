@@ -14,26 +14,19 @@ export default function PDFToExcel() {
 
   const handleProcess = async () => {
     if (!file) return;
-        setLoading(true);
+    setLoading(true);
     setError('');
-    setTimeout(() => {
-      setResult({
-        message: 'PDF to Excel conversion coming soon!',
-        info: `"${file.name}" (${(file.size / 1024).toFixed(1)} KB) — table extraction with formatting preservation is in development.`,
-      });
+    try {
+      const response = await pdfAPI.pdfToExcel(file);
+      setResult(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Something went wrong.');
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
-  const handleNotify = (e) => {
-    e.preventDefault();
-    setResult((prev) => ({
-      ...prev,
-      notified: true,
-      message: `We'll email ${email} when PDF to Excel is available!`,
-    }));
-  };
-
+  
   return (
     <>
     <SEO title="PDF to Excel Converter Online Free" description="Convert PDF tables to Excel spreadsheets online for free. PDF to XLSX converter by Doczen." keywords="PDF to Excel, convert PDF to Excel, PDF to XLS, PDF to spreadsheet, extract PDF tables" canonical="/pdf-to-excel" />
@@ -72,24 +65,6 @@ export default function PDFToExcel() {
         {result && (
           <div className="mt-6">
             <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="converted" />
-            {!result.notified && (
-              <form onSubmit={handleNotify} className="mt-4 flex gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
-                >
-                  Notify Me
-                </button>
-              </form>
-            )}
           </div>
         )}
       </div>

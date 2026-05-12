@@ -14,15 +14,19 @@ export default function WordToPDF() {
 
   const handleProcess = async () => {
     if (!file) return;
-        setLoading(true);
+    setLoading(true);
     setError('');
-    setTimeout(() => {
-      setResult({
-        message: 'Word to PDF conversion coming soon!',
-        info: `"${file.name}" (${(file.size / 1024).toFixed(1)} KB) — .doc / .docx support is under development.`,
+    try {
+      const response = await pdfAPI.wordToPdf(file, (progress) => {
+        // Handle progress if needed
+        console.log(`Upload progress: ${progress}%`);
       });
+      setResult(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Conversion failed. Please try again.');
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
   const handleNotify = (e) => {
