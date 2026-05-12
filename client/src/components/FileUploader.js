@@ -29,19 +29,25 @@ export default function FileUploader({
   const triggerShake = () => setShakeKey((k) => k + 1);
 
   const allowedExts = parseAcceptExtensions(accept);
+  const acceptPatterns = accept.split(',').map(s => s.trim());
 
-  const hasValidExtension = (file) => {
+  const isAcceptedFile = (file) => {
     const ext = '.' + file.name.split('.').pop().toLowerCase();
-    return allowedExts.some(e => e === ext);
+    if (allowedExts.some(e => e === ext)) return true;
+    for (const p of acceptPatterns) {
+      if (p === file.type) return true;
+      if (p.endsWith('/*') && file.type.startsWith(p.replace('/*', '/'))) return true;
+    }
+    return false;
   };
 
   const onDrop = useCallback(
     (accepted, rejected) => {
       setError('');
 
-      const invalid = accepted.filter(f => !hasValidExtension(f));
+      const invalid = accepted.filter(f => !isAcceptedFile(f));
       if (invalid.length > 0 || rejected.length > 0) {
-        setError(`Invalid file type. Please upload a PDF file.`);
+        setError(`Invalid file type. Please upload a valid file.`);
         triggerShake();
         return;
       }
@@ -117,7 +123,7 @@ export default function FileUploader({
             {isDragActive ? 'Release to upload' : files.length > 0 ? 'Files selected — drop more or click to change' : label}
           </p>
           <p className="text-xs text-gray-400">
-            {isDragActive ? 'Great, drop them here!' : files.length > 0 ? `Tap to add more files` : multiple ? `Drag & drop up to ${maxFiles} PDFs here, or click to browse` : 'Drag & drop a PDF here, or click to browse'}
+            {isDragActive ? 'Great, drop them here!' : files.length > 0 ? `Tap to add more files` : multiple ? `Drag & drop up to ${maxFiles} files here, or click to browse` : 'Drag & drop a file here, or click to browse'}
           </p>
           <span className={`mt-1 px-3 py-1 text-xs font-medium rounded-full transition-colors ${isDragActive ? 'bg-indigo-200 text-indigo-700' : files.length > 0 ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-600'}`}>
             {accept}
@@ -154,7 +160,7 @@ export default function FileUploader({
               className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-indigo-200 transition-all duration-200 group/file"
             >
               <div className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 text-sm font-semibold group-hover/file:bg-indigo-200 transition-colors">
-                PDF
+                {file.name.split('.').pop().toUpperCase().slice(0, 3)}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate">{file.name}</p>
