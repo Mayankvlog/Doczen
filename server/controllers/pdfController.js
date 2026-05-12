@@ -42,6 +42,18 @@ const getOutputPath = (originalName, suffix, customExt) => {
 
 const getOutputDir = () => path.join(__dirname, '../uploads');
 
+const validateOutputFile = (outputPath) => {
+  if (!fs.existsSync(outputPath)) {
+    throw new Error('Output file was not created');
+  }
+  const stat = fs.statSync(outputPath);
+  if (stat.size === 0) {
+    fs.unlinkSync(outputPath);
+    throw new Error('Output file is empty');
+  }
+  return stat;
+};
+
 const createHistory = async (userId, action, inputFiles, outputFiles, status, error = null) => {
   if (!isDbConnected()) return;
   try {
@@ -138,7 +150,7 @@ const processRequest = async (req, res, action, processFn) => {
   try {
     req.files = normalizeFiles(req);
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: 'No files uploaded' });
+      return res.status(400).json({ success: false, message: 'No files uploaded' });
     }
 
     sourcePaths = req.files.map(f => f.path);
@@ -147,7 +159,7 @@ const processRequest = async (req, res, action, processFn) => {
       const limitCheck = await checkLimits(req);
       if (!limitCheck.allowed) {
         cleanupFiles(sourcePaths);
-        return res.status(429).json({ message: limitCheck.message });
+        return res.status(429).json({ success: false, message: limitCheck.message });
       }
     }
 
@@ -155,11 +167,14 @@ const processRequest = async (req, res, action, processFn) => {
 
     if (result && result.fileName) {
       const outputPath = path.join(getOutputDir(), path.basename(result.fileName));
-      if (!fs.existsSync(outputPath)) {
+      try {
+        validateOutputFile(outputPath);
+      } catch (validationErr) {
         cleanupFiles(sourcePaths);
+        console.error(`Output validation failed for ${result.fileName}: ${validationErr.message}`);
         return res.status(500).json({
           success: false,
-          message: 'Conversion failed - output file was not created'
+          message: `Conversion failed - ${validationErr.message}`
         });
       }
       scheduleFileCleanup(outputPath, 60 * 60 * 1000);
@@ -177,8 +192,9 @@ const processRequest = async (req, res, action, processFn) => {
     
     res.json(result);
   } catch (error) {
+    console.error(`Processing failed for action "${action}":`, error.message);
     cleanupFiles(sourcePaths);
-    res.status(500).json({ message: 'Processing failed', error: error.message });
+    res.status(500).json({ success: false, message: 'Processing failed', error: error.message });
   }
 };
 
@@ -563,7 +579,6 @@ exports.pdfToJpg = async (req, res) => {
       const imgW = Math.round(width * scale);
       const imgH = Math.round(height * scale);
 
-      // Get text for this page
       const pageTextLines = pageTexts.slice(i * 50, (i + 1) * 50).slice(0, 30);
       const textElements = pageTextLines.map((line, idx) =>
         `<text x="${40}" y="${80 + idx * 22}" font-size="${14}" font-family="sans-serif" fill="#333">${line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</text>`
@@ -585,6 +600,10 @@ exports.pdfToJpg = async (req, res) => {
       } catch (err) {
         console.error('Error creating image for page', i + 1, ':', err);
       }
+    }
+
+    if (outputFiles.length === 0) {
+      throw new Error('Failed to render any pages from the PDF');
     }
 
     if (outputFiles.length === 1) {
@@ -730,8 +749,10 @@ exports.download = async (req, res) => {
     const fileName = req.params.filename;
     const filePath = path.join(getOutputDir(), fileName);
 
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ message: 'File not found or expired' });
+    try {
+      validateOutputFile(filePath);
+    } catch {
+      return res.status(404).json({ success: false, message: 'File not found or expired' });
     }
 
     res.download(filePath, (err) => {
@@ -741,7 +762,8 @@ exports.download = async (req, res) => {
       scheduleFileCleanup(filePath, 60 * 60 * 1000);
     });
   } catch (error) {
-    res.status(500).json({ message: 'Download failed', error: error.message });
+    console.error('Download failed:', error.message);
+    res.status(500).json({ success: false, message: 'Download failed', error: error.message });
   }
 };
 
@@ -750,7 +772,7 @@ exports.getPageCount = async (req, res) => {
   try {
     req.files = normalizeFiles(req);
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: 'No file uploaded' });
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
     sourcePaths = req.files.map(f => f.path);
@@ -759,7 +781,7 @@ exports.getPageCount = async (req, res) => {
       const limitCheck = await checkLimits(req);
       if (!limitCheck.allowed) {
         cleanupFiles(sourcePaths);
-        return res.status(429).json({ message: limitCheck.message });
+        return res.status(429).json({ success: false, message: limitCheck.message });
       }
     }
 
@@ -768,14 +790,12 @@ exports.getPageCount = async (req, res) => {
     const pdfDoc = await PDFDocument.load(data);
     const pageCount = pdfDoc.getPageCount();
 
-    // Schedule cleanup for later instead of immediate cleanup
-    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000)); // 30 minutes
+    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000));
 
     res.json({ pageCount });
   } catch (error) {
-    // Only cleanup on error
     cleanupFiles(sourcePaths);
-    res.status(500).json({ message: 'Failed to get page count', error: error.message });
+    res.status(500).json({ success: false, message: 'Failed to get page count', error: error.message });
   }
 };
 
@@ -824,27 +844,25 @@ exports.readMetadata = async (req, res) => {
   try {
     req.files = normalizeFiles(req);
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: 'No file uploaded' });
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
     sourcePaths = req.files.map(f => f.path);
     if (isDbConnected()) {
       const limitCheck = await checkLimits(req);
       if (!limitCheck.allowed) {
         cleanupFiles(sourcePaths);
-        return res.status(429).json({ message: limitCheck.message });
+        return res.status(429).json({ success: false, message: limitCheck.message });
       }
     }
     const filePath = req.files[0].path;
     const metadata = await getMetadata(filePath);
     
-    // Schedule cleanup for later instead of immediate cleanup
-    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000)); // 30 minutes
+    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000));
     
     res.json({ metadata });
   } catch (error) {
-    // Only cleanup on error
     cleanupFiles(sourcePaths);
-    res.status(500).json({ message: 'Failed to read metadata', error: error.message });
+    res.status(500).json({ success: false, message: 'Failed to read metadata', error: error.message });
   }
 };
 
@@ -894,12 +912,12 @@ exports.htmlToPdf = async (req, res) => {
     if (isDbConnected()) {
       const limitCheck = await checkLimits(req);
       if (!limitCheck.allowed) {
-        return res.status(429).json({ message: limitCheck.message });
+        return res.status(429).json({ success: false, message: limitCheck.message });
       }
     }
     const textContent = req.body.content || '';
     if (!textContent.trim()) {
-      return res.status(400).json({ message: 'HTML/text content is required' });
+      return res.status(400).json({ success: false, message: 'HTML/text content is required' });
     }
     const outputName = `html_to_pdf_${uuidv4()}.pdf`;
     const outputPath = path.join(getOutputDir(), outputName);
@@ -907,7 +925,18 @@ exports.htmlToPdf = async (req, res) => {
       title: req.body.title || 'Converted Document',
       fontSize: parseInt(req.body.fontSize) || 12
     });
-    const outStat = fs.statSync(outputPath);
+
+    let outStat;
+    try {
+      outStat = validateOutputFile(outputPath);
+    } catch (validationErr) {
+      console.error(`Output validation failed for ${outputName}: ${validationErr.message}`);
+      return res.status(500).json({
+        success: false,
+        message: `Conversion failed - ${validationErr.message}`
+      });
+    }
+
     scheduleFileCleanup(outputPath, 60 * 60 * 1000);
     res.json({
       message: 'HTML converted to PDF successfully',
@@ -917,7 +946,8 @@ exports.htmlToPdf = async (req, res) => {
       downloadUrl: `/api/pdf/download/${outputName}`
     });
   } catch (error) {
-    res.status(500).json({ message: 'Processing failed', error: error.message });
+    console.error('HTML to PDF failed:', error.message);
+    res.status(500).json({ success: false, message: 'Processing failed', error: error.message });
   }
 };
 
@@ -978,29 +1008,27 @@ exports.compare = async (req, res) => {
   try {
     req.files = normalizeFiles(req);
     if (!req.files || req.files.length < 2) {
-      return res.status(400).json({ message: 'Please upload two PDF files to compare' });
+      return res.status(400).json({ success: false, message: 'Please upload two PDF files to compare' });
     }
     sourcePaths = req.files.map(f => f.path);
     if (isDbConnected()) {
       const limitCheck = await checkLimits(req);
       if (!limitCheck.allowed) {
         cleanupFiles(sourcePaths);
-        return res.status(429).json({ message: limitCheck.message });
+        return res.status(429).json({ success: false, message: limitCheck.message });
       }
     }
     const result = await comparePDFs(req.files[0].path, req.files[1].path);
     
-    // Schedule cleanup for later instead of immediate cleanup
-    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000)); // 30 minutes
+    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000));
     
     res.json({
       ...result,
       originalSize: req.files.reduce((s, f) => s + f.size, 0)
     });
   } catch (error) {
-    // Only cleanup on error
     cleanupFiles(sourcePaths);
-    res.status(500).json({ message: 'Comparison failed', error: error.message });
+    res.status(500).json({ success: false, message: 'Comparison failed', error: error.message });
   }
 };
 

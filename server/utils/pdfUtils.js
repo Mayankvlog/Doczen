@@ -19,6 +19,14 @@ const loadPdf = async (filePath, options = {}) => {
 const savePdf = async (pdfDoc, outputPath) => {
   const data = await pdfDoc.save();
   await fs.promises.writeFile(outputPath, data);
+  if (!fs.existsSync(outputPath)) {
+    throw new Error(`Failed to write output file: ${outputPath}`);
+  }
+  const stat = fs.statSync(outputPath);
+  if (stat.size === 0) {
+    fs.unlinkSync(outputPath);
+    throw new Error(`Output file is empty: ${outputPath}`);
+  }
   return outputPath;
 };
 
@@ -631,6 +639,9 @@ const pdfToWord = async (filePath, outputPath) => {
     
     const buffer = await Packer.toBuffer(doc);
     await fs.promises.writeFile(outputPath, buffer);
+    if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0) {
+      throw new Error('Output Word file was not created');
+    }
     return outputPath;
   } catch (error) {
     throw new Error(`Failed to convert PDF to Word: ${error.message}`);
@@ -668,6 +679,9 @@ const pdfToExcel = async (filePath, outputPath) => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'PDF Data');
     XLSX.writeFile(workbook, outputPath);
+    if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0) {
+      throw new Error('Output Excel file was not created');
+    }
     return outputPath;
   } catch (error) {
     throw new Error(`Failed to convert PDF to Excel: ${error.message}`);
@@ -734,6 +748,9 @@ const excelToPdf = async (filePath, outputPath) => {
     await savePdf(pdfDoc, outputPath);
     return outputPath;
   } catch (error) {
+    if (fs.existsSync(outputPath)) {
+      try { fs.unlinkSync(outputPath); } catch (e) { }
+    }
     throw new Error(`Failed to convert Excel to PDF: ${error.message}`);
   }
 };
@@ -769,6 +786,9 @@ const pdfToPpt = async (filePath, outputPath) => {
     }
     
     await pptx.writeFile({ fileName: outputPath });
+    if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0) {
+      throw new Error('Output PPT file was not created');
+    }
     return outputPath;
   } catch (error) {
     throw new Error(`Failed to convert PDF to PPT: ${error.message}`);
@@ -856,6 +876,9 @@ const pptToPdf = async (filePath, outputPath) => {
     await savePdf(pdfDoc, outputPath);
     return outputPath;
   } catch (error) {
+    if (fs.existsSync(outputPath)) {
+      try { fs.unlinkSync(outputPath); } catch (e) { }
+    }
     throw new Error(`Failed to convert PPT to PDF: ${error.message}`);
   }
 };
@@ -929,6 +952,9 @@ const wordToPdf = async (filePath, outputPath) => {
     await savePdf(pdfDoc, outputPath);
     return outputPath;
   } catch (error) {
+    if (fs.existsSync(outputPath)) {
+      try { fs.unlinkSync(outputPath); } catch (e) { }
+    }
     throw new Error(`Failed to convert Word to PDF: ${error.message}`);
   }
 };
