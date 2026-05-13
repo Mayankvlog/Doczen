@@ -69,8 +69,10 @@ api.interceptors.response.use(
 const API_URL = process.env.REACT_APP_API_URL || '';
 
 export async function handleToolSubmit(url, formData, fallbackName) {
+  const token = localStorage.getItem('token');
   const response = await fetch(`${API_URL}/api${url}`, {
     method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData
   });
 

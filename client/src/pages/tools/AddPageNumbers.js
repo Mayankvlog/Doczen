@@ -154,7 +154,7 @@ export default function AddPageNumbers() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="numbered" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="numbered" />
           </div>
         )}
       </div>

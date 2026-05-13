@@ -278,7 +278,7 @@ export default function Metadata() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setMetadataData(null); }} action="processed" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setMetadataData(null); clearDownload(); }} action="processed" />
           </div>
         )}
       </div>
