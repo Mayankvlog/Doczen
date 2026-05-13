@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function SignPDF() {
@@ -10,19 +10,35 @@ export default function SignPDF() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
-  const [signatureType, setSignatureType] = useState('type');
+  const [signatureText, setSignatureText] = useState('');
+  const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
 
   const handleProcess = async () => {
     if (!file) return;
-        setLoading(true);
+    if (!signatureText.trim()) {
+      setError('Please type or enter signature text.');
+      return;
+    }
+    setLoading(true);
     setError('');
-    setTimeout(() => {
-      setResult({
-        message: `"${file.name}" ready for signing.`,
-        info: 'Signature placement will be available once the PDF editing engine is integrated. Choose your signature style below.',
-      });
+    setResult(null);
+    clearDownload();
+
+    try {
+      const signature = { text: signatureText.trim(), pageIndex: 0 };
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('signature', JSON.stringify(signature));
+      const data = await handleToolSubmit('/pdf/sign-pdf', formData, 'signed.pdf');
+      setResult(data);
+      if (data.blobUrl) {
+        setDownload(data.blobUrl, data.filename || 'signed.pdf');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to sign PDF.');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -40,15 +56,29 @@ export default function SignPDF() {
         <FileUploader
           accept=".pdf"
           label="Upload PDF to sign"
-          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); }}
+          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); clearDownload(); }}
         />
+
+        {file && (
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Signature Text</label>
+            <input
+              type="text"
+              value={signatureText}
+              onChange={(e) => setSignatureText(e.target.value)}
+              placeholder="Type your signature..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-lg font-serif italic focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+            />
+          </div>
+        )}
 
         {file && !loading && (
           <button
             onClick={handleProcess}
-            className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
+            disabled={!signatureText.trim()}
+            className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors disabled:opacity-50"
           >
-            Prepare for Signing
+            Sign PDF
           </button>
         )}
 
@@ -60,60 +90,24 @@ export default function SignPDF() {
           </div>
         )}
 
-        {result && (
-          <div className="mt-6 space-y-4">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="prepared" />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Signature Method
-              </label>
-              <div className="flex gap-3">
-                {['type', 'draw', 'upload'].map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => setSignatureType(mode)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium border capitalize transition-colors ${
-                      signatureType === mode
-                        ? 'bg-indigo-600 text-white border-indigo-600'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-indigo-400'
-                    }`}
-                  >
-                    {mode === 'type' ? 'Type' : mode === 'draw' ? 'Draw' : 'Upload Image'}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {signatureType === 'type' && (
-              <div>
-                <input
-                  type="text"
-                  placeholder="Type your signature..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-lg font-serif italic focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                />
-              </div>
+        {isReady && (
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+            <p>PDF signed successfully. Download started automatically. You can download it again below.</p>
+            {downloadUrl && (
+              <button
+                type="button"
+                onClick={handleDownloadAgain}
+                className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Download Again
+              </button>
             )}
+          </div>
+        )}
 
-            {signatureType === 'draw' && (
-              <div className="p-8 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-400 text-sm">
-                Signature canvas — coming soon
-              </div>
-            )}
-
-            {signatureType === 'upload' && (
-              <div className="p-8 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-400 text-sm">
-                Upload signature image — coming soon
-              </div>
-            )}
-
-            <button className="w-full px-4 py-2 bg-gray-300 text-gray-500 font-medium rounded-lg cursor-not-allowed">
-              Place Signature (coming soon)
-            </button>
-
-            <p className="text-xs text-gray-400 text-center">
-              Full signature placement requires a client-side PDF rendering library.
-            </p>
+        {result && !isReady && (
+          <div className="mt-6">
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setSignatureText(''); clearDownload(); }} action="signed" />
           </div>
         )}
       </div>

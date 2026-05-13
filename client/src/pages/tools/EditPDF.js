@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function EditPDF() {
@@ -10,19 +10,31 @@ export default function EditPDF() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [editText, setEditText] = useState('');
+  const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
 
   const handleProcess = async () => {
     if (!file) return;
-        setLoading(true);
+    setLoading(true);
     setError('');
+    setResult(null);
+    clearDownload();
+
     try {
-      const { data } = await pdfAPI.getPageCount(file);
-      setResult({
-        message: `"${file.name}" loaded — ${data.pageCount || 'N/A'} page(s) detected.`,
-        info: 'Full PDF editing with annotations, text editing, and drawing tools requires a client-side PDF library. Server-side editing support is in development.',
-      });
+      const edits = editText.trim()
+        ? [{ type: 'text', text: editText.trim(), pageIndex: 0, x: 50, y: 50 }]
+        : [{ type: 'text', text: 'Edited', pageIndex: 0, x: 50, y: 50 }];
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('edits', JSON.stringify(edits));
+      const data = await handleToolSubmit('/pdf/edit-pdf', formData, 'edited.pdf');
+      setResult(data);
+      if (data.blobUrl) {
+        setDownload(data.blobUrl, data.filename || 'edited.pdf');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load file.');
+      setError(err.message || 'Failed to edit PDF.');
     } finally {
       setLoading(false);
     }
@@ -43,15 +55,28 @@ export default function EditPDF() {
         <FileUploader
           accept=".pdf"
           label="Upload PDF to edit"
-          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); }}
+          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); clearDownload(); }}
         />
+
+        {file && (
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Text to add (first page)</label>
+            <input
+              type="text"
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              placeholder="Enter text to add to the PDF"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+            />
+          </div>
+        )}
 
         {file && !loading && (
           <button
             onClick={handleProcess}
             className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
           >
-            Load PDF
+            Edit PDF
           </button>
         )}
 
@@ -63,23 +88,24 @@ export default function EditPDF() {
           </div>
         )}
 
-        {result && (
-          <div className="mt-6 space-y-4">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="loaded" />
-            <div className="grid grid-cols-2 gap-3">
-              {['Add Text', 'Highlight', 'Draw', 'Shapes', 'Sticky Notes', 'Signature'].map((tool) => (
-                <div
-                  key={tool}
-                  className="p-3 border border-gray-200 rounded-lg text-center text-sm text-gray-500 bg-gray-50 cursor-not-allowed"
-                >
-                  {tool}
-                  <span className="block text-xs text-indigo-400 mt-1">coming soon</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-gray-400 text-center">
-              Annotation tools will be available once a client-side PDF renderer is integrated.
-            </p>
+        {isReady && (
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+            <p>PDF edited successfully. Download started automatically. You can download it again below.</p>
+            {downloadUrl && (
+              <button
+                type="button"
+                onClick={handleDownloadAgain}
+                className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Download Again
+              </button>
+            )}
+          </div>
+        )}
+
+        {result && !isReady && (
+          <div className="mt-6">
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setEditText(''); clearDownload(); }} action="edited" />
           </div>
         )}
       </div>

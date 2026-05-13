@@ -526,6 +526,10 @@ exports.extractText = async (req, res) => {
     const filePath = req.files[0].path;
     const text = await extractText(filePath);
 
+    if (!text || !text.trim()) {
+      throw new Error('No extractable text found in the PDF. The file may be scanned or image-based.');
+    }
+
     const txtName = `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}_text_${uuidv4()}.txt`;
     const txtPath = path.join(getOutputDir(), txtName);
     fs.writeFileSync(txtPath, text);
@@ -910,30 +914,11 @@ exports.pdfToPdfa = async (req, res) => {
 };
 
 exports.readMetadata = async (req, res) => {
-  let sourcePaths = [];
-  try {
-    req.files = normalizeFiles(req);
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ success: false, message: 'No file uploaded' });
-    }
-    sourcePaths = req.files.map(f => f.path);
-    if (isDbConnected()) {
-      const limitCheck = await checkLimits(req);
-      if (!limitCheck.allowed) {
-        cleanupFiles(sourcePaths);
-        return res.status(429).json({ success: false, message: limitCheck.message });
-      }
-    }
+  await processRequest(req, res, 'readMetadata', async (req) => {
     const filePath = req.files[0].path;
     const metadata = await getMetadata(filePath);
-    
-    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000));
-    
-    res.json({ success: true, metadata });
-  } catch (error) {
-    cleanupFiles(sourcePaths);
-    res.status(500).json({ success: false, message: 'Failed to read metadata', error: error.message });
-  }
+    return { success: true, metadata };
+  });
 };
 
 exports.writeMetadata = async (req, res) => {

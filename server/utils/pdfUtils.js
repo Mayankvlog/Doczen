@@ -1,6 +1,9 @@
 const { PDFDocument, StandardFonts, rgb, degrees } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
+const { execFile } = require('child_process');
+const util = require('util');
+const execFileAsync = util.promisify(execFile);
 
 const loadPdf = async (filePath, options = {}) => {
   const data = await fs.promises.readFile(filePath);
@@ -658,14 +661,9 @@ const pdfToWord = async (filePath, outputPath) => {
 };
 
 const pdfToExcel = async (filePath, outputPath) => {
-  const { execFile } = require('child_process');
-  const util = require('util');
-  const execFileAsync = util.promisify(execFile);
-
   try {
     await execFileAsync('soffice', [
       '--headless',
-      '--infilter=impress_pdf_import',
       '--convert-to', 'xlsx',
       '--outdir', path.dirname(outputPath),
       filePath
@@ -763,10 +761,6 @@ const excelToPdf = async (filePath, outputPath) => {
 };
 
 const pdfToPpt = async (filePath, outputPath) => {
-  const { execFile } = require('child_process');
-  const util = require('util');
-  const execFileAsync = util.promisify(execFile);
-
   try {
     await execFileAsync('soffice', [
       '--headless',
@@ -964,6 +958,46 @@ const wordToPdf = async (filePath, outputPath) => {
   }
 };
 
+const editPdf = async (filePath, outputPath, edits = []) => {
+  const pdfDoc = await loadPdf(filePath);
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const pages = pdfDoc.getPages();
+
+  for (const edit of edits) {
+    const { pageIndex = 0, type = 'text', x = 50, y = 50, text = '', fontSize = 12, color = [0, 0, 0] } = edit;
+    if (pageIndex >= pages.length) continue;
+    const page = pages[pageIndex];
+    if (type === 'text' && text) {
+      page.drawText(text, {
+        x, y, size: fontSize, font,
+        color: rgb(color[0], color[1], color[2])
+      });
+    }
+  }
+
+  await savePdf(pdfDoc, outputPath);
+  return outputPath;
+};
+
+const signPdf = async (filePath, outputPath, signatureData) => {
+  const pdfDoc = await loadPdf(filePath);
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const pages = pdfDoc.getPages();
+  const firstPage = pages[0];
+  const { width } = firstPage.getSize();
+
+  const { text: sigText = 'Signed', pageIndex = 0, x = width - 200, y = 50, fontSize = 16 } = signatureData;
+
+  const targetPage = pageIndex < pages.length ? pages[pageIndex] : firstPage;
+  targetPage.drawText(sigText, {
+    x, y, size: fontSize, font,
+    color: rgb(0, 0, 0.8)
+  });
+
+  await savePdf(pdfDoc, outputPath);
+  return outputPath;
+};
+
 module.exports = {
   mergePDFs, splitPDF, compressPDF, rotatePDF,
   protectPDF, unlockPDF, addPageNumbers, addWatermark,
@@ -971,5 +1005,6 @@ module.exports = {
   repairPDF, pdfToPdfa, setMetadata, getMetadata,
   flattenPDF, htmlToPdf, redactText, removeAnnotations,
   removeWatermarkFromPdf, comparePDFs, pdfToWord, pdfToExcel, excelToPdf,
-  pdfToPpt, pptToPdf, wordToPdf, loadPdf, savePdf
+  pdfToPpt, pptToPdf, wordToPdf, loadPdf, savePdf,
+  editPdf, signPdf
 };

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function ComparePDF() {
@@ -21,10 +21,13 @@ export default function ComparePDF() {
     setLoading(true);
     setComparison(null);
     try {
-      const { data } = await pdfAPI.compare(file1, file2);
+      const formData = new FormData();
+      formData.append('files', file1);
+      formData.append('files', file2);
+      const data = await handleToolSubmit('/pdf/compare', formData);
       setComparison(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to compare PDFs. Please try again.');
+      setError(err.message || 'Failed to compare PDFs. Please try again.');
     } finally {
       setLoading(false);
     }
