@@ -68,6 +68,24 @@ api.interceptors.response.use(
 
 const API_URL = process.env.REACT_APP_API_URL || '';
 
+async function parseResponseBlob(response, fallbackFilename) {
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    const data = await response.json();
+    if (data.success === false) throw new Error(data.message || 'Operation failed');
+    return data;
+  }
+  const blob = await response.blob();
+  if (!blob || blob.size === 0) {
+    throw new Error('Server returned empty file');
+  }
+  const disposition = response.headers.get('content-disposition') || '';
+  const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^"]+)"?/i);
+  const filename = decodeURIComponent(match?.[1] || match?.[2] || fallbackFilename || 'downloaded-file');
+  const blobUrl = window.URL.createObjectURL(blob);
+  return { success: true, filename, blobUrl };
+}
+
 export async function handleToolSubmit(url, formData, fallbackName) {
   const token = localStorage.getItem('token');
   const response = await fetch(`${API_URL}/api${url}`, {
@@ -85,25 +103,7 @@ export async function handleToolSubmit(url, formData, fallbackName) {
     throw new Error(message);
   }
 
-  const contentType = response.headers.get('content-type') || '';
-
-  if (contentType.includes('application/json')) {
-    const data = await response.json();
-    if (data.success === false) throw new Error(data.message || 'Operation failed');
-    return data;
-  }
-
-  const blob = await response.blob();
-  if (!blob || blob.size === 0) {
-    throw new Error('Server returned empty file');
-  }
-
-  const disposition = response.headers.get('content-disposition') || '';
-  const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^"]+)"?/i);
-  const filename = decodeURIComponent(match?.[1] || match?.[2] || fallbackName || 'downloaded-file');
-
-  const blobUrl = window.URL.createObjectURL(blob);
-  return { success: true, filename, blobUrl };
+  return parseResponseBlob(response, fallbackName);
 }
 
 export function useDownloadHandler() {
@@ -146,7 +146,28 @@ export function useDownloadHandler() {
     if (downloadUrl) triggerDownload(downloadUrl, downloadName);
   }, [downloadUrl, downloadName, triggerDownload]);
 
-  return { downloadUrl, downloadName, isReady, setDownload, clearDownload, handleDownloadAgain };
+  const handleDownloadResponse = useCallback(async (response, fallbackFilename) => {
+    if (!response.ok) {
+      let message = 'Operation failed';
+      try {
+        const err = await response.json();
+        message = err.message || message;
+      } catch (_) {}
+      throw new Error(message);
+    }
+
+    const result = await parseResponseBlob(response, fallbackFilename);
+    if (result.blobUrl) {
+      setDownload(result.blobUrl, result.filename || fallbackFilename);
+    }
+    return result;
+  }, [setDownload]);
+
+  return {
+    downloadUrl, downloadName, isReady,
+    setDownload, clearDownload, handleDownloadAgain,
+    handleDownloadResponse
+  };
 }
 
 export const authAPI = {

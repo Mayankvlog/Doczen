@@ -242,7 +242,12 @@ const processRequest = async (req, res, action, processFn, options = {}) => {
 
     if (result && result.__sendFile && outputPath) {
       res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
-      return res.download(outputPath, result.originalName || path.basename(result.fileName));
+      return res.download(outputPath, result.originalName || path.basename(result.fileName), (err) => {
+        cleanupFiles([...sourcePaths, ...(outputPath ? [outputPath] : [])]);
+        if (err && !res.headersSent) {
+          console.error(`Download failed for ${result.fileName}:`, err.message);
+        }
+      });
     }
 
     res.json(result);
@@ -828,7 +833,10 @@ exports.download = async (req, res) => {
       return res.status(404).json({ success: false, message: 'File not found or expired' });
     }
 
+    const originalName = path.basename(fileName, path.extname(fileName));
+    const ext = path.extname(fileName);
     res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+    res.setHeader('Content-Disposition', `attachment; filename="${originalName}${ext}"`);
     res.download(filePath, (err) => {
       if (err) {
         console.error('Download error:', err);
@@ -964,6 +972,7 @@ exports.flatten = async (req, res) => {
 
 exports.htmlToPdf = async (req, res) => {
   let sourcePaths = [];
+  let outputPath = null;
   try {
     if (isDbConnected()) {
       const limitCheck = await checkLimits(req);
@@ -976,7 +985,7 @@ exports.htmlToPdf = async (req, res) => {
       return res.status(400).json({ success: false, message: 'HTML/text content is required' });
     }
     const outputName = `html_to_pdf_${uuidv4()}.pdf`;
-    const outputPath = path.join(getOutputDir(), outputName);
+    outputPath = path.join(getOutputDir(), outputName);
     await htmlToPdf(textContent, outputPath, {
       title: req.body.title || 'Converted Document',
       fontSize: parseInt(req.body.fontSize) || 12
@@ -987,18 +996,23 @@ exports.htmlToPdf = async (req, res) => {
       outStat = validateOutputFile(outputPath);
     } catch (validationErr) {
       console.error(`Output validation failed for ${outputName}: ${validationErr.message}`);
+      cleanupFiles(sourcePaths);
       return res.status(500).json({
         success: false,
         message: `Conversion failed - ${validationErr.message}`
       });
     }
 
-    scheduleFileCleanup(outputPath, 60 * 60 * 1000);
     res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
-    res.download(outputPath, 'converted.pdf');
+    return res.download(outputPath, 'converted.pdf', (err) => {
+      cleanupFiles([...(outputPath ? [outputPath] : [])]);
+      if (err && !res.headersSent) {
+        console.error('HTML to PDF download failed:', err.message);
+      }
+    });
   } catch (error) {
     console.error('HTML to PDF failed:', error.message);
-    cleanupFiles(sourcePaths);
+    cleanupFiles([...sourcePaths, ...(outputPath ? [outputPath] : [])]);
     res.status(500).json({ success: false, message: 'Processing failed', error: error.message });
   }
 };
