@@ -101,12 +101,6 @@ export async function handleToolSubmit(url, formData, fallbackName) {
   const filename = decodeURIComponent(match?.[1] || match?.[2] || fallbackName || 'downloaded-file');
 
   const blobUrl = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = blobUrl;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
   return { success: true, filename, blobUrl };
 }
 

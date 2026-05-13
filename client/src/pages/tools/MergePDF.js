@@ -34,9 +34,7 @@ export default function MergePDF() {
       setResult(data);
       toast.success('PDFs merged successfully!');
       if (data.blobUrl) {
-        setDownloadUrl(data.blobUrl);
-        setDownloadName(data.filename || 'merged.pdf');
-        setSuccessMessage('Files merged successfully. Download started automatically. You can download it again below.');
+        setDownload(data.blobUrl, data.filename || 'merged.pdf');
       }
     } catch (err) {
       const msg = err.message || 'Failed to merge PDFs. Please try again.';

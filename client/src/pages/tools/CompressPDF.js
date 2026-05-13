@@ -36,9 +36,7 @@ export default function CompressPDF() {
       setResult(data);
       toast.success('PDF compressed successfully!');
       if (data.blobUrl) {
-        setDownloadUrl(data.blobUrl);
-        setDownloadName(data.filename || 'compressed.pdf');
-        setSuccessMessage('File compressed successfully. Download started automatically. You can download it again below.');
+        setDownload(data.blobUrl, data.filename || 'compressed.pdf');
       }
     } catch (err) {
       const msg = err.message || 'Failed to compress PDF. Please try again.';
