@@ -664,7 +664,8 @@ const pdfToExcel = async (filePath, outputPath) => {
   try {
     await execFileAsync('soffice', [
       '--headless',
-      '--convert-to', 'xlsx',
+      '--infilter=impress_pdf_import',
+      '--convert-to', 'xlsx:Calc MS Excel 2007 XML:UTF8',
       '--outdir', path.dirname(outputPath),
       filePath
     ]);
@@ -686,11 +687,43 @@ const pdfToExcel = async (filePath, outputPath) => {
 
     return outputPath;
   } catch (err) {
-    if (err.code === 'ENOENT') {
-      throw new Error('PDF to Excel conversion requires LibreOffice (soffice) to be installed on the server');
+    try {
+      return await pdfToExcelFallback(filePath, outputPath);
+    } catch (fallbackErr) {
+      if (err.code === 'ENOENT') {
+        throw new Error('PDF to Excel conversion requires LibreOffice (soffice) to be installed on the server. Fallback extraction also failed: ' + fallbackErr.message);
+      }
+      throw new Error(`PDF to Excel conversion failed: ${err.message}. Fallback: ${fallbackErr.message}`);
     }
-    throw new Error(`PDF to Excel conversion failed: ${err.message}`);
   }
+};
+
+const pdfToExcelFallback = async (filePath, outputPath) => {
+  let pdfData;
+  try {
+    const pdfParse = require('pdf-parse');
+    const dataBuffer = await fs.promises.readFile(filePath);
+    pdfData = await pdfParse(dataBuffer);
+  } catch (parseErr) {
+    const dataBuffer = await fs.promises.readFile(filePath);
+    const text = dataBuffer.toString('utf8');
+    const textMatch = text.match(/\((.*?)\)/g);
+    pdfData = { text: textMatch ? textMatch.map(m => m.slice(1, -1)).join('\n') : 'Unable to extract text from PDF' };
+  }
+  const ExcelJS = require('exceljs');
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('PDF Content');
+  const lines = pdfData.text.split('\n');
+  lines.forEach((line, idx) => {
+    if (line.trim()) {
+      worksheet.getCell(`A${idx + 1}`).value = line.trim();
+    }
+  });
+  await workbook.xlsx.writeFile(outputPath);
+  if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0) {
+    throw new Error('Fallback Excel output is empty');
+  }
+  return outputPath;
 };
 
 const excelToPdf = async (filePath, outputPath) => {
@@ -699,6 +732,10 @@ const excelToPdf = async (filePath, outputPath) => {
   
   try {
     const workbook = new ExcelJS.Workbook();
+    const fileExt = path.extname(filePath).toLowerCase();
+    if (fileExt === '.xls') {
+      throw new Error('The .xls (binary) format is not supported. Please save as .xlsx and try again.');
+    }
     await workbook.xlsx.readFile(filePath);
     
     const pdfDoc = await PDFDocument.create();
@@ -708,7 +745,6 @@ const excelToPdf = async (filePath, outputPath) => {
       let y = 750;
       let page = pdfDoc.addPage([612, 792]);
       
-      // Add worksheet title
       page.drawText(`Worksheet: ${worksheet.name}`, {
         x: 50,
         y,
@@ -718,30 +754,36 @@ const excelToPdf = async (filePath, outputPath) => {
       });
       y -= 30;
       
-      // Process each row
       for (let rowNumber = 1; rowNumber <= worksheet.rowCount; rowNumber++) {
         const row = worksheet.getRow(rowNumber);
         let x = 50;
         
-        // Process each cell in the row
         for (let colNumber = 1; colNumber <= row.cellCount; colNumber++) {
-          const cell = row.getCell(colNumber);
-          const value = cell.value ? cell.value.toString() : '';
+          try {
+            const cell = row.getCell(colNumber);
+            let value = '';
+            if (cell.value != null) {
+              if (typeof cell.value === 'object') {
+                value = cell.value.text || cell.value.result || '';
+              } else {
+                value = String(cell.value);
+              }
+            }
+            if (value) {
+              page.drawText(value.substring(0, 100), {
+                x,
+                y,
+                size: 10,
+                font,
+                color: rgb(0, 0, 0)
+              });
+            }
+          } catch (_) {}
           
-          if (value) {
-            page.drawText(value, {
-              x,
-              y,
-              size: 10,
-              font,
-              color: rgb(0, 0, 0)
-            });
-          }
-          
-          x += 100; // Move to next column position
+          x += 100;
         }
         
-        y -= 20; // Move to next row
+        y -= 20;
         
         if (y < 50) {
           y = 750;
