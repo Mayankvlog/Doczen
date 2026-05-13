@@ -683,18 +683,20 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
   const isWatermarkBlock = (ops) => {
     let fontSize = 0;
     let hasRotation = false;
+    let hasGs = false;
     for (const op of ops) {
       if (op.n === 'Tf' && op.a.length >= 2) {
         const sizeArg = op.a[op.a.length - 1];
-        if (sizeArg.t === 'num') fontSize = parseFloat(sizeArg.v);
+        if (sizeArg.t === 'num') fontSize = Math.abs(parseFloat(sizeArg.v));
       }
       if (op.n === 'Tm' && op.a.length >= 6) {
         const b = parseFloat(op.a[1].v || '0');
         const c = parseFloat(op.a[2].v || '0');
         if (Math.abs(b) > 0.001 && Math.abs(c) > 0.001) hasRotation = true;
       }
+      if (op.n === 'gs') hasGs = true;
     }
-    return fontSize >= 40 || (hasRotation && fontSize >= 20);
+    return (fontSize >= 60 && hasRotation) || (fontSize >= 80);
   };
 
   const removeWatermarkOps = (ops) => {
