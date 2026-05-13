@@ -67,7 +67,7 @@ export default function CompressPDF() {
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
           <FileUploader
             accept=".pdf"
-            onFilesSelected={(selected) => setFile(selected[0] || null)}
+            onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
             progress={progress}
           />
           {file && (

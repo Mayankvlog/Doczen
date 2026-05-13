@@ -61,7 +61,7 @@ export default function ComparePDF() {
             <FileUploader
               accept=".pdf"
               label="Upload first PDF"
-              onFilesSelected={(selected) => setFile1(selected[0] || null)}
+              onFilesSelected={(selected) => { setFile1(selected[0] || null); setComparison(null); setError(''); }}
             />
             {file1 && (
               <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
@@ -77,7 +77,7 @@ export default function ComparePDF() {
             <FileUploader
               accept=".pdf"
               label="Upload second PDF"
-              onFilesSelected={(selected) => setFile2(selected[0] || null)}
+              onFilesSelected={(selected) => { setFile2(selected[0] || null); setComparison(null); setError(''); }}
             />
             {file2 && (
               <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
@@ -158,6 +158,14 @@ export default function ComparePDF() {
                   </ul>
                 </div>
               )}
+            </div>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => { setComparison(null); setFile1(null); setFile2(null); setError(''); }}
+                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-indigo-300 hover:text-indigo-600 active:scale-[0.98] transition-all duration-200"
+              >
+                Compare Another
+              </button>
             </div>
           </div>
         )}

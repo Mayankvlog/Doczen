@@ -46,7 +46,7 @@ export default function DeletePages() {
       const data = await handleToolSubmit('/pdf/delete-pages', formData, 'cleaned.pdf');
       setResult(data);
       if (data.blobUrl) {
-        setDownload(data.blobUrl, data.filename || 'cropped.pdf');
+        setDownload(data.blobUrl, data.filename || 'cleaned.pdf');
       }
     } catch (err) {
       setError(err.message || 'Failed to delete pages. Please try again.');
@@ -74,7 +74,7 @@ export default function DeletePages() {
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
           <FileUploader
             accept=".pdf"
-            onFilesSelected={(selected) => setFile(selected[0] || null)}
+            onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
           />
           {file && (
             <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">

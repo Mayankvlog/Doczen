@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
@@ -23,7 +23,7 @@ export default function PDFToTXT() {
       const data = await handleToolSubmit('/pdf/pdf-to-txt', formData, 'extracted.txt');
       setResult(data);
       if (data.blobUrl) {
-        setDownload(data.blobUrl, data.filename || 'converted.txt');
+        setDownload(data.blobUrl, data.filename || 'extracted.txt');
       }
     } catch (err) {
       setError(err.message || 'Text extraction failed. Try again.');

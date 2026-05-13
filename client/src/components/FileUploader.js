@@ -79,7 +79,7 @@ export default function FileUploader({
 
   useEffect(() => {
     onFilesSelected?.(files);
-  }, [files, onFilesSelected]);
+  }, [files]);
 
   const removeFile = (index) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));

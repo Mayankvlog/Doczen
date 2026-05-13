@@ -26,13 +26,14 @@ export default function ExtractText() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const data = await handleToolSubmit('/pdf/extract-text', formData);
+      const data = await handleToolSubmit('/pdf/extract-text', formData, 'extracted-text.txt');
       setExtractedText(data.text || '');
       setResult({ success: true, fileName: data.fileName, size: data.size });
       if (data.downloadUrl) {
-        const API_BASE = process.env.REACT_APP_API_URL || '';
-        const resp = await fetch(`${API_BASE}${data.downloadUrl}`);
-        if (resp.ok) {
+        const resp = await fetch(`${process.env.REACT_APP_API_URL || ''}${data.downloadUrl}`);
+        if (!resp.ok) {
+          console.warn('Text download fetch failed:', resp.status);
+        } else {
           const blob = await resp.blob();
           const objectUrl = window.URL.createObjectURL(blob);
           setDownload(objectUrl, data.fileName || data.originalName || 'extracted-text.txt');
@@ -64,7 +65,7 @@ export default function ExtractText() {
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
           <FileUploader
             accept=".pdf"
-            onFilesSelected={(selected) => setFile(selected[0] || null)}
+            onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); setExtractedText(''); clearDownload(); }}
           />
           {file && (
             <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">

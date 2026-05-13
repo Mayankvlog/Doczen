@@ -36,7 +36,7 @@ export default function PDFToPDFA() {
       const data = await handleToolSubmit('/pdf/pdf-to-pdfa', formData, 'pdfa.pdf');
       setResult(data);
       if (data.blobUrl) {
-        setDownload(data.blobUrl, data.filename || 'converted.pdf');
+        setDownload(data.blobUrl, data.filename || 'pdfa.pdf');
       }
     } catch (err) {
       setError(err.message || 'Failed to convert to PDF/A. Please try again.');
@@ -64,7 +64,7 @@ export default function PDFToPDFA() {
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
           <FileUploader
             accept=".pdf"
-            onFilesSelected={(selected) => setFile(selected[0] || null)}
+            onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
           />
           {file && (
             <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">

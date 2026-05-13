@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
@@ -13,7 +13,10 @@ export default function PDFToJPG() {
   const [error, setError] = useState('');
 
   const handleProcess = async () => {
-    if (!file) return;
+    if (!file) {
+      setError('Please select a PDF file.');
+      return;
+    }
     setLoading(true);
     setError('');
 
@@ -23,7 +26,7 @@ export default function PDFToJPG() {
       const data = await handleToolSubmit('/pdf/pdf-to-jpg', formData, 'pdf_pages.zip');
       setResult(data);
       if (data.blobUrl) {
-        setDownload(data.blobUrl, data.filename || 'converted.zip');
+        setDownload(data.blobUrl, data.filename || 'pdf_pages.zip');
       }
     } catch (err) {
       setError(err.message || 'Conversion failed. Try again.');

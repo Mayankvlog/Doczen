@@ -1,4 +1,3 @@
-import { pdfAPI } from '../services/api';
 
 function formatSize(bytes) {
   if (!bytes || bytes === 0) return '0 B';

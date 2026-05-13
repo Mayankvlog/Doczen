@@ -66,7 +66,7 @@ export default function MergePDF() {
           <FileUploader
             multiple
             accept=".pdf"
-            onFilesSelected={(selected) => setFiles(selected)}
+            onFilesSelected={(selected) => { setFiles(selected); setError(''); setResult(null); clearDownload(); }}
             progress={progress}
           />
         </div>
