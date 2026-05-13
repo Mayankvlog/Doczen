@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 const sharp = require('sharp');
 
 const guestRateLimit = new Map();
-const GUEST_MAX_FILES = 10;
+const GUEST_MAX_FILES = 10000;
 const GUEST_WINDOW_MS = 60 * 60 * 1000;
 
 setInterval(() => {
@@ -59,7 +59,7 @@ const expectedMimeTypes = {
   compare: ['application/pdf'],
   pdfToWord: ['application/pdf'],
   pdfToExcel: ['application/pdf'],
-  excelToPdf: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+  excelToPdf: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
   pdfToPpt: ['application/pdf'],
   pptToPdf: ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
   wordToPdf: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],

@@ -18,7 +18,7 @@ export default function FileUploader({
   onFilesSelected,
   multiple = false,
   accept = 'application/pdf',
-  maxFiles = 10,
+  maxFiles = 100,
   label = 'Upload your files',
   progress = null,
 }) {
