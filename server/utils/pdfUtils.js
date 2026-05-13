@@ -580,14 +580,156 @@ const removeAnnotations = async (filePath, outputPath) => {
 
 const removeWatermarkFromPdf = async (filePath, outputPath) => {
   const pdfDoc = await loadPdf(filePath);
-  const { PDFName } = require('pdf-lib');
+  const { PDFName, PDFRawStream } = require('pdf-lib');
+  const zlib = require('zlib');
   const pages = pdfDoc.getPages();
+  const context = pdfDoc.context;
+
+  const isWs = (ch) => ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r' || ch === '\f';
+  const isDigit = (ch) => ch >= '0' && ch <= '9';
+
+  const tokenize = (str) => {
+    const tokens = [];
+    let i = 0;
+    const len = str.length;
+    while (i < len) {
+      while (i < len && isWs(str[i])) i++;
+      if (i >= len) break;
+      const ch = str[i];
+      if (ch === '%') { while (i < len && str[i] !== '\n' && str[i] !== '\r') i++; continue; }
+      if (ch === '(') {
+        let val = ''; i++;
+        let depth = 1;
+        while (i < len && depth > 0) {
+          if (str[i] === '\\') { val += str[i] + (str[i + 1] || ''); i += 2; }
+          else if (str[i] === '(') { depth++; val += str[i]; i++; }
+          else if (str[i] === ')') { depth--; if (depth > 0) val += str[i]; i++; }
+          else { val += str[i]; i++; }
+        }
+        tokens.push({ t: 'str', v: val }); continue;
+      }
+      if (ch === '<') {
+        if (i + 1 < len && str[i + 1] === '<') { i += 2; continue; }
+        i++; let hex = '';
+        while (i < len && str[i] !== '>') { hex += str[i]; i++; }
+        if (i < len) i++;
+        tokens.push({ t: 'hex', v: hex }); continue;
+      }
+      if (ch === '>') { if (i + 1 < len && str[i + 1] === '>') i += 2; else i++; continue; }
+      if (ch === '/') {
+        i++; let name = '';
+        while (i < len && !isWs(str[i]) && str[i] !== '/' && str[i] !== '(' && str[i] !== '<' && str[i] !== '[' && str[i] !== ']') { name += str[i]; i++; }
+        tokens.push({ t: 'name', v: name }); continue;
+      }
+      if (ch === '[') {
+        i++; let arr = ''; let depth = 1;
+        while (i < len && depth > 0) {
+          if (str[i] === '[') depth++;
+          else if (str[i] === ']') depth--;
+          if (depth > 0) arr += str[i];
+          i++;
+        }
+        if (i < len) i++;
+        tokens.push({ t: 'arr', v: arr }); continue;
+      }
+      if (ch === ']') { i++; continue; }
+      if (isDigit(ch) || ch === '+' || ch === '-' || ch === '.') {
+        let num = ''; const start = i;
+        if (ch === '+' || ch === '-') { num += str[i]; i++; }
+        while (i < len && (isDigit(str[i]) || str[i] === '.' || str[i] === 'e' || str[i] === 'E' || str[i] === '+' || str[i] === '-')) {
+          if ((str[i] === '+' || str[i] === '-') && str[i - 1] !== 'e' && str[i - 1] !== 'E') break;
+          num += str[i]; i++;
+        }
+        if (/^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(num) || /^[+-]?\.\d+([eE][+-]?\d+)?$/.test(num)) {
+          tokens.push({ t: 'num', v: num });
+        } else { i = start + 1; }
+        continue;
+      }
+      if (str.startsWith('true', i)) { tokens.push({ t: 'bool', v: 'true' }); i += 4; continue; }
+      if (str.startsWith('false', i)) { tokens.push({ t: 'bool', v: 'false' }); i += 5; continue; }
+      if (str.startsWith('null', i)) { tokens.push({ t: 'null', v: 'null' }); i += 4; continue; }
+      let op = '';
+      while (i < len && !isWs(str[i]) && str[i] !== '/' && str[i] !== '(' && str[i] !== '<' && str[i] !== '[' && str[i] !== ']') { op += str[i]; i++; }
+      if (op) tokens.push({ t: 'op', v: op });
+    }
+    return tokens;
+  };
+
+  const parseOps = (toks) => {
+    const ops = [];
+    let i = 0;
+    while (i < toks.length) {
+      const args = [];
+      while (i < toks.length && toks[i].t !== 'op') { args.push(toks[i]); i++; }
+      if (i < toks.length) { ops.push({ n: toks[i].v, a: args }); i++; }
+    }
+    return ops;
+  };
+
+  const opsToStr = (ops) => ops.map(op => {
+    const argStr = op.a.map(a => {
+      if (a.t === 'name') return '/' + a.v;
+      if (a.t === 'num') return a.v;
+      if (a.t === 'str') return '(' + a.v + ')';
+      if (a.t === 'hex') return '<' + a.v + '>';
+      if (a.t === 'arr') return '[' + a.v + ']';
+      if (a.t === 'bool') return a.v;
+      if (a.t === 'null') return 'null';
+      return a.v || '';
+    }).join(' ');
+    return argStr ? argStr + ' ' + op.n : op.n;
+  }).join('\n') + '\n';
+
+  const isWatermarkBlock = (ops) => {
+    let fontSize = 0;
+    let hasRotation = false;
+    for (const op of ops) {
+      if (op.n === 'Tf' && op.a.length >= 2) {
+        const sizeArg = op.a[op.a.length - 1];
+        if (sizeArg.t === 'num') fontSize = parseFloat(sizeArg.v);
+      }
+      if (op.n === 'Tm' && op.a.length >= 6) {
+        const b = parseFloat(op.a[1].v || '0');
+        const c = parseFloat(op.a[2].v || '0');
+        if (Math.abs(b) > 0.001 && Math.abs(c) > 0.001) hasRotation = true;
+      }
+    }
+    return fontSize >= 40 || (hasRotation && fontSize >= 20);
+  };
+
+  const removeWatermarkOps = (ops) => {
+    const result = [];
+    let i = 0;
+    while (i < ops.length) {
+      if (ops[i].n === 'BT') {
+        const start = i; i++;
+        while (i < ops.length && ops[i].n !== 'ET') i++;
+        if (i < ops.length) i++;
+        const block = ops.slice(start, i);
+        if (!isWatermarkBlock(block)) result.push(...block);
+      } else if (ops[i].n === 'BI') {
+        while (i < ops.length && ops[i].n !== 'EI') { result.push(ops[i]); i++; }
+        if (i < ops.length) { result.push(ops[i]); i++; }
+      } else {
+        result.push(ops[i]); i++;
+      }
+    }
+    return result;
+  };
+
+  const getContentString = (obj) => {
+    if (obj && typeof obj.getContentsString === 'function') {
+      try { return obj.getContentsString(); } catch (e) { return null; }
+    }
+    return null;
+  };
+
   for (const page of pages) {
     try {
-      if (page.node.get(PDFName.of('Annots'))) {
-        page.node.delete(PDFName.of('Annots'));
-      }
-    } catch (e) { }
+      if (page.node.get(PDFName.of('Annots'))) page.node.delete(PDFName.of('Annots'));
+    } catch (e) {}
+
+    const removedXObjNames = [];
     try {
       const resources = page.node.get(PDFName.of('Resources'));
       if (resources) {
@@ -595,15 +737,75 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
         if (xObject) {
           const keys = xObject.keys();
           for (const key of keys) {
-            const name = key.toString();
-            if (name.toLowerCase().includes('watermark') || name.toLowerCase().includes('water') || name.toLowerCase().includes('wm')) {
-              try { xObject.delete(key); } catch (ex) { }
+            const name = key.toString().toLowerCase();
+            if (/watermark|water|wm|draft|confidential|overlay|stamp|bgcolor|bg_|overprint|opacity/.test(name)) {
+              removedXObjNames.push(key.toString());
+              try { xObject.delete(key); } catch (ex) {}
             }
           }
         }
       }
-    } catch (e) { }
+    } catch (e) {}
+
+    const contentsArr = page.node.get(PDFName.of('Contents'));
+    if (contentsArr) {
+      let allContent = '';
+      for (let ci = 0; ci < contentsArr.size(); ci++) {
+        let raw = null;
+        try {
+          const item = contentsArr.get(ci);
+          let obj;
+          if (item && item.constructor && item.constructor.name === 'PDFRef') obj = context.lookup(item);
+          else obj = item;
+          raw = getContentString(obj);
+        } catch (e) {}
+        if (raw) {
+          try { allContent += zlib.inflateRawSync(Buffer.from(raw, 'binary')).toString(); }
+          catch (e) {
+            try { allContent += zlib.unzipSync(Buffer.from(raw, 'binary')).toString(); }
+            catch (e2) { allContent += raw; }
+          }
+        }
+      }
+
+      if (allContent) {
+        let modified = false;
+        const toks = tokenize(allContent);
+        const ops = parseOps(toks);
+
+        const filtered = removeWatermarkOps(ops);
+
+        const finalOps = [];
+        if (removedXObjNames.length > 0) {
+          const nameSet = new Set(removedXObjNames);
+          for (const op of filtered) {
+            if (op.n === 'Do' && op.a.length > 0) {
+              const xObjName = op.a[0];
+              const rawName = (xObjName.t === 'name' ? xObjName.v : '');
+              if (nameSet.has(rawName)) { modified = true; continue; }
+            }
+            finalOps.push(op);
+          }
+        } else {
+          finalOps.push(...filtered);
+        }
+
+        if (filtered.length !== ops.length || finalOps.length !== filtered.length) modified = true;
+
+        if (modified) {
+          const cleanedStr = opsToStr(finalOps);
+          const compressed = zlib.deflateRawSync(Buffer.from(cleanedStr, 'utf8'));
+          const dict = context.obj({ Filter: 'FlateDecode', Length: compressed.length });
+          const rawStream = PDFRawStream.of(dict, new Uint8Array(compressed));
+          const ref = context.register(rawStream);
+          const newContents = context.obj([]);
+          newContents.push(ref);
+          page.node.set(PDFName.of('Contents'), newContents);
+        }
+      }
+    }
   }
+
   const newPdf = await PDFDocument.create();
   const indices = pdfDoc.getPageIndices();
   const newPages = await newPdf.copyPages(pdfDoc, indices);
