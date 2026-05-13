@@ -6,7 +6,15 @@ const util = require('util');
 const execFileAsync = util.promisify(execFile);
 
 const loadPdf = async (filePath, options = {}) => {
-  const data = await fs.promises.readFile(filePath);
+  let data;
+  try {
+    data = await fs.promises.readFile(filePath);
+  } catch (readErr) {
+    throw new Error(`Failed to read PDF file: ${readErr.message}`);
+  }
+  if (data.length < 4 || data[0] !== 0x25 || data[1] !== 0x50 || data[2] !== 0x44 || data[3] !== 0x46) {
+    throw new Error(`Invalid or corrupted PDF file: ${path.basename(filePath)} - missing PDF header`);
+  }
   try {
     return await PDFDocument.load(data, options);
   } catch (err) {

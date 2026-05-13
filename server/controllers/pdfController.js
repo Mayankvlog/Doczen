@@ -143,6 +143,26 @@ const cleanupFiles = (paths = []) => {
   }
 };
 
+const validatePdfHeader = (filePath) => {
+  if (!fs.existsSync(filePath)) {
+    const err = new Error(`Uploaded file not found on server: ${path.basename(filePath)}`);
+    err.statusCode = 400;
+    throw err;
+  }
+  const fd = fs.openSync(filePath, 'r');
+  const buffer = Buffer.alloc(4);
+  try {
+    const bytesRead = fs.readSync(fd, buffer, 0, 4, 0);
+    if (bytesRead < 4 || buffer[0] !== 0x25 || buffer[1] !== 0x50 || buffer[2] !== 0x44 || buffer[3] !== 0x46) {
+      const err = new Error('Invalid or corrupted PDF file. The uploaded file does not have a valid PDF header.');
+      err.statusCode = 400;
+      throw err;
+    }
+  } finally {
+    fs.closeSync(fd);
+  }
+};
+
 const scheduleFileCleanup = (filePath, delayMs = 24 * 60 * 60 * 1000) => {
   setTimeout(() => {
     try {
@@ -213,6 +233,20 @@ const processRequest = async (req, res, action, processFn, options = {}) => {
       if (!limitCheck.allowed) {
         cleanupFiles(sourcePaths);
         return res.status(429).json({ success: false, message: limitCheck.message });
+      }
+    }
+
+    for (const f of req.files) {
+      if (f.mimetype === 'application/pdf') {
+        try {
+          validatePdfHeader(f.path);
+        } catch (validationErr) {
+          cleanupFiles(sourcePaths);
+          return res.status(validationErr.statusCode || 400).json({
+            success: false,
+            message: validationErr.message
+          });
+        }
       }
     }
 
