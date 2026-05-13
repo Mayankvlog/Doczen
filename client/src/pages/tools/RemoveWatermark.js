@@ -25,10 +25,10 @@ export default function RemoveWatermark() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const data = await handleToolSubmit('/pdf/remove-watermark', formData, 'cleaned.pdf');
+      const data = await handleToolSubmit('/pdf/remove-watermark', formData, 'watermark_removed.pdf');
       setResult(data);
       if (data.blobUrl) {
-        setDownload(data.blobUrl, data.filename || 'cleaned.pdf');
+        setDownload(data.blobUrl, data.filename || 'watermark_removed.pdf');
       }
     } catch (err) {
       setError(err.message || 'Failed to remove watermark. Please try again.');

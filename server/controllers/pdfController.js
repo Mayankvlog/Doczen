@@ -290,6 +290,9 @@ const processRequest = async (req, res, action, processFn, options = {}) => {
     res.json(result);
   } catch (error) {
     console.error(`Processing failed for action "${action}":`, error.message);
+    if (action === 'removeWatermark') {
+      console.error("REMOVE WATERMARK ERROR:", error);
+    }
     cleanupFiles(sourcePaths);
     const statusCode = error.statusCode || 500;
     res.status(statusCode).json({ success: false, message: error.message || 'Processing failed' });
@@ -1106,17 +1109,57 @@ exports.removeAnnotations = async (req, res) => {
 
 exports.removeWatermark = async (req, res) => {
   await processRequest(req, res, 'removeWatermark', async (req) => {
+    console.log("REMOVE WATERMARK API HIT");
+    console.log("Uploaded File:", req.files[0].originalname, "Path:", req.files[0].path);
+
     const filePath = req.files[0].path;
     const outputPath = getOutputPath(req.files[0].originalname, 'clean');
+    
+    console.log("Input Path:", filePath);
+    console.log("Output Path:", outputPath);
+
+    const originalSize = fs.statSync(filePath).size;
+    console.log("Original File Size:", originalSize);
+
     await removeWatermarkFromPdf(filePath, outputPath);
+
+    console.log("Output Path after processing:", outputPath);
+    console.log("Exists:", fs.existsSync(outputPath));
+
+    if (!fs.existsSync(outputPath)) {
+      const error = new Error("Watermark removal failed - output file not created");
+      error.statusCode = 500;
+      throw error;
+    }
+
     const outStat = fs.statSync(outputPath);
+    console.log("Output File Size:", outStat.size);
+
+    if (outStat.size === 0) {
+      const error = new Error("Watermark removal failed - output file is empty");
+      error.statusCode = 500;
+      throw error;
+    }
+
+    if (outStat.size === originalSize) {
+      console.warn("Possible unchanged PDF after watermark removal - file size identical");
+    }
+
+    if (req.user) {
+      await createHistory(req.user._id, 'removeWatermark',
+        req.files.map(f => ({ originalName: f.originalname, storedName: f.filename, size: f.size })),
+        [{ originalName: `clean_${req.files[0].originalname}`, storedName: path.basename(outputPath), size: outStat.size, path: outputPath }],
+        'completed'
+      );
+    }
+
     return {
       __sendFile: true,
       message: 'Watermark removed successfully',
       fileName: path.basename(outputPath),
       originalName: `clean_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size
+      originalSize: originalSize
     };
   });
 };

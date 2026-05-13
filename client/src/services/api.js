@@ -413,6 +413,7 @@ export const pdfAPI = {
     formData.append('file', file);
     return api.post('/pdf/remove-watermark', formData, withProgress({
       timeout: 300000,
+      responseType: 'blob',
     }, onProgress));
   },
 
