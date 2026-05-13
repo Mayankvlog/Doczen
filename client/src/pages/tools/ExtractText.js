@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function ExtractText() {
@@ -22,11 +22,13 @@ export default function ExtractText() {
     setExtractedText('');
     setResult(null);
     try {
-      const { data } = await pdfAPI.extractText(file);
+      const formData = new FormData();
+      formData.append('file', file);
+      const data = await handleToolSubmit('/pdf/extract-text', formData);
       setExtractedText(data.text || '');
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl });
+      setResult({ success: true, fileName: data.fileName, size: data.size });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to extract text. Please try again.');
+      setError(err.message || 'Failed to extract text. Please try again.');
     } finally {
       setLoading(false);
     }

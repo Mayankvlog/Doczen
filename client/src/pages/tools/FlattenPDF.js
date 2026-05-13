@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function FlattenPDF() {
@@ -20,10 +20,12 @@ export default function FlattenPDF() {
     setLoading(true);
     setResult(null);
     try {
-      const { data } = await pdfAPI.flatten(file);
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      const formData = new FormData();
+      formData.append('file', file);
+      const data = await handleToolSubmit('/pdf/flatten', formData, 'flattened.pdf');
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to flatten PDF. Please try again.');
+      setError(err.message || 'Failed to flatten PDF. Please try again.');
     } finally {
       setLoading(false);
     }

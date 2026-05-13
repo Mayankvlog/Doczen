@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import SEO from '../../components/SEO';
 
@@ -26,11 +26,14 @@ export default function CompressPDF() {
     setResult(null);
     setProgress(0);
     try {
-      const { data } = await pdfAPI.compress(file, quality, setProgress);
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
-      toast.success(`PDF compressed by ${data.compressionRatio || 0}%!`);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('quality', quality);
+      const data = await handleToolSubmit('/pdf/compress', formData, 'compressed.pdf');
+      setResult(data);
+      toast.success('PDF compressed successfully!');
     } catch (err) {
-      const msg = err.response?.data?.message || 'Failed to compress PDF. Please try again.';
+      const msg = err.message || 'Failed to compress PDF. Please try again.';
       setError(msg);
       toast.error(msg);
     } finally {

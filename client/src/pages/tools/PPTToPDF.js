@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function PPTToPDF() {
@@ -10,32 +10,20 @@ export default function PPTToPDF() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
-  const [email, setEmail] = useState('');
-
   const handleProcess = async () => {
     if (!file) return;
     setLoading(true);
     setError('');
     try {
-      const response = await pdfAPI.pptToPdf(file, (progress) => {
-        // Handle progress if needed
-        console.log(`Upload progress: ${progress}%`);
-      });
-      setResult(response.data);
+      const formData = new FormData();
+      formData.append('file', file);
+      const data = await handleToolSubmit('/pdf/ppt-to-pdf', formData, 'converted.pdf');
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Conversion failed. Please try again.');
+      setError(err.message || 'Conversion failed. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleNotify = (e) => {
-    e.preventDefault();
-    setResult((prev) => ({
-      ...prev,
-      notified: true,
-      message: `We'll notify you at ${email} when PPT to PDF is ready!`,
-    }));
   };
 
   return (
@@ -76,24 +64,6 @@ export default function PPTToPDF() {
         {result && (
           <div className="mt-6">
             <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="converted to PDF" />
-            {!result.notified && (
-              <form onSubmit={handleNotify} className="mt-4 flex gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
-                >
-                  Notify Me
-                </button>
-              </form>
-            )}
           </div>
         )}
       </div>

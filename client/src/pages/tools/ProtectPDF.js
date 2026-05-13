@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function ProtectPDF() {
@@ -34,10 +34,13 @@ export default function ProtectPDF() {
     setLoading(true);
     setResult(null);
     try {
-      const { data } = await pdfAPI.protect(file, password);
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('password', password);
+      const data = await handleToolSubmit('/pdf/protect', formData, 'protected.pdf');
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to protect PDF. Please try again.');
+      setError(err.message || 'Failed to protect PDF. Please try again.');
     } finally {
       setLoading(false);
     }

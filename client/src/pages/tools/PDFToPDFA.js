@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function PDFToPDFA() {
@@ -24,10 +24,16 @@ export default function PDFToPDFA() {
     setLoading(true);
     setResult(null);
     try {
-      const { data } = await pdfAPI.pdfToPdfa(file, { title, author, subject, keywords });
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', title);
+      formData.append('author', author);
+      formData.append('subject', subject);
+      formData.append('keywords', keywords);
+      const data = await handleToolSubmit('/pdf/pdf-to-pdfa', formData, 'pdfa.pdf');
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to convert to PDF/A. Please try again.');
+      setError(err.message || 'Failed to convert to PDF/A. Please try again.');
     } finally {
       setLoading(false);
     }

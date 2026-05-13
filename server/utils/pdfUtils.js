@@ -658,7 +658,41 @@ const pdfToWord = async (filePath, outputPath) => {
 };
 
 const pdfToExcel = async (filePath, outputPath) => {
-  throw new Error('PDF to Excel requires OCR/table extraction');
+  const { execFile } = require('child_process');
+  const util = require('util');
+  const execFileAsync = util.promisify(execFile);
+
+  try {
+    await execFileAsync('soffice', [
+      '--headless',
+      '--infilter=impress_pdf_import',
+      '--convert-to', 'xlsx',
+      '--outdir', path.dirname(outputPath),
+      filePath
+    ]);
+
+    const baseName = path.basename(filePath, path.extname(filePath));
+    const libreOfficeOutput = path.join(path.dirname(outputPath), `${baseName}.xlsx`);
+
+    if (fs.existsSync(libreOfficeOutput)) {
+      if (outputPath !== libreOfficeOutput) {
+        fs.renameSync(libreOfficeOutput, outputPath);
+      }
+    } else {
+      throw new Error('LibreOffice did not produce output file');
+    }
+
+    if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0) {
+      throw new Error('Output XLSX file was not created by LibreOffice');
+    }
+
+    return outputPath;
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      throw new Error('PDF to Excel conversion requires LibreOffice (soffice) to be installed on the server');
+    }
+    throw new Error(`PDF to Excel conversion failed: ${err.message}`);
+  }
 };
 
 const excelToPdf = async (filePath, outputPath) => {
@@ -729,7 +763,41 @@ const excelToPdf = async (filePath, outputPath) => {
 };
 
 const pdfToPpt = async (filePath, outputPath) => {
-  throw new Error('PDF to PPT is not supported yet');
+  const { execFile } = require('child_process');
+  const util = require('util');
+  const execFileAsync = util.promisify(execFile);
+
+  try {
+    await execFileAsync('soffice', [
+      '--headless',
+      '--infilter=impress_pdf_import',
+      '--convert-to', 'pptx',
+      '--outdir', path.dirname(outputPath),
+      filePath
+    ]);
+
+    const baseName = path.basename(filePath, path.extname(filePath));
+    const libreOfficeOutput = path.join(path.dirname(outputPath), `${baseName}.pptx`);
+
+    if (fs.existsSync(libreOfficeOutput)) {
+      if (outputPath !== libreOfficeOutput) {
+        fs.renameSync(libreOfficeOutput, outputPath);
+      }
+    } else {
+      throw new Error('LibreOffice did not produce output file');
+    }
+
+    if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0) {
+      throw new Error('Output PPTX file was not created by LibreOffice');
+    }
+
+    return outputPath;
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      throw new Error('PDF to PPT conversion requires LibreOffice (soffice) to be installed on the server');
+    }
+    throw new Error(`PDF to PPT conversion failed: ${err.message}`);
+  }
 };
 
 const pptToPdf = async (filePath, outputPath) => {

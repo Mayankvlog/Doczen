@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function ExcelToPDF() {
@@ -10,17 +10,17 @@ export default function ExcelToPDF() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
-  const [email, setEmail] = useState('');
-
   const handleProcess = async () => {
     if (!file) return;
     setLoading(true);
     setError('');
     try {
-      const response = await pdfAPI.excelToPdf(file);
-      setResult(response.data);
+      const formData = new FormData();
+      formData.append('file', file);
+      const data = await handleToolSubmit('/pdf/excel-to-pdf', formData, 'converted.pdf');
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong.');
+      setError(err.message || 'Something went wrong.');
     } finally {
       setLoading(false);
     }

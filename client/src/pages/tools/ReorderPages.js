@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function ReorderPages() {
@@ -37,10 +37,13 @@ export default function ReorderPages() {
     setLoading(true);
     setResult(null);
     try {
-      const { data } = await pdfAPI.reorder(file, pages);
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('pageOrder', JSON.stringify(pages));
+      const data = await handleToolSubmit('/pdf/reorder', formData, 'reordered.pdf');
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to reorder pages. Please try again.');
+      setError(err.message || 'Failed to reorder pages. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -65,6 +65,52 @@ api.interceptors.response.use(
   }
 );
 
+const API_URL = process.env.REACT_APP_API_URL || '';
+
+export async function handleToolSubmit(url, formData, fallbackName) {
+  const response = await fetch(`${API_URL}/api${url}`, {
+    method: 'POST',
+    body: formData
+  });
+
+  if (!response.ok) {
+    let message = 'Request failed';
+    try {
+      const err = await response.json();
+      message = err.message || err.error || message;
+    } catch (_) {}
+    throw new Error(message);
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+
+  if (contentType.includes('application/json')) {
+    const data = await response.json();
+    if (data.success === false) throw new Error(data.message || 'Operation failed');
+    return data;
+  }
+
+  const blob = await response.blob();
+  if (!blob || blob.size === 0) {
+    throw new Error('Server returned empty file');
+  }
+
+  const disposition = response.headers.get('content-disposition') || '';
+  const match = disposition.match(/filename="?([^"]+)"?/i);
+  const filename = match?.[1] || fallbackName || 'downloaded-file';
+
+  const blobUrl = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(blobUrl);
+
+  return { success: true, filename };
+}
+
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),

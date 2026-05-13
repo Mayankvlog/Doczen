@@ -17,7 +17,8 @@ function getRatioColor(ratio) {
 export default function ResultCard({ result, onReset, action = 'processed' }) {
   if (!result) return null;
 
-  const { fileName, size, downloadUrl, originalSize } = result;
+  const { fileName, filename, size, originalSize, success } = result;
+  const displayName = fileName || filename || '';
   const compressionRatio = originalSize && size ? size / originalSize : null;
 
   return (
@@ -35,14 +36,18 @@ export default function ResultCard({ result, onReset, action = 'processed' }) {
       </div>
 
       <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">File</span>
-          <span className="font-medium text-gray-900 truncate max-w-[200px]">{fileName}</span>
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">Size</span>
-          <span className="font-medium text-gray-900">{formatSize(size)}</span>
-        </div>
+        {displayName && (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-500">File</span>
+            <span className="font-medium text-gray-900 truncate max-w-[200px]">{displayName}</span>
+          </div>
+        )}
+        {size && (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-500">Size</span>
+            <span className="font-medium text-gray-900">{formatSize(size)}</span>
+          </div>
+        )}
         {compressionRatio !== null && (
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-500">Compression</span>
@@ -62,18 +67,6 @@ export default function ResultCard({ result, onReset, action = 'processed' }) {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        {downloadUrl && (
-          <a
-            href={pdfAPI.getDownloadUrl(fileName)}
-            download
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md shadow-indigo-500/25"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Download
-          </a>
-        )}
         <button
           onClick={onReset}
           className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-indigo-300 hover:text-indigo-600 active:scale-[0.98] transition-all duration-200"

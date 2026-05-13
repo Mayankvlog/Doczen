@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import SEO from '../../components/SEO';
 
@@ -25,11 +25,13 @@ export default function MergePDF() {
     setResult(null);
     setProgress(0);
     try {
-      const { data } = await pdfAPI.merge(files, setProgress);
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      const formData = new FormData();
+      files.forEach((f) => formData.append('files', f));
+      const data = await handleToolSubmit('/pdf/merge', formData, 'merged.pdf');
+      setResult(data);
       toast.success('PDFs merged successfully!');
     } catch (err) {
-      const msg = err.response?.data?.message || 'Failed to merge PDFs. Please try again.';
+      const msg = err.message || 'Failed to merge PDFs. Please try again.';
       setError(msg);
       toast.error(msg);
     } finally {

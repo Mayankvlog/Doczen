@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function PDFToTXT() {
@@ -16,10 +16,12 @@ export default function PDFToTXT() {
         setLoading(true);
     setError('');
     try {
-      const { data } = await pdfAPI.pdfToTxt(file);
+      const formData = new FormData();
+      formData.append('file', file);
+      const data = await handleToolSubmit('/pdf/pdf-to-txt', formData, 'extracted.txt');
       setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Text extraction failed. Try again.');
+      setError(err.message || 'Text extraction failed. Try again.');
     } finally {
       setLoading(false);
     }

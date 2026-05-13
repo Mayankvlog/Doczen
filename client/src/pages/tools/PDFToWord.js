@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function PDFToWord() {
@@ -16,30 +16,12 @@ export default function PDFToWord() {
     setLoading(true);
     setError('');
     try {
-      const response = await pdfAPI.pdfToWord(file);
-      const { fileName } = response.data;
-
-      const blob = await pdfAPI.downloadAsBlob(fileName);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-
-      setResult(response.data);
+      const formData = new FormData();
+      formData.append('file', file);
+      const data = await handleToolSubmit('/pdf/pdf-to-word', formData, 'converted.docx');
+      setResult(data);
     } catch (err) {
-      let msg = 'Something went wrong.';
-      if (err.response?.data instanceof Blob) {
-        try {
-          const text = await err.response.data.text();
-          msg = JSON.parse(text).message || msg;
-        } catch (e) { /* ignore */ }
-      } else {
-        msg = err.response?.data?.message || err.message || msg;
-      }
+      const msg = err.message || 'Something went wrong.';
       setError(msg);
     } finally {
       setLoading(false);

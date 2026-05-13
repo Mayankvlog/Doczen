@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function DeletePages() {
@@ -37,10 +37,13 @@ export default function DeletePages() {
     setLoading(true);
     setResult(null);
     try {
-      const { data } = await pdfAPI.deletePages(file, pages);
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('pagesToDelete', JSON.stringify(pages));
+      const data = await handleToolSubmit('/pdf/delete-pages', formData, 'cleaned.pdf');
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete pages. Please try again.');
+      setError(err.message || 'Failed to delete pages. Please try again.');
     } finally {
       setLoading(false);
     }

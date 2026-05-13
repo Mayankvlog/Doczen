@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function JPGToPDF() {
@@ -16,10 +16,12 @@ export default function JPGToPDF() {
         setLoading(true);
     setError('');
     try {
-      const { data } = await pdfAPI.jpgToPdf(files);
+      const formData = new FormData();
+      files.forEach((f) => formData.append('files', f));
+      const data = await handleToolSubmit('/pdf/jpg-to-pdf', formData, 'converted.pdf');
       setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Conversion failed. Try again.');
+      setError(err.message || 'Conversion failed. Try again.');
     } finally {
       setLoading(false);
     }

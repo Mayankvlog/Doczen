@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function RedactPDF() {
@@ -26,10 +26,13 @@ export default function RedactPDF() {
     setResult(null);
     try {
       const redactions = terms.split('\n').filter((t) => t.trim()).map((t) => t.trim());
-      const { data } = await pdfAPI.redact(file, redactions);
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('redactions', JSON.stringify(redactions));
+      const data = await handleToolSubmit('/pdf/redact', formData, 'redacted.pdf');
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to redact PDF. Please try again.');
+      setError(err.message || 'Failed to redact PDF. Please try again.');
     } finally {
       setLoading(false);
     }

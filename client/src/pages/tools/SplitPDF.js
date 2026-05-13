@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function SplitPDF() {
@@ -20,10 +20,12 @@ export default function SplitPDF() {
     setLoading(true);
     setResult(null);
     try {
-      const { data } = await pdfAPI.split(file);
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      const formData = new FormData();
+      formData.append('file', file);
+      const data = await handleToolSubmit('/pdf/split', formData, 'split_pages.zip');
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to split PDF. Please try again.');
+      setError(err.message || 'Failed to split PDF. Please try again.');
     } finally {
       setLoading(false);
     }

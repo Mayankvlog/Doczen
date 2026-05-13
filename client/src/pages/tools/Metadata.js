@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function Metadata() {
@@ -26,10 +26,12 @@ export default function Metadata() {
     setLoading(true);
     setMetadataData(null);
     try {
-      const { data } = await pdfAPI.readMetadata(file);
+      const formData = new FormData();
+      formData.append('file', file);
+      const data = await handleToolSubmit('/pdf/read-metadata', formData);
       setMetadataData(data.metadata);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to read metadata. Please try again.');
+      setError(err.message || 'Failed to read metadata. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -44,10 +46,16 @@ export default function Metadata() {
     setLoading(true);
     setResult(null);
     try {
-      const { data } = await pdfAPI.writeMetadata(file, { title, author, subject, keywords });
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', title);
+      formData.append('author', author);
+      formData.append('subject', subject);
+      formData.append('keywords', keywords);
+      const data = await handleToolSubmit('/pdf/write-metadata', formData, 'metadata.pdf');
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to write metadata. Please try again.');
+      setError(err.message || 'Failed to write metadata. Please try again.');
     } finally {
       setLoading(false);
     }

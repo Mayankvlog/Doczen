@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function AddPageNumbers() {
@@ -30,10 +30,14 @@ export default function AddPageNumbers() {
     setLoading(true);
     setResult(null);
     try {
-      const { data } = await pdfAPI.addPageNumbers(file, { startNumber, fontSize });
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('startNumber', startNumber);
+      formData.append('fontSize', fontSize);
+      const data = await handleToolSubmit('/pdf/add-page-numbers', formData, 'numbered.pdf');
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add page numbers. Please try again.');
+      setError(err.message || 'Failed to add page numbers. Please try again.');
     } finally {
       setLoading(false);
     }

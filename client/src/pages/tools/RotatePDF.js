@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
 
 const rotateOptions = [
@@ -27,10 +27,13 @@ export default function RotatePDF() {
     setLoading(true);
     setResult(null);
     try {
-      const { data } = await pdfAPI.rotate(file, degrees);
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl, originalSize: data.originalSize });
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('degrees', degrees);
+      const data = await handleToolSubmit('/pdf/rotate', formData, 'rotated.pdf');
+      setResult(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to rotate PDF. Please try again.');
+      setError(err.message || 'Failed to rotate PDF. Please try again.');
     } finally {
       setLoading(false);
     }

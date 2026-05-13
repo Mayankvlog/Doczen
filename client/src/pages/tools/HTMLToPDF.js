@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { pdfAPI } from '../../services/api';
+const API_BASE = process.env.REACT_APP_API_URL || '';
 import SEO from '../../components/SEO';
 
 export default function HTMLToPDF() {
@@ -21,10 +21,37 @@ export default function HTMLToPDF() {
     setLoading(true);
     setResult(null);
     try {
-      const { data } = await pdfAPI.htmlToPdf(content.trim(), { title, fontSize });
-      setResult({ fileName: data.fileName, size: data.size, downloadUrl: data.downloadUrl });
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/api/pdf/html-to-pdf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ content: content.trim(), title, fontSize })
+      });
+
+      if (!response.ok) {
+        let msg = 'Conversion failed';
+        try { const err = await response.json(); msg = err.message || msg; } catch (_) {}
+        throw new Error(msg);
+      }
+
+      const blob = await response.blob();
+      if (!blob || blob.size === 0) throw new Error('Server returned empty file');
+
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = 'converted.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(blobUrl);
+
+      setResult({ success: true, filename: 'converted.pdf' });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to convert to PDF. Please try again.');
+      setError(err.message || 'Failed to convert to PDF. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -33,6 +33,40 @@ const {
   pdfToPpt, pptToPdf, wordToPdf, editPdf, signPdf
 } = require('../utils/pdfUtils');
 
+const expectedMimeTypes = {
+  merge: ['application/pdf'],
+  split: ['application/pdf'],
+  compress: ['application/pdf'],
+  rotate: ['application/pdf'],
+  protect: ['application/pdf'],
+  unlock: ['application/pdf'],
+  addPageNumbers: ['application/pdf'],
+  addWatermark: ['application/pdf'],
+  extractText: ['application/pdf'],
+  reorder: ['application/pdf'],
+  deletePages: ['application/pdf'],
+  pdfToJpg: ['application/pdf'],
+  jpgToPdf: ['image/jpeg', 'image/png'],
+  pdfToTxt: ['application/pdf'],
+  repair: ['application/pdf'],
+  pdfToPdfa: ['application/pdf'],
+  readMetadata: ['application/pdf'],
+  metadata: ['application/pdf'],
+  flatten: ['application/pdf'],
+  redact: ['application/pdf'],
+  removeAnnotations: ['application/pdf'],
+  removeWatermark: ['application/pdf'],
+  compare: ['application/pdf'],
+  pdfToWord: ['application/pdf'],
+  pdfToExcel: ['application/pdf'],
+  excelToPdf: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+  pdfToPpt: ['application/pdf'],
+  pptToPdf: ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+  wordToPdf: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  editPdf: ['application/pdf'],
+  signPdf: ['application/pdf']
+};
+
 const getOutputPath = (originalName, suffix, customExt) => {
   const ext = customExt || path.extname(originalName);
   const base = path.basename(originalName, path.extname(originalName));
@@ -42,17 +76,19 @@ const getOutputPath = (originalName, suffix, customExt) => {
 
 const getOutputDir = () => path.join(__dirname, '../uploads');
 
-const validateOutputFile = (outputPath) => {
+const ensureOutputFile = (outputPath) => {
   if (!fs.existsSync(outputPath)) {
-    throw new Error('Output file was not created');
+    throw new Error(`Output file not created: ${outputPath}`);
   }
   const stat = fs.statSync(outputPath);
-  if (stat.size === 0) {
-    fs.unlinkSync(outputPath);
-    throw new Error('Output file is empty');
+  if (!stat.size) {
+    try { fs.unlinkSync(outputPath); } catch (_) {}
+    throw new Error(`Output file is empty: ${outputPath}`);
   }
   return stat;
 };
+
+const validateOutputFile = ensureOutputFile;
 
 const createHistory = async (userId, action, inputFiles, outputFiles, status, error = null) => {
   if (!isDbConnected()) return;
@@ -96,11 +132,11 @@ const trackFile = async (userId, file) => {
   }
 };
 
-const cleanupFiles = (filePaths) => {
-  for (const fp of filePaths) {
+const cleanupFiles = (paths = []) => {
+  for (const p of paths) {
     try {
-      if (fs.existsSync(fp)) fs.unlinkSync(fp);
-    } catch (e) { /* ignore */ }
+      if (p && fs.existsSync(p)) fs.unlinkSync(p);
+    } catch (_) {}
   }
 };
 
@@ -145,8 +181,9 @@ const normalizeFiles = (req) => {
   return [];
 };
 
-const processRequest = async (req, res, action, processFn) => {
+const processRequest = async (req, res, action, processFn, options = {}) => {
   let sourcePaths = [];
+  let outputPath = null;
   try {
     req.files = normalizeFiles(req);
     if (!req.files || req.files.length === 0) {
@@ -154,6 +191,19 @@ const processRequest = async (req, res, action, processFn) => {
     }
 
     sourcePaths = req.files.map(f => f.path);
+
+    const allowedTypes = expectedMimeTypes[action];
+    if (allowedTypes) {
+      for (const f of req.files) {
+        if (!allowedTypes.includes(f.mimetype)) {
+          cleanupFiles(sourcePaths);
+          return res.status(400).json({
+            success: false,
+            message: `Invalid file type "${f.mimetype}" for ${action}. Expected: ${allowedTypes.join(' or ')}`
+          });
+        }
+      }
+    }
 
     if (isDbConnected()) {
       const limitCheck = await checkLimits(req);
@@ -166,9 +216,9 @@ const processRequest = async (req, res, action, processFn) => {
     const result = await processFn(req);
 
     if (result && result.fileName) {
-      const outputPath = path.join(getOutputDir(), path.basename(result.fileName));
+      outputPath = path.join(getOutputDir(), path.basename(result.fileName));
       try {
-        validateOutputFile(outputPath);
+        ensureOutputFile(outputPath);
       } catch (validationErr) {
         cleanupFiles(sourcePaths);
         console.error(`Output validation failed for ${result.fileName}: ${validationErr.message}`);
@@ -188,8 +238,12 @@ const processRequest = async (req, res, action, processFn) => {
       }
     }
 
-    sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000));
-    
+    sourcePaths.forEach(p => scheduleFileCleanup(p, 30 * 60 * 1000));
+
+    if (result && result.__sendFile && outputPath) {
+      return res.download(outputPath, result.originalName || path.basename(result.fileName));
+    }
+
     res.json(result);
   } catch (error) {
     console.error(`Processing failed for action "${action}":`, error.message);
@@ -225,12 +279,12 @@ exports.merge = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDFs merged successfully',
       fileName: outputName,
       originalName: 'merged.pdf',
       size: outStat.size,
-      originalSize: totalSize,
-      downloadUrl: `/api/pdf/download/${outputName}`
+      originalSize: totalSize
     };
   });
 };
@@ -270,12 +324,12 @@ exports.split = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDF split successfully',
       fileName: zipName,
       originalName: 'split_pages.zip',
       size: outStat.size,
-      originalSize: totalSize,
-      downloadUrl: `/api/pdf/download/${zipName}`
+      originalSize: totalSize
     };
   });
 };
@@ -306,13 +360,13 @@ exports.compress = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDF compressed successfully',
       fileName: path.basename(outputPath),
       originalName: `compressed_${req.files[0].originalname}`,
       size: outStat.size,
       originalSize: req.files[0].size,
-      compressionRatio: ((1 - outStat.size / req.files[0].size) * 100).toFixed(1),
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      compressionRatio: ((1 - outStat.size / req.files[0].size) * 100).toFixed(1)
     };
   });
 };
@@ -335,12 +389,12 @@ exports.rotate = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDF rotated successfully',
       fileName: path.basename(outputPath),
       originalName: `rotated_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -366,12 +420,12 @@ exports.protect = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDF protected successfully',
       fileName: path.basename(outputPath),
       originalName: `protected_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -397,12 +451,12 @@ exports.unlock = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDF unlocked successfully',
       fileName: path.basename(outputPath),
       originalName: `unlocked_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -428,12 +482,12 @@ exports.addPageNumbers = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'Page numbers added successfully',
       fileName: path.basename(outputPath),
       originalName: `numbered_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -456,12 +510,12 @@ exports.addWatermark = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'Watermark added successfully',
       fileName: path.basename(outputPath),
       originalName: `watermarked_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -514,12 +568,12 @@ exports.reorder = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'Pages reordered successfully',
       fileName: path.basename(outputPath),
       originalName: `reordered_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -542,12 +596,12 @@ exports.deletePages = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'Pages deleted successfully',
       fileName: path.basename(outputPath),
       originalName: `cleaned_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -629,11 +683,11 @@ exports.pdfToJpg = async (req, res) => {
       }
 
       return {
+        __sendFile: true,
         message: 'PDF converted to JPG successfully',
         fileName: path.basename(outputFiles[0]),
         originalName: 'page_1.jpg',
-        size: outStat.size,
-        downloadUrl: `/api/pdf/download/${path.basename(outputFiles[0])}`
+        size: outStat.size
       };
     }
 
@@ -664,12 +718,12 @@ exports.pdfToJpg = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDF converted to JPG successfully',
       fileName: zipName,
       originalName: 'pdf_pages.zip',
       pages: pageCount,
-      size: outStat.size,
-      downloadUrl: `/api/pdf/download/${zipName}`
+      size: outStat.size
     };
   });
 };
@@ -715,12 +769,12 @@ exports.jpgToPdf = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'Images converted to PDF successfully',
       fileName: outputName,
       originalName: 'converted.pdf',
       size: outStat.size,
-      originalSize: totalSize,
-      downloadUrl: `/api/pdf/download/${outputName}`
+      originalSize: totalSize
     };
   });
 };
@@ -729,6 +783,10 @@ exports.pdfToTxt = async (req, res) => {
   await processRequest(req, res, 'pdfToTxt', async (req) => {
     const filePath = req.files[0].path;
     const text = await extractText(filePath);
+
+    if (!text || !text.trim()) {
+      throw new Error('No extractable text found in the PDF. The file may be scanned or image-based.');
+    }
 
     const txtName = `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}_${uuidv4()}.txt`;
     const txtPath = path.join(getOutputDir(), txtName);
@@ -745,12 +803,11 @@ exports.pdfToTxt = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDF converted to text successfully',
       fileName: txtName,
       originalName: `${path.basename(req.files[0].originalname, '.pdf')}.txt`,
-      text: text.substring(0, 5000),
-      size: outStat.size,
-      downloadUrl: `/api/pdf/download/${txtName}`
+      size: outStat.size
     };
   });
 };
@@ -803,7 +860,7 @@ exports.getPageCount = async (req, res) => {
 
     sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000));
 
-    res.json({ pageCount });
+    res.json({ success: true, pageCount });
   } catch (error) {
     cleanupFiles(sourcePaths);
     res.status(500).json({ success: false, message: 'Failed to get page count', error: error.message });
@@ -817,12 +874,12 @@ exports.repair = async (req, res) => {
     await repairPDF(filePath, outputPath);
     const outStat = fs.statSync(outputPath);
     return {
+      __sendFile: true,
       message: 'PDF repaired successfully',
       fileName: path.basename(outputPath),
       originalName: `repaired_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -840,12 +897,12 @@ exports.pdfToPdfa = async (req, res) => {
     await pdfToPdfa(filePath, outputPath, options);
     const outStat = fs.statSync(outputPath);
     return {
+      __sendFile: true,
       message: 'PDF converted to PDF/A successfully',
       fileName: path.basename(outputPath),
       originalName: `pdfa_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -870,7 +927,7 @@ exports.readMetadata = async (req, res) => {
     
     sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000));
     
-    res.json({ metadata });
+    res.json({ success: true, metadata });
   } catch (error) {
     cleanupFiles(sourcePaths);
     res.status(500).json({ success: false, message: 'Failed to read metadata', error: error.message });
@@ -890,13 +947,13 @@ exports.writeMetadata = async (req, res) => {
     const result = await setMetadata(filePath, outputPath, metadata);
     const outStat = fs.statSync(outputPath);
     return {
+      __sendFile: true,
       message: 'Metadata updated successfully',
       fileName: path.basename(outputPath),
       originalName: `metadata_${req.files[0].originalname}`,
       size: outStat.size,
       originalSize: req.files[0].size,
-      metadata: result.metadata,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      metadata: result.metadata
     };
   });
 };
@@ -908,12 +965,12 @@ exports.flatten = async (req, res) => {
     await flattenPDF(filePath, outputPath);
     const outStat = fs.statSync(outputPath);
     return {
+      __sendFile: true,
       message: 'PDF flattened successfully',
       fileName: path.basename(outputPath),
       originalName: `flattened_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -950,13 +1007,7 @@ exports.htmlToPdf = async (req, res) => {
     }
 
     scheduleFileCleanup(outputPath, 60 * 60 * 1000);
-    res.json({
-      message: 'HTML converted to PDF successfully',
-      fileName: outputName,
-      originalName: 'converted.pdf',
-      size: outStat.size,
-      downloadUrl: `/api/pdf/download/${outputName}`
-    });
+    res.download(outputPath, 'converted.pdf');
   } catch (error) {
     console.error('HTML to PDF failed:', error.message);
     cleanupFiles(sourcePaths);
@@ -972,12 +1023,12 @@ exports.redact = async (req, res) => {
     await redactText(filePath, outputPath, redactions);
     const outStat = fs.statSync(outputPath);
     return {
+      __sendFile: true,
       message: 'PDF redacted successfully',
       fileName: path.basename(outputPath),
       originalName: `redacted_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -989,12 +1040,12 @@ exports.removeAnnotations = async (req, res) => {
     await removeAnnotations(filePath, outputPath);
     const outStat = fs.statSync(outputPath);
     return {
+      __sendFile: true,
       message: 'Annotations removed successfully',
       fileName: path.basename(outputPath),
       originalName: `cleaned_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -1006,12 +1057,12 @@ exports.removeWatermark = async (req, res) => {
     await removeWatermarkFromPdf(filePath, outputPath);
     const outStat = fs.statSync(outputPath);
     return {
+      __sendFile: true,
       message: 'Watermark removed successfully',
       fileName: path.basename(outputPath),
       originalName: `clean_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -1036,6 +1087,7 @@ exports.compare = async (req, res) => {
     sourcePaths.forEach(path => scheduleFileCleanup(path, 30 * 60 * 1000));
     
     res.json({
+      success: true,
       ...result,
       originalSize: req.files.reduce((s, f) => s + f.size, 0)
     });
@@ -1070,12 +1122,12 @@ exports.pdfToWord = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDF converted to Word successfully',
       fileName: path.basename(outputPath),
       originalName: `${path.basename(req.files[0].originalname, '.pdf')}.docx`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -1105,12 +1157,12 @@ exports.pdfToExcel = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDF converted to Excel successfully',
       fileName: path.basename(outputPath),
       originalName: `${path.basename(req.files[0].originalname, '.pdf')}.xlsx`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -1140,12 +1192,12 @@ exports.excelToPdf = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'Excel converted to PDF successfully',
       fileName: path.basename(outputPath),
       originalName: `${path.basename(req.files[0].originalname, '.xlsx')}.pdf`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -1175,12 +1227,12 @@ exports.pdfToPpt = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDF converted to PowerPoint successfully',
       fileName: path.basename(outputPath),
       originalName: `${path.basename(req.files[0].originalname, '.pdf')}.pptx`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -1210,12 +1262,12 @@ exports.pptToPdf = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PowerPoint converted to PDF successfully',
       fileName: path.basename(outputPath),
       originalName: `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}.pdf`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -1245,12 +1297,12 @@ exports.wordToPdf = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'Word document converted to PDF successfully',
       fileName: path.basename(outputPath),
       originalName: `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}.pdf`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -1273,12 +1325,12 @@ exports.editPdf = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDF edited successfully',
       fileName: path.basename(outputPath),
       originalName: `edited_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
@@ -1304,12 +1356,12 @@ exports.signPdf = async (req, res) => {
     }
 
     return {
+      __sendFile: true,
       message: 'PDF signed successfully',
       fileName: path.basename(outputPath),
       originalName: `signed_${req.files[0].originalname}`,
       size: outStat.size,
-      originalSize: req.files[0].size,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
+      originalSize: req.files[0].size
     };
   });
 };
