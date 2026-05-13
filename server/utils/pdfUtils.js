@@ -101,6 +101,16 @@ const rotatePDF = async (filePath, outputPath, rotationDegrees = 90) => {
 };
 
 const protectPDF = async (filePath, outputPath, password) => {
+  try {
+    await execFileAsync('qpdf', [
+      '--encrypt', password, password, '256',
+      '--', filePath, outputPath
+    ]);
+    if (fs.existsSync(outputPath) && fs.statSync(outputPath).size > 0) {
+      return outputPath;
+    }
+  } catch (_) {}
+
   const pdfDoc = await loadPdf(filePath);
   const encryptedBytes = await pdfDoc.save({
     userPassword: password,
@@ -120,6 +130,24 @@ const protectPDF = async (filePath, outputPath, password) => {
 };
 
 const unlockPDF = async (filePath, outputPath, password) => {
+  try {
+    await execFileAsync('qpdf', [
+      '--password=' + password,
+      '--decrypt',
+      filePath,
+      outputPath
+    ]);
+    if (fs.existsSync(outputPath) && fs.statSync(outputPath).size > 0) {
+      return outputPath;
+    }
+  } catch (qpdfErr) {
+    if (qpdfErr.message && qpdfErr.message.includes('wrong password')) {
+      const wrongPwdErr = new Error('Incorrect password. Please try again.');
+      wrongPwdErr.statusCode = 400;
+      throw wrongPwdErr;
+    }
+  }
+
   const data = await fs.promises.readFile(filePath);
   try {
     await PDFDocument.load(data);
