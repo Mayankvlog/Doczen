@@ -2,49 +2,20 @@ import React, { useState, useEffect } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { handleToolSubmit } from '../../services/api';
+import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function ExcelToPDF() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
   const [error, setError] = useState('');
-  const [downloadUrl, setDownloadUrl] = useState('');
-  const [downloadName, setDownloadName] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-
-  useEffect(() => {
-    return () => {
-      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
-    };
-  }, [downloadUrl]);
-
-  const triggerDownload = (url, filename) => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename || 'downloaded-file';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
-
-  const handleDownloadAgain = () => {
-    if (!downloadUrl) return;
-    triggerDownload(downloadUrl, downloadName);
-  };
 
   const handleProcess = async () => {
     if (!file) return;
     setLoading(true);
     setError('');
-    setSuccessMessage('');
-
-    if (downloadUrl) {
-      URL.revokeObjectURL(downloadUrl);
-      setDownloadUrl('');
-      setDownloadName('');
-    }
 
     try {
       const formData = new FormData();
@@ -52,9 +23,7 @@ export default function ExcelToPDF() {
       const data = await handleToolSubmit('/pdf/excel-to-pdf', formData, 'converted.pdf');
       setResult(data);
       if (data.blobUrl) {
-        setDownloadUrl(data.blobUrl);
-        setDownloadName(data.filename || 'converted.pdf');
-        setSuccessMessage('File converted successfully. Download started automatically. You can download it again below.');
+        setDownload(data.blobUrl, data.filename || 'converted.pdf');
       }
     } catch (err) {
       setError(err.message || 'Something went wrong.');
@@ -79,7 +48,7 @@ export default function ExcelToPDF() {
         <FileUploader
           accept=".xlsx,.xls"
           label="Upload Excel file"
-          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); setSuccessMessage(''); }}
+          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); clearDownload(); }}
         />
 
         {file && !loading && (
@@ -99,9 +68,9 @@ export default function ExcelToPDF() {
           </div>
         )}
 
-        {successMessage && (
+        {isReady && (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
-            <p>{successMessage}</p>
+            <p>File converted successfully. Download started automatically. You can download it again below.</p>
             {downloadUrl && (
               <button
                 type="button"
@@ -114,9 +83,9 @@ export default function ExcelToPDF() {
           </div>
         )}
 
-        {result && !successMessage && (
+        {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setSuccessMessage(''); }} action="converted" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="converted" />
           </div>
         )}
       </div>

@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { handleToolSubmit } from '../../services/api';
+import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function AddPageNumbers() {
@@ -12,29 +12,7 @@ export default function AddPageNumbers() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
-  const [downloadUrl, setDownloadUrl] = useState('');
-  const [downloadName, setDownloadName] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-
-  useEffect(() => {
-    return () => {
-      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
-    };
-  }, [downloadUrl]);
-
-  const triggerDownload = (url, filename) => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename || 'downloaded-file';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
-
-  const handleDownloadAgain = () => {
-    if (!downloadUrl) return;
-    triggerDownload(downloadUrl, downloadName);
-  };
+  const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
 
   const handleProcess = async () => {
     if (!file) {
@@ -52,13 +30,7 @@ export default function AddPageNumbers() {
     setError('');
     setLoading(true);
     setResult(null);
-    setSuccessMessage('');
-
-    if (downloadUrl) {
-      URL.revokeObjectURL(downloadUrl);
-      setDownloadUrl('');
-      setDownloadName('');
-    }
+    clearDownload();
 
     try {
       const formData = new FormData();
@@ -68,9 +40,7 @@ export default function AddPageNumbers() {
       const data = await handleToolSubmit('/pdf/add-page-numbers', formData, 'numbered.pdf');
       setResult(data);
       if (data.blobUrl) {
-        setDownloadUrl(data.blobUrl);
-        setDownloadName(data.filename || 'numbered.pdf');
-        setSuccessMessage('File processed successfully. Download started automatically. You can download it again below.');
+        setDownload(data.blobUrl, data.filename || 'numbered.pdf');
       }
     } catch (err) {
       setError(err.message || 'Failed to add page numbers. Please try again.');
@@ -167,9 +137,9 @@ export default function AddPageNumbers() {
           </div>
         )}
 
-        {successMessage && (
+        {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>{successMessage}</p>
+            <p>File converted successfully. Download started automatically. You can download it again below.</p>
             {downloadUrl && (
               <button
                 type="button"
@@ -182,7 +152,7 @@ export default function AddPageNumbers() {
           </div>
         )}
 
-        {result && !successMessage && (
+        {result && !isReady && (
           <div className="mt-6">
             <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="numbered" />
           </div>

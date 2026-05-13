@@ -2,49 +2,20 @@ import React, { useState, useEffect } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { handleToolSubmit } from '../../services/api';
+import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function PDFToPPT() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
   const [error, setError] = useState('');
-  const [downloadUrl, setDownloadUrl] = useState('');
-  const [downloadName, setDownloadName] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-
-  useEffect(() => {
-    return () => {
-      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
-    };
-  }, [downloadUrl]);
-
-  const triggerDownload = (url, filename) => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename || 'downloaded-file';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
-
-  const handleDownloadAgain = () => {
-    if (!downloadUrl) return;
-    triggerDownload(downloadUrl, downloadName);
-  };
 
   const handleProcess = async () => {
     if (!file) return;
     setLoading(true);
     setError('');
-    setSuccessMessage('');
-
-    if (downloadUrl) {
-      URL.revokeObjectURL(downloadUrl);
-      setDownloadUrl('');
-      setDownloadName('');
-    }
 
     try {
       const formData = new FormData();
@@ -53,9 +24,7 @@ export default function PDFToPPT() {
       setResult(data);
 
       if (data.blobUrl) {
-        setDownloadUrl(data.blobUrl);
-        setDownloadName(data.filename || 'converted.pptx');
-        setSuccessMessage('File converted successfully. Download started automatically. You can download it again below.');
+        setDownload(data.blobUrl, data.filename || 'converted.pptx');
       }
     } catch (err) {
       const msg = err.message || 'Conversion failed. Please try again.';
@@ -80,7 +49,7 @@ export default function PDFToPPT() {
         <FileUploader
           accept=".pdf"
           label="Upload PDF file"
-          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); setSuccessMessage(''); }}
+          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); clearDownload(); }}
         />
 
         {file && !loading && (
@@ -100,9 +69,9 @@ export default function PDFToPPT() {
           </div>
         )}
 
-        {successMessage && (
+        {isReady && (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
-            <p>{successMessage}</p>
+            <p>File converted successfully. Download started automatically. You can download it again below.</p>
             {downloadUrl && (
               <button
                 type="button"
@@ -115,9 +84,9 @@ export default function PDFToPPT() {
           </div>
         )}
 
-        {result && !successMessage && (
+        {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setSuccessMessage(''); }} action="converted" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="converted" />
           </div>
         )}
       </div>

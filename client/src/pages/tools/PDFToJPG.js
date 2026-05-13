@@ -2,49 +2,20 @@ import React, { useState, useEffect } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { handleToolSubmit } from '../../services/api';
+import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
 
 export default function PDFToJPG() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
   const [error, setError] = useState('');
-  const [downloadUrl, setDownloadUrl] = useState('');
-  const [downloadName, setDownloadName] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-
-  useEffect(() => {
-    return () => {
-      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
-    };
-  }, [downloadUrl]);
-
-  const triggerDownload = (url, filename) => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename || 'downloaded-file';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
-
-  const handleDownloadAgain = () => {
-    if (!downloadUrl) return;
-    triggerDownload(downloadUrl, downloadName);
-  };
 
   const handleProcess = async () => {
     if (!file) return;
     setLoading(true);
     setError('');
-    setSuccessMessage('');
-
-    if (downloadUrl) {
-      URL.revokeObjectURL(downloadUrl);
-      setDownloadUrl('');
-      setDownloadName('');
-    }
 
     try {
       const formData = new FormData();
@@ -52,9 +23,7 @@ export default function PDFToJPG() {
       const data = await handleToolSubmit('/pdf/pdf-to-jpg', formData, 'pdf_pages.zip');
       setResult(data);
       if (data.blobUrl) {
-        setDownloadUrl(data.blobUrl);
-        setDownloadName(data.filename || 'pdf_pages.zip');
-        setSuccessMessage('File converted successfully. Download started automatically. You can download it again below.');
+        setDownload(data.blobUrl, data.filename || 'converted.zip');
       }
     } catch (err) {
       setError(err.message || 'Conversion failed. Try again.');
@@ -78,7 +47,7 @@ export default function PDFToJPG() {
         <FileUploader
           accept=".pdf"
           label="Upload PDF file"
-          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); setSuccessMessage(''); }}
+          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); clearDownload(); }}
         />
 
         {file && !loading && (
@@ -98,9 +67,9 @@ export default function PDFToJPG() {
           </div>
         )}
 
-        {successMessage && (
+        {isReady && (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
-            <p>{successMessage}</p>
+            <p>File converted successfully. Download started automatically. You can download it again below.</p>
             {downloadUrl && (
               <button
                 type="button"
@@ -113,9 +82,9 @@ export default function PDFToJPG() {
           </div>
         )}
 
-        {result && !successMessage && (
+        {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setSuccessMessage(''); }} action="converted" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="converted" />
           </div>
         )}
       </div>

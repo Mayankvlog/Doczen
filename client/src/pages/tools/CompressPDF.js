@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
-import { handleToolSubmit } from '../../services/api';
+import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import SEO from '../../components/SEO';
 
@@ -13,30 +13,8 @@ export default function CompressPDF() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
   const [progress, setProgress] = useState(null);
-  const [downloadUrl, setDownloadUrl] = useState('');
-  const [downloadName, setDownloadName] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-
-  useEffect(() => {
-    return () => {
-      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
-    };
-  }, [downloadUrl]);
-
-  const triggerDownload = (url, filename) => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename || 'downloaded-file';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
-
-  const handleDownloadAgain = () => {
-    if (!downloadUrl) return;
-    triggerDownload(downloadUrl, downloadName);
-  };
 
   const handleProcess = async () => {
     if (!file) {
@@ -47,14 +25,8 @@ export default function CompressPDF() {
     setError('');
     setLoading(true);
     setResult(null);
+    clearDownload();
     setProgress(0);
-    setSuccessMessage('');
-
-    if (downloadUrl) {
-      URL.revokeObjectURL(downloadUrl);
-      setDownloadUrl('');
-      setDownloadName('');
-    }
 
     try {
       const formData = new FormData();
@@ -166,9 +138,9 @@ export default function CompressPDF() {
           </div>
         )}
 
-        {successMessage && (
+        {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>{successMessage}</p>
+            <p>File converted successfully. Download started automatically. You can download it again below.</p>
             {downloadUrl && (
               <button
                 type="button"
@@ -181,9 +153,9 @@ export default function CompressPDF() {
           </div>
         )}
 
-        {result && !successMessage && (
+        {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setSuccessMessage(''); }} action="compressed" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="compressed" />
           </div>
         )}
       </div>

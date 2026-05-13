@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 const API_BASE = process.env.REACT_APP_API_URL || '';
@@ -11,29 +11,7 @@ export default function HTMLToPDF() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
-  const [downloadUrl, setDownloadUrl] = useState('');
-  const [downloadName, setDownloadName] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-
-  useEffect(() => {
-    return () => {
-      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
-    };
-  }, [downloadUrl]);
-
-  const triggerDownload = (url, filename) => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename || 'downloaded-file';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
-
-  const handleDownloadAgain = () => {
-    if (!downloadUrl) return;
-    triggerDownload(downloadUrl, downloadName);
-  };
+  const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
 
   const handleProcess = async () => {
     if (!content.trim()) {
@@ -43,13 +21,7 @@ export default function HTMLToPDF() {
     setError('');
     setLoading(true);
     setResult(null);
-    setSuccessMessage('');
-
-    if (downloadUrl) {
-      URL.revokeObjectURL(downloadUrl);
-      setDownloadUrl('');
-      setDownloadName('');
-    }
+    clearDownload();
 
     try {
       const token = localStorage.getItem('token');
@@ -74,11 +46,7 @@ export default function HTMLToPDF() {
       const blobUrl = window.URL.createObjectURL(blob);
       const filename = 'converted.pdf';
 
-      triggerDownload(blobUrl, filename);
-
-      setDownloadUrl(blobUrl);
-      setDownloadName(filename);
-      setSuccessMessage('File converted successfully. Download started automatically. You can download it again below.');
+      setDownload(blobUrl, filename);
       setResult({ success: true, filename });
     } catch (err) {
       setError(err.message || 'Failed to convert to PDF. Please try again.');
@@ -181,9 +149,9 @@ export default function HTMLToPDF() {
           </div>
         )}
 
-        {successMessage && (
+        {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>{successMessage}</p>
+            <p>File converted successfully. Download started automatically. You can download it again below.</p>
             {downloadUrl && (
               <button
                 type="button"
@@ -196,7 +164,7 @@ export default function HTMLToPDF() {
           </div>
         )}
 
-        {result && !successMessage && (
+        {result && !isReady && (
           <div className="mt-6">
             <ResultCard result={result} onReset={() => { setResult(null); setContent(''); setSuccessMessage(''); }} action="converted to PDF" />
           </div>

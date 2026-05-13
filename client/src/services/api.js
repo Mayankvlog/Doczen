@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useState, useEffect, useCallback } from 'react';
 
 const API_BASE = process.env.REACT_APP_API_URL || '';
 
@@ -107,6 +108,49 @@ export async function handleToolSubmit(url, formData, fallbackName) {
   a.click();
   a.remove();
   return { success: true, filename, blobUrl };
+}
+
+export function useDownloadHandler() {
+  const [downloadUrl, setDownloadUrl] = useState('');
+  const [downloadName, setDownloadName] = useState('');
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (downloadUrl) window.URL.revokeObjectURL(downloadUrl);
+    };
+  }, [downloadUrl]);
+
+  const triggerDownload = useCallback((url, filename) => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'downloaded-file';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }, []);
+
+  const setDownload = useCallback((url, filename) => {
+    setDownloadUrl(url);
+    setDownloadName(filename);
+    setIsReady(true);
+    triggerDownload(url, filename);
+  }, [triggerDownload]);
+
+  const clearDownload = useCallback(() => {
+    setDownloadUrl(prev => {
+      if (prev) window.URL.revokeObjectURL(prev);
+      return '';
+    });
+    setDownloadName('');
+    setIsReady(false);
+  }, []);
+
+  const handleDownloadAgain = useCallback(() => {
+    if (downloadUrl) triggerDownload(downloadUrl, downloadName);
+  }, [downloadUrl, downloadName, triggerDownload]);
+
+  return { downloadUrl, downloadName, isReady, setDownload, clearDownload, handleDownloadAgain };
 }
 
 export const authAPI = {
