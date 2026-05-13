@@ -588,6 +588,7 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
   const isWs = (ch) => ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r' || ch === '\f';
   const isDigit = (ch) => ch >= '0' && ch <= '9';
 
+  // Enhanced tokenizer to handle PDF stream content
   const tokenize = (str) => {
     const tokens = [];
     let i = 0;
@@ -680,23 +681,81 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
     return argStr ? argStr + ' ' + op.n : op.n;
   }).join('\n') + '\n';
 
+  // Improved watermark detection
   const isWatermarkBlock = (ops) => {
     let fontSize = 0;
+    let textContent = '';
+    let hasLowOpacity = false;
+    let opacity = 1.0;
     let hasRotation = false;
-    let hasGs = false;
+    let rotationAngle = 0;
+    let gsStateNames = [];
+    
     for (const op of ops) {
+      // Extract font size
       if (op.n === 'Tf' && op.a.length >= 2) {
         const sizeArg = op.a[op.a.length - 1];
         if (sizeArg.t === 'num') fontSize = Math.abs(parseFloat(sizeArg.v));
       }
-      if (op.n === 'Tm' && op.a.length >= 6) {
-        const b = parseFloat(op.a[1].v || '0');
-        const c = parseFloat(op.a[2].v || '0');
-        if (Math.abs(b) > 0.001 && Math.abs(c) > 0.001) hasRotation = true;
+      
+      // Extract text content - only from Tj/TJ operators
+      if ((op.n === 'Tj' || op.n === 'TJ') && op.a.length > 0) {
+        for (const arg of op.a) {
+          if (arg.t === 'str') textContent += (arg.v || '').replace(/\\/g, '').substring(0, 50);
+        }
       }
-      if (op.n === 'gs') hasGs = true;
+      
+      // Check for graphics state with low opacity
+      if (op.n === 'gs' && op.a.length > 0) {
+        for (const arg of op.a) {
+          if (arg.t === 'name') {
+            gsStateNames.push(arg.v.toLowerCase());
+          }
+        }
+      }
+      
+      // Detect diagonal rotation
+      if (op.n === 'Tm' && op.a.length >= 6) {
+        const a = parseFloat(op.a[0].v || '1');
+        const b = parseFloat(op.a[1].v || '0');
+        
+        // Calculate rotation angle - watermarks have significant rotation like -45 or 45 degrees
+        const angle = Math.atan2(b, a) * (180 / Math.PI);
+        if (Math.abs(angle) > 20 && (Math.abs(angle - 45) < 10 || Math.abs(angle + 45) < 10)) {
+          hasRotation = true;
+          rotationAngle = Math.abs(angle);
+        }
+      }
     }
-    return (fontSize >= 60 && hasRotation) || (fontSize >= 80);
+    
+    // Check for watermark-related graphics states
+    if (gsStateNames.length > 0) {
+      hasLowOpacity = gsStateNames.some(name => /wm|water|overlay|stamp|transparent|fade/.test(name));
+    }
+    
+    // Watermark keyword detection
+    const watermarkKeywords = /watermark|draft|confidential|proprietary|secret|sample|internal|copy|reserved|trademark|®|™|©/i;
+    const looksLikeWatermark = watermarkKeywords.test(textContent);
+    
+    // Conservative watermark detection to avoid removing content
+    // Only mark as watermark if multiple indicators are present
+    const indicators = [];
+    if (hasRotation) indicators.push('rotation');
+    if (looksLikeWatermark) indicators.push('keyword');
+    if (hasLowOpacity) indicators.push('opacity');
+    if (fontSize > 100) indicators.push('largeFont');
+    
+    // Need at least 2 indicators to be considered a watermark
+    if (indicators.length >= 2) {
+      return true;
+    }
+    
+    // Very large rotated text is likely watermark
+    if (hasRotation && fontSize > 80 && textContent.length < 30) {
+      return true;
+    }
+    
+    return false;
   };
 
   const removeWatermarkOps = (ops) => {
@@ -704,14 +763,18 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
     let i = 0;
     while (i < ops.length) {
       if (ops[i].n === 'BT') {
+        // Text block
         const start = i; i++;
         while (i < ops.length && ops[i].n !== 'ET') i++;
         if (i < ops.length) i++;
         const block = ops.slice(start, i);
         if (!isWatermarkBlock(block)) result.push(...block);
       } else if (ops[i].n === 'BI') {
-        while (i < ops.length && ops[i].n !== 'EI') { result.push(ops[i]); i++; }
-        if (i < ops.length) { result.push(ops[i]); i++; }
+        // Inline image - generally preserve, watermarks are usually in XObjects
+        const imgOps = [];
+        while (i < ops.length && ops[i].n !== 'EI') { imgOps.push(ops[i]); i++; }
+        if (i < ops.length) imgOps.push(ops[i++]);
+        result.push(...imgOps);
       } else {
         result.push(ops[i]); i++;
       }
@@ -726,11 +789,39 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
     return null;
   };
 
+  // Process each page
   for (const page of pages) {
     try {
-      if (page.node.get(PDFName.of('Annots'))) page.node.delete(PDFName.of('Annots'));
+      // Handle annotations more carefully
+      const annots = page.node.get(PDFName.of('Annots'));
+      if (annots && annots.size) {
+        const toRemove = [];
+        for (let i = 0; i < annots.size(); i++) {
+          try {
+            const annot = annots.get(i);
+            const annotObj = (annot && annot.constructor && annot.constructor.name === 'PDFRef') 
+              ? page.context.lookup(annot) 
+              : annot;
+            if (annotObj) {
+              const subType = annotObj.get(PDFName.of('Subtype'));
+              const contents = annotObj.get(PDFName.of('Contents'));
+              const subTypeStr = subType ? subType.toString().toLowerCase() : '';
+              const contentsStr = contents ? contents.toString().toLowerCase() : '';
+              
+              // Only remove stamp annotations with watermark text
+              if ((subTypeStr.includes('stamp') || /watermark|draft|confidential/.test(contentsStr))) {
+                toRemove.push(i);
+              }
+            }
+          } catch (ex) {}
+        }
+        for (let i = toRemove.length - 1; i >= 0; i--) {
+          try { annots.removeAt(toRemove[i]); } catch (ex) {}
+        }
+      }
     } catch (e) {}
 
+    // Handle image XObjects (external images/watermarks)
     const removedXObjNames = [];
     try {
       const resources = page.node.get(PDFName.of('Resources'));
@@ -740,7 +831,8 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
           const keys = xObject.keys();
           for (const key of keys) {
             const name = key.toString().toLowerCase();
-            if (/watermark|water|wm|draft|confidential|overlay|stamp|bgcolor|bg_|overprint|opacity/.test(name)) {
+            // Conservative: only remove explicitly named watermark XObjects
+            if (/^(watermark|water_?mark|wm|draft_stamp)/.test(name)) {
               removedXObjNames.push(key.toString());
               try { xObject.delete(key); } catch (ex) {}
             }
@@ -749,6 +841,7 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
       }
     } catch (e) {}
 
+    // Process page content stream
     const contentsArr = page.node.get(PDFName.of('Contents'));
     if (contentsArr) {
       let allContent = '';
@@ -762,10 +855,14 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
           raw = getContentString(obj);
         } catch (e) {}
         if (raw) {
-          try { allContent += zlib.inflateRawSync(Buffer.from(raw, 'binary')).toString(); }
-          catch (e) {
-            try { allContent += zlib.unzipSync(Buffer.from(raw, 'binary')).toString(); }
-            catch (e2) { allContent += raw; }
+          try { 
+            allContent += zlib.inflateRawSync(Buffer.from(raw, 'binary')).toString(); 
+          } catch (e) {
+            try { 
+              allContent += zlib.unzipSync(Buffer.from(raw, 'binary')).toString(); 
+            } catch (e2) { 
+              allContent += raw; 
+            }
           }
         }
       }
@@ -774,6 +871,8 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
         let modified = false;
         const toks = tokenize(allContent);
         const ops = parseOps(toks);
+        
+        if (ops.length === 0) continue;
 
         const filtered = removeWatermarkOps(ops);
 
@@ -792,22 +891,34 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
           finalOps.push(...filtered);
         }
 
-        if (filtered.length !== ops.length || finalOps.length !== filtered.length) modified = true;
+        // Safety check: if all content was removed, keep original
+        if (finalOps.length === 0 && ops.length > 0) {
+          console.warn('Warning: All content would be removed from page. Preserving original.');
+          modified = false;
+        } else if (filtered.length !== ops.length || finalOps.length !== filtered.length) {
+          modified = true;
+        }
 
-        if (modified) {
-          const cleanedStr = opsToStr(finalOps);
-          const compressed = zlib.deflateRawSync(Buffer.from(cleanedStr, 'utf8'));
-          const dict = context.obj({ Filter: 'FlateDecode', Length: compressed.length });
-          const rawStream = PDFRawStream.of(dict, new Uint8Array(compressed));
-          const ref = context.register(rawStream);
-          const newContents = context.obj([]);
-          newContents.push(ref);
-          page.node.set(PDFName.of('Contents'), newContents);
+        // Only update if we actually removed something
+        if (modified && finalOps.length > 0) {
+          try {
+            const cleanedStr = opsToStr(finalOps);
+            const compressed = zlib.deflateRawSync(Buffer.from(cleanedStr, 'utf8'));
+            const dict = context.obj({ Filter: 'FlateDecode', Length: compressed.length });
+            const rawStream = PDFRawStream.of(dict, new Uint8Array(compressed));
+            const ref = context.register(rawStream);
+            const newContents = context.obj([]);
+            newContents.push(ref);
+            page.node.set(PDFName.of('Contents'), newContents);
+          } catch (streamErr) {
+            console.warn('Failed to update page content, keeping original:', streamErr.message);
+          }
         }
       }
     }
   }
 
+  // Create new PDF with modified pages
   const newPdf = await PDFDocument.create();
   const indices = pdfDoc.getPageIndices();
   const newPages = await newPdf.copyPages(pdfDoc, indices);
