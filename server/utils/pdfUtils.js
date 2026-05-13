@@ -271,14 +271,16 @@ const repairPDF = async (filePath, outputPath) => {
     pages.forEach((page) => newPdf.addPage(page));
     
     // Copy metadata if available
-    const title = pdfDoc.getTitle();
-    const author = pdfDoc.getAuthor();
-    const subject = pdfDoc.getSubject();
-    const keywords = pdfDoc.getKeywords();
-    if (title) newPdf.setTitle(title);
-    if (author) newPdf.setAuthor(author);
-    if (subject) newPdf.setSubject(subject);
-    if (keywords) newPdf.setKeywords(keywords);
+    try {
+      const title = pdfDoc.getTitle();
+      const author = pdfDoc.getAuthor();
+      const subject = pdfDoc.getSubject();
+      const keywords = pdfDoc.getKeywords();
+      if (title) newPdf.setTitle(title);
+      if (author) newPdf.setAuthor(author);
+      if (subject) newPdf.setSubject(subject);
+      if (keywords) newPdf.setKeywords(Array.isArray(keywords) ? keywords : [keywords]);
+    } catch (e) { /* best-effort metadata copy */ }
     
     await savePdf(newPdf, outputPath);
     return outputPath;
@@ -314,14 +316,17 @@ const pdfToPdfa = async (filePath, outputPath, options = {}) => {
     title = 'Document',
     author = 'Doczen',
     subject = '',
-    keywords = ''
+    keywords = []
   } = options;
-  pdfDoc.setTitle(title);
-  pdfDoc.setAuthor(author);
-  pdfDoc.setSubject(subject);
-  pdfDoc.setKeywords(keywords);
-  pdfDoc.setProducer('Doczen PDF/A Generator');
-  pdfDoc.setCreator('Doczen');
+  const kw = Array.isArray(keywords) ? keywords : keywords ? [String(keywords)] : [];
+  try {
+    pdfDoc.setTitle(String(title));
+    pdfDoc.setAuthor(String(author));
+    pdfDoc.setSubject(String(subject));
+    pdfDoc.setKeywords(kw);
+    pdfDoc.setProducer('Doczen PDF/A Generator');
+    pdfDoc.setCreator('Doczen');
+  } catch (e) { /* best-effort metadata */ }
 
   const { PDFName } = require('pdf-lib');
   const context = pdfDoc.context;
@@ -347,7 +352,7 @@ const setMetadata = async (filePath, outputPath, metadata = {}) => {
   if (title) pdfDoc.setTitle(title);
   if (author) pdfDoc.setAuthor(author);
   if (subject) pdfDoc.setSubject(subject);
-  if (keywords) pdfDoc.setKeywords(keywords);
+  if (keywords) pdfDoc.setKeywords(Array.isArray(keywords) ? keywords : [keywords]);
   if (producer) pdfDoc.setProducer(producer);
   if (creator) pdfDoc.setCreator(creator);
   await savePdf(pdfDoc, outputPath);
@@ -661,40 +666,44 @@ const pdfToWord = async (filePath, outputPath) => {
 };
 
 const pdfToExcel = async (filePath, outputPath) => {
-  try {
-    await execFileAsync('soffice', [
-      '--headless',
-      '--infilter=impress_pdf_import',
-      '--convert-to', 'xlsx:Calc MS Excel 2007 XML:UTF8',
-      '--outdir', path.dirname(outputPath),
-      filePath
-    ]);
+  const scanForXlsx = (dir) => {
+    let candidates;
+    try { candidates = fs.readdirSync(dir).filter(f => f.endsWith('.xlsx')); } catch { candidates = []; }
+    const newest = candidates.map(f => ({ name: f, mtime: fs.statSync(path.join(dir, f)).mtime }))
+      .sort((a, b) => b.mtime - a.mtime);
+    return newest.length ? path.join(dir, newest[0].name) : null;
+  };
 
-    const baseName = path.basename(filePath, path.extname(filePath));
-    const libreOfficeOutput = path.join(path.dirname(outputPath), `${baseName}.xlsx`);
+  const outDir = path.dirname(outputPath);
+  const inputDir = path.dirname(filePath);
 
-    if (fs.existsSync(libreOfficeOutput)) {
-      if (outputPath !== libreOfficeOutput) {
-        fs.renameSync(libreOfficeOutput, outputPath);
-      }
-    } else {
-      throw new Error('LibreOffice did not produce output file');
-    }
+  const attempts = [
+    { convertTo: 'xlsx' },
+    { convertTo: 'xlsx', infilter: 'draw_pdf_import' },
+    { convertTo: 'xlsx', infilter: 'impress_pdf_import' },
+  ];
 
-    if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0) {
-      throw new Error('Output XLSX file was not created by LibreOffice');
-    }
-
-    return outputPath;
-  } catch (err) {
+  for (const attempt of attempts) {
     try {
-      return await pdfToExcelFallback(filePath, outputPath);
-    } catch (fallbackErr) {
-      if (err.code === 'ENOENT') {
-        throw new Error('PDF to Excel conversion requires LibreOffice (soffice) to be installed on the server. Fallback extraction also failed: ' + fallbackErr.message);
+      const args = ['--headless'];
+      if (attempt.infilter) args.push(`--infilter=${attempt.infilter}`);
+      args.push('--convert-to', attempt.convertTo, '--outdir', outDir, filePath);
+      await execFileAsync('soffice', args);
+
+      let found = scanForXlsx(outDir);
+      if (!found) found = scanForXlsx(inputDir);
+
+      if (found && fs.statSync(found).size > 0) {
+        if (found !== outputPath) fs.copyFileSync(found, outputPath);
+        return outputPath;
       }
-      throw new Error(`PDF to Excel conversion failed: ${err.message}. Fallback: ${fallbackErr.message}`);
-    }
+    } catch (_) { /* try next */ }
+  }
+
+  try {
+    return await pdfToExcelFallback(filePath, outputPath);
+  } catch (fallbackErr) {
+    throw new Error(`PDF to Excel conversion failed: ${fallbackErr.message}`);
   }
 };
 
@@ -770,13 +779,17 @@ const excelToPdf = async (filePath, outputPath) => {
               }
             }
             if (value) {
-              page.drawText(value.substring(0, 100), {
-                x,
-                y,
-                size: 10,
-                font,
-                color: rgb(0, 0, 0)
-              });
+              const displayText = value.substring(0, 100);
+              try {
+                page.drawText(displayText, { x, y, size: 10, font, color: rgb(0, 0, 0) });
+              } catch (drawErr) {
+                if (drawErr.message && drawErr.message.includes('cannot encode')) {
+                  const sanitized = displayText.replace(/[^\x20-\x7E\xA0-\xFF]/g, '').replace(/\s+/g, ' ').trim();
+                  page.drawText(sanitized || '.', { x, y, size: 10, font, color: rgb(0, 0, 0) });
+                } else {
+                  throw drawErr;
+                }
+              }
             }
           } catch (_) {}
           

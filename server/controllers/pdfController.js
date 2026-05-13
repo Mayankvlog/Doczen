@@ -906,7 +906,7 @@ exports.pdfToPdfa = async (req, res) => {
       title: req.body.title || req.files[0].originalname,
       author: req.body.author || 'Doczen',
       subject: req.body.subject || '',
-      keywords: req.body.keywords || ''
+      keywords: Array.isArray(req.body.keywords) ? req.body.keywords : req.body.keywords ? req.body.keywords.split(',').map(k => k.trim()).filter(k => k) : []
     };
     await pdfToPdfa(filePath, outputPath, options);
     const outStat = fs.statSync(outputPath);
@@ -937,7 +937,7 @@ exports.writeMetadata = async (req, res) => {
       title: req.body.title,
       author: req.body.author,
       subject: req.body.subject,
-      keywords: req.body.keywords
+      keywords: Array.isArray(req.body.keywords) ? req.body.keywords : req.body.keywords ? req.body.keywords.split(',').map(k => k.trim()).filter(k => k) : []
     };
     const result = await setMetadata(filePath, outputPath, metadata);
     const outStat = fs.statSync(outputPath);
