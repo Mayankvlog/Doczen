@@ -257,7 +257,8 @@ const processRequest = async (req, res, action, processFn, options = {}) => {
   } catch (error) {
     console.error(`Processing failed for action "${action}":`, error.message);
     cleanupFiles(sourcePaths);
-    res.status(500).json({ success: false, message: error.message || 'Processing failed' });
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({ success: false, message: error.message || 'Processing failed' });
   }
 };
 
@@ -413,7 +414,9 @@ exports.protect = async (req, res) => {
     const filePath = req.files[0].path;
     const password = req.body.password;
     if (!password) {
-      throw new Error('Password is required');
+      const err = new Error('Password is required');
+      err.statusCode = 400;
+      throw err;
     }
     const outputPath = getOutputPath(req.files[0].originalname, 'protected');
     await protectPDF(filePath, outputPath, password);
@@ -444,7 +447,9 @@ exports.unlock = async (req, res) => {
     const filePath = req.files[0].path;
     const password = req.body.password;
     if (!password) {
-      throw new Error('Password is required');
+      const err = new Error('Password is required');
+      err.statusCode = 400;
+      throw err;
     }
     const outputPath = getOutputPath(req.files[0].originalname, 'unlocked');
     await unlockPDF(filePath, outputPath, password);
@@ -535,7 +540,9 @@ exports.extractText = async (req, res) => {
     const text = await extractText(filePath);
 
     if (!text || !text.trim()) {
-      throw new Error('No extractable text found in the PDF. The file may be scanned or image-based.');
+      const err = new Error('No extractable text found in the PDF. The file may be scanned or image-based.');
+      err.statusCode = 400;
+      throw err;
     }
 
     const txtName = `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}_text_${uuidv4()}.txt`;
@@ -681,7 +688,9 @@ exports.pdfToJpg = async (req, res) => {
     }
 
     if (outputFiles.length === 0) {
-      throw new Error('Failed to render any pages from the PDF');
+      const err = new Error('Failed to render any pages from the PDF');
+      err.statusCode = 400;
+      throw err;
     }
 
     if (outputFiles.length === 1) {
@@ -750,7 +759,9 @@ exports.jpgToPdf = async (req, res) => {
       try {
         imageBytes = await fs.promises.readFile(file.path);
       } catch {
-        throw new Error(`Could not read file: ${file.originalname}`);
+        const err = new Error(`Could not read file: ${file.originalname}`);
+        err.statusCode = 400;
+        throw err;
       }
       let image;
       try {
@@ -760,7 +771,9 @@ exports.jpgToPdf = async (req, res) => {
           image = await pdfDoc.embedJpg(imageBytes);
         }
       } catch {
-        throw new Error(`Invalid or corrupted image: ${file.originalname}. Only JPEG and PNG files are supported.`);
+        const err = new Error(`Invalid or corrupted image: ${file.originalname}. Only JPEG and PNG files are supported.`);
+        err.statusCode = 400;
+        throw err;
       }
       const page = pdfDoc.addPage([image.width, image.height]);
       page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
@@ -798,7 +811,9 @@ exports.pdfToTxt = async (req, res) => {
     const text = await extractText(filePath);
 
     if (!text || !text.trim()) {
-      throw new Error('No extractable text found in the PDF. The file may be scanned or image-based.');
+      const err = new Error('No extractable text found in the PDF. The file may be scanned or image-based.');
+      err.statusCode = 400;
+      throw err;
     }
 
     const txtName = `${path.basename(req.files[0].originalname, path.extname(req.files[0].originalname))}_${uuidv4()}.txt`;
@@ -1346,7 +1361,9 @@ exports.signPdf = async (req, res) => {
     const outputPath = getOutputPath(req.files[0].originalname, 'signed');
     const signatureData = JSON.parse(req.body.signature || '{}');
     if (!signatureData.text) {
-      throw new Error('Signature text is required');
+      const err = new Error('Signature text is required');
+      err.statusCode = 400;
+      throw err;
     }
     await signPdf(filePath, outputPath, signatureData);
 

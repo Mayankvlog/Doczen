@@ -123,7 +123,9 @@ const unlockPDF = async (filePath, outputPath, password) => {
   const data = await fs.promises.readFile(filePath);
   try {
     await PDFDocument.load(data);
-    throw new Error('This file is not encrypted. Upload a password-protected file.');
+    const notEncryptedErr = new Error('This file is not encrypted. Upload a password-protected file.');
+    notEncryptedErr.statusCode = 400;
+    throw notEncryptedErr;
   } catch (notEncrypted) {
     if (notEncrypted.message === 'This file is not encrypted. Upload a password-protected file.') {
       throw notEncrypted;
@@ -143,9 +145,12 @@ const unlockPDF = async (filePath, outputPath, password) => {
     return outputPath;
   } catch (err) {
     if (err.message && err.message.includes('Incorrect password')) {
+      err.statusCode = 400;
       throw err;
     }
-    throw new Error('Incorrect password. Please try again.');
+    const wrongPwdErr = new Error('Incorrect password. Please try again.');
+    wrongPwdErr.statusCode = 400;
+    throw wrongPwdErr;
   }
 };
 
@@ -261,7 +266,9 @@ const repairPDF = async (filePath, outputPath) => {
         const data = await fs.promises.readFile(filePath);
         pdfDoc = await PDFDocument.load(data, { ignoreEncryption: true });
       } catch (secondErr) {
-        throw new Error('PDF file is too corrupted to repair');
+        const corruptErr = new Error('PDF file is too corrupted to repair');
+        corruptErr.statusCode = 400;
+        throw corruptErr;
       }
     }
     
@@ -743,7 +750,9 @@ const excelToPdf = async (filePath, outputPath) => {
     const workbook = new ExcelJS.Workbook();
     const fileExt = path.extname(filePath).toLowerCase();
     if (fileExt === '.xls') {
-      throw new Error('The .xls (binary) format is not supported. Please save as .xlsx and try again.');
+      const xlsErr = new Error('The .xls (binary) format is not supported. Please save as .xlsx and try again.');
+      xlsErr.statusCode = 400;
+      throw xlsErr;
     }
     await workbook.xlsx.readFile(filePath);
     
