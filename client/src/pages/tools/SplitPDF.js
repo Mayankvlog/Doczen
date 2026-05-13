@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
@@ -10,6 +10,29 @@ export default function SplitPDF() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [downloadUrl, setDownloadUrl] = useState('');
+  const [downloadName, setDownloadName] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    return () => {
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+    };
+  }, [downloadUrl]);
+
+  const triggerDownload = (url, filename) => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'downloaded-file';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  const handleDownloadAgain = () => {
+    if (!downloadUrl) return;
+    triggerDownload(downloadUrl, downloadName);
+  };
 
   const handleProcess = async () => {
     if (!file) {
@@ -19,11 +42,24 @@ export default function SplitPDF() {
     setError('');
     setLoading(true);
     setResult(null);
+    setSuccessMessage('');
+
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl('');
+      setDownloadName('');
+    }
+
     try {
       const formData = new FormData();
       formData.append('file', file);
       const data = await handleToolSubmit('/pdf/split', formData, 'split_pages.zip');
       setResult(data);
+      if (data.blobUrl) {
+        setDownloadUrl(data.blobUrl);
+        setDownloadName(data.filename || 'split_pages.zip');
+        setSuccessMessage('File processed successfully. Download started automatically. You can download it again below.');
+      }
     } catch (err) {
       setError(err.message || 'Failed to split PDF. Please try again.');
     } finally {
@@ -92,9 +128,24 @@ export default function SplitPDF() {
           </div>
         )}
 
-        {result && (
+        {successMessage && (
+          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
+            <p>{successMessage}</p>
+            {downloadUrl && (
+              <button
+                type="button"
+                onClick={handleDownloadAgain}
+                className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Download Again
+              </button>
+            )}
+          </div>
+        )}
+
+        {result && !successMessage && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="split" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setSuccessMessage(''); }} action="split" />
           </div>
         )}
       </div>

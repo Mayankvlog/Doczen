@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
@@ -10,15 +10,53 @@ export default function PDFToPPT() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [downloadUrl, setDownloadUrl] = useState('');
+  const [downloadName, setDownloadName] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    return () => {
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+    };
+  }, [downloadUrl]);
+
+  const triggerDownload = (url, filename) => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'downloaded-file';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  const handleDownloadAgain = () => {
+    if (!downloadUrl) return;
+    triggerDownload(downloadUrl, downloadName);
+  };
+
   const handleProcess = async () => {
     if (!file) return;
     setLoading(true);
     setError('');
+    setSuccessMessage('');
+
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl('');
+      setDownloadName('');
+    }
+
     try {
       const formData = new FormData();
       formData.append('file', file);
       const data = await handleToolSubmit('/pdf/pdf-to-ppt', formData, 'converted.pptx');
       setResult(data);
+
+      if (data.blobUrl) {
+        setDownloadUrl(data.blobUrl);
+        setDownloadName(data.filename || 'converted.pptx');
+        setSuccessMessage('File converted successfully. Download started automatically. You can download it again below.');
+      }
     } catch (err) {
       const msg = err.message || 'Conversion failed. Please try again.';
       setError(msg);
@@ -42,7 +80,7 @@ export default function PDFToPPT() {
         <FileUploader
           accept=".pdf"
           label="Upload PDF file"
-          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); }}
+          onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); setSuccessMessage(''); }}
         />
 
         {file && !loading && (
@@ -62,9 +100,24 @@ export default function PDFToPPT() {
           </div>
         )}
 
-        {result && (
+        {successMessage && (
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+            <p>{successMessage}</p>
+            {downloadUrl && (
+              <button
+                type="button"
+                onClick={handleDownloadAgain}
+                className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Download Again
+              </button>
+            )}
+          </div>
+        )}
+
+        {result && !successMessage && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); }} action="converted" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setSuccessMessage(''); }} action="converted" />
           </div>
         )}
       </div>

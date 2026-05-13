@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
@@ -16,6 +16,29 @@ export default function Metadata() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [downloadUrl, setDownloadUrl] = useState('');
+  const [downloadName, setDownloadName] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    return () => {
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+    };
+  }, [downloadUrl]);
+
+  const triggerDownload = (url, filename) => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'downloaded-file';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  const handleDownloadAgain = () => {
+    if (!downloadUrl) return;
+    triggerDownload(downloadUrl, downloadName);
+  };
 
   const handleRead = async () => {
     if (!file) {
@@ -25,6 +48,7 @@ export default function Metadata() {
     setError('');
     setLoading(true);
     setMetadataData(null);
+    setSuccessMessage('');
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -45,6 +69,14 @@ export default function Metadata() {
     setError('');
     setLoading(true);
     setResult(null);
+    setSuccessMessage('');
+
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+      setDownloadUrl('');
+      setDownloadName('');
+    }
+
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -54,6 +86,11 @@ export default function Metadata() {
       formData.append('keywords', keywords);
       const data = await handleToolSubmit('/pdf/write-metadata', formData, 'metadata.pdf');
       setResult(data);
+      if (data.blobUrl) {
+        setDownloadUrl(data.blobUrl);
+        setDownloadName(data.filename || 'metadata.pdf');
+        setSuccessMessage('Metadata updated successfully. Download started automatically. You can download it again below.');
+      }
     } catch (err) {
       setError(err.message || 'Failed to write metadata. Please try again.');
     } finally {
@@ -95,7 +132,7 @@ export default function Metadata() {
         <div className="card mb-6">
           <div className="flex gap-2 mb-6">
             <button
-              onClick={() => { setMode('read'); setMetadataData(null); setResult(null); setError(''); }}
+              onClick={() => { setMode('read'); setMetadataData(null); setResult(null); setError(''); setSuccessMessage(''); }}
               className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
                 mode === 'read'
                   ? 'bg-primary-600 text-white shadow-sm'
@@ -111,7 +148,7 @@ export default function Metadata() {
               </div>
             </button>
             <button
-              onClick={() => { setMode('write'); setMetadataData(null); setResult(null); setError(''); }}
+              onClick={() => { setMode('write'); setMetadataData(null); setResult(null); setError(''); setSuccessMessage(''); }}
               className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
                 mode === 'write'
                   ? 'bg-primary-600 text-white shadow-sm'
@@ -255,9 +292,24 @@ export default function Metadata() {
           </div>
         )}
 
-        {result && (
+        {successMessage && (
+          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
+            <p>{successMessage}</p>
+            {downloadUrl && (
+              <button
+                type="button"
+                onClick={handleDownloadAgain}
+                className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Download Again
+              </button>
+            )}
+          </div>
+        )}
+
+        {result && !successMessage && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setMetadataData(null); }} action="processed" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setMetadataData(null); setSuccessMessage(''); }} action="processed" />
           </div>
         )}
       </div>

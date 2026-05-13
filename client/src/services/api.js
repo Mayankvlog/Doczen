@@ -96,8 +96,8 @@ export async function handleToolSubmit(url, formData, fallbackName) {
   }
 
   const disposition = response.headers.get('content-disposition') || '';
-  const match = disposition.match(/filename="?([^"]+)"?/i);
-  const filename = match?.[1] || fallbackName || 'downloaded-file';
+  const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^"]+)"?/i);
+  const filename = decodeURIComponent(match?.[1] || match?.[2] || fallbackName || 'downloaded-file');
 
   const blobUrl = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -106,9 +106,7 @@ export async function handleToolSubmit(url, formData, fallbackName) {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  window.URL.revokeObjectURL(blobUrl);
-
-  return { success: true, filename };
+  return { success: true, filename, blobUrl };
 }
 
 export const authAPI = {

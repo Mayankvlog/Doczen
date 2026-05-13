@@ -241,6 +241,7 @@ const processRequest = async (req, res, action, processFn, options = {}) => {
     sourcePaths.forEach(p => scheduleFileCleanup(p, 30 * 60 * 1000));
 
     if (result && result.__sendFile && outputPath) {
+      res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
       return res.download(outputPath, result.originalName || path.basename(result.fileName));
     }
 
@@ -823,6 +824,7 @@ exports.download = async (req, res) => {
       return res.status(404).json({ success: false, message: 'File not found or expired' });
     }
 
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
     res.download(filePath, (err) => {
       if (err) {
         console.error('Download error:', err);
@@ -1007,6 +1009,7 @@ exports.htmlToPdf = async (req, res) => {
     }
 
     scheduleFileCleanup(outputPath, 60 * 60 * 1000);
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
     res.download(outputPath, 'converted.pdf');
   } catch (error) {
     console.error('HTML to PDF failed:', error.message);
