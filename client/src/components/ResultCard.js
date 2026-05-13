@@ -14,7 +14,7 @@ function getRatioColor(ratio) {
   return 'text-green-600 bg-green-50';
 }
 
-export default function ResultCard({ result, onReset, action = 'processed' }) {
+export default function ResultCard({ result, onReset, action = 'processed', onDownloadAgain, downloadAgainLabel }) {
   if (!result) return null;
 
   const { fileName, filename, size, originalSize, success } = result;
@@ -67,6 +67,15 @@ export default function ResultCard({ result, onReset, action = 'processed' }) {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
+        {onDownloadAgain && (
+          <button
+            type="button"
+            onClick={onDownloadAgain}
+            className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-all duration-200 active:scale-[0.98]"
+          >
+            {downloadAgainLabel || 'Download Again'}
+          </button>
+        )}
         <button
           onClick={onReset}
           className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-indigo-300 hover:text-indigo-600 active:scale-[0.98] transition-all duration-200"

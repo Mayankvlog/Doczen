@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
+import { useDownloadHandler } from '../../services/api';
 const API_BASE = process.env.REACT_APP_API_URL || '';
 import SEO from '../../components/SEO';
 
