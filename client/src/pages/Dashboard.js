@@ -34,8 +34,8 @@ const actionColors = {
   'ppt-to-pdf': 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/50 dark:text-fuchsia-300',
   'pdf-to-excel': 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300',
   'excel-to-pdf': 'bg-lime-100 text-lime-700 dark:bg-lime-900/50 dark:text-lime-300',
-  'edit-pdf': 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300',
-  'sign-pdf': 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300',
+  editPdf: 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300',
+  signPdf: 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300',
 };
 
 export default function Dashboard() {
@@ -69,10 +69,10 @@ export default function Dashboard() {
     );
   }
 
-  const filesToday = user?.filesToday ?? 0;
-  const dailyLimit = user?.dailyLimit ?? 25;
-  const storageUsed = user?.storageUsed ?? 0;
-  const storageLimit = user?.storageLimit ?? 500;
+  const filesToday = user?.dailyFileCount ?? 0;
+  const dailyLimit = user?.dailyLimit ?? 10000;
+  const storageUsed = user?.storageUsed ? Math.round(user.storageUsed / (1024 * 1024)) : 0;
+  const storageLimit = user?.storageLimit ? Math.round(user.storageLimit / (1024 * 1024)) : 500;
 
   return (
     <>
@@ -191,7 +191,7 @@ export default function Dashboard() {
                     {item.action?.replace(/-/g, ' ')}
                   </span>
                   <span className="flex-1 truncate text-sm text-gray-600 dark:text-gray-300">
-                    {item.fileName || 'Untitled'}
+                    {item.fileName || item.outputFiles?.[0]?.originalName || item.inputFiles?.[0]?.originalName || 'Untitled'}
                   </span>
                   <span className="text-xs text-gray-400">
                     {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}

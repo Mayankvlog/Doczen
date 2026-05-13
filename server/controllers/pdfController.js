@@ -93,6 +93,7 @@ const validateOutputFile = ensureOutputFile;
 const createHistory = async (userId, action, inputFiles, outputFiles, status, error = null) => {
   if (!isDbConnected()) return;
   try {
+    const totalSize = outputFiles.reduce((s, f) => s + (f.size || 0), 0);
     await History.create({
       user: userId,
       action,
@@ -107,6 +108,8 @@ const createHistory = async (userId, action, inputFiles, outputFiles, status, er
         size: f.size,
         path: f.path
       })),
+      fileName: outputFiles[0]?.originalName || inputFiles[0]?.originalName || 'Untitled',
+      fileSize: totalSize || outputFiles[0]?.size || inputFiles[0]?.size || 0,
       status,
       error
     });

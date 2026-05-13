@@ -23,8 +23,8 @@ const actionLabels = {
   pptToPdf: 'PPT to PDF',
   pdfToExcel: 'PDF to Excel',
   excelToPdf: 'Excel to PDF',
-  edit: 'Edit PDF',
-  sign: 'Sign PDF',
+  editPdf: 'Edit PDF',
+  signPdf: 'Sign PDF',
 };
 
 export default function History() {
@@ -39,7 +39,7 @@ export default function History() {
     try {
       const { data } = await historyAPI.getAll(p);
       setHistory(data.history || []);
-      setTotalPages(data.totalPages || 1);
+      setTotalPages(data.pages || 1);
     } catch {
       setHistory([]);
     } finally {
@@ -153,7 +153,7 @@ export default function History() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-700 dark:text-gray-300 max-w-[200px] truncate">
-                      {item.fileName || 'Untitled'}
+                      {item.fileName || item.outputFiles?.[0]?.originalName || item.inputFiles?.[0]?.originalName || 'Untitled'}
                     </td>
                     <td className="hidden sm:table-cell px-5 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-US', {
@@ -174,7 +174,7 @@ export default function History() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                      {item.fileSize ? `${(item.fileSize / 1024 / 1024).toFixed(1)} MB` : '—'}
+                      {(() => { const fs = item.fileSize || item.outputFiles?.[0]?.size || item.inputFiles?.[0]?.size; return fs ? `${(fs / 1024 / 1024).toFixed(1)} MB` : '—'; })()}
                     </td>
                     <td className="px-5 py-4">
                       <button
