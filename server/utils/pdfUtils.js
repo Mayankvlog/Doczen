@@ -741,6 +741,8 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
       if (op.n === 'Tm' && op.a.length >= 6) {
         const a = parseFloat(op.a[0].v || '1');
         const b = parseFloat(op.a[1].v || '0');
+        // Skip skew/shear (italic/oblique text): a ≈ 1 while b ≠ 0
+        if (Math.abs(b) > 0.05 && Math.abs(Math.abs(a) - 1) < 0.1) continue;
         const angle = Math.atan2(b, a) * (180 / Math.PI);
         const absAngle = Math.abs(angle);
         // Only detect angles near 45 degrees (diagonal watermarks)
@@ -774,10 +776,6 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
     if (hasDiagonalRotation && hasWatermarkKeyword) return true;
     if (hasDiagonalRotation && fontSize >= 60) return true;
     if (hasWatermarkKeyword && hasLowOpacity && fontSize >= 40) return true;
-    
-    // 2 medium indicators
-    if (indicators.length >= 2 && hasLowOpacity) return true;
-    if (indicators.length >= 2 && hasDiagonalRotation) return true;
     
     return false;
   };
