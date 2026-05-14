@@ -40,13 +40,11 @@ export default function AddPageNumbers() {
       formData.append('fontSize', fontSize);
       formData.append('position', position);
       const data = await handleToolSubmit('/pdf/add-page-numbers', formData, 'numbered.pdf');
-      if (data._json && !data.blobUrl) {
-        throw new Error(data.message || 'Server returned unexpected response. Please try again.');
+      if (!data.blobUrl) {
+        throw new Error(data.message || 'Server did not return a processed file. Please try again.');
       }
       setResult(data);
-      if (data.blobUrl) {
-        setDownload(data.blobUrl, data.filename || 'numbered.pdf');
-      }
+      setDownload(data.blobUrl, data.filename || 'numbered.pdf');
     } catch (err) {
       setError(err.message || 'Failed to add page numbers. Please try again.');
     } finally {

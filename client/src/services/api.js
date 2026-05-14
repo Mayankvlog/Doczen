@@ -73,7 +73,7 @@ async function parseResponseBlob(response, fallbackFilename) {
   if (contentType.includes('application/json')) {
     const data = await response.json();
     if (data.success === false) throw new Error(data.message || 'Operation failed');
-    return { ...data, _json: true };
+    return data;
   }
   const disposition = response.headers.get('content-disposition') || '';
   const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^"]+)"?/i);

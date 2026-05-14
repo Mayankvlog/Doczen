@@ -253,7 +253,7 @@ const processRequest = async (req, res, action, processFn, options = {}) => {
     const result = await processFn(req);
 
     if (result && result.fileName) {
-      outputPath = path.join(getOutputDir(), path.basename(result.fileName));
+      outputPath = result.outputPath || path.join(getOutputDir(), path.basename(result.fileName));
       try {
         ensureOutputFile(outputPath);
       } catch (validationErr) {
@@ -278,11 +278,17 @@ const processRequest = async (req, res, action, processFn, options = {}) => {
     sourcePaths.forEach(p => scheduleFileCleanup(p, 30 * 60 * 1000));
 
     if (result && result.__sendFile && outputPath) {
+      if (!fs.existsSync(outputPath)) {
+        cleanupFiles(sourcePaths);
+        console.error(`Output file missing before download: ${outputPath}`);
+        return res.status(500).json({ success: false, message: 'Output file not found' });
+      }
       res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
       return res.download(outputPath, result.originalName || path.basename(result.fileName), (err) => {
         cleanupFiles([...sourcePaths, ...(outputPath ? [outputPath] : [])]);
         if (err && !res.headersSent) {
           console.error(`Download failed for ${result.fileName}:`, err.message);
+          res.status(500).json({ success: false, message: `Download failed: ${err.message}` });
         }
       });
     }
@@ -538,6 +544,7 @@ exports.addPageNumbers = async (req, res) => {
       __sendFile: true,
       message: 'Page numbers added successfully',
       fileName: path.basename(outputPath),
+      outputPath: outputPath,
       originalName: `numbered_${req.files[0].originalname}`,
       size: outStat.size,
       originalSize: req.files[0].size

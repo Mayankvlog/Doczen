@@ -198,15 +198,13 @@ const addPageNumbers = async (filePath, outputPath, options = {}) => {
     throw new Error('PDF has no pages to number');
   }
 
-  const {
-    startNumber = 1,
-    x = undefined,
-    y = undefined,
-    size = 12,
-    position = 'bottom',
-    margin = size * 1.5,
-    color = rgb(0, 0, 0)
-  } = options;
+  const startNumber = options.startNumber || 1;
+  const x = options.x;
+  const y = options.y;
+  const size = options.size || 12;
+  const position = options.position || 'bottom';
+  const color = options.color || rgb(0, 0, 0);
+  const margin = options.margin !== undefined ? options.margin : size * 1.5;
 
   const textHeight = font.heightAtSize(size);
 
