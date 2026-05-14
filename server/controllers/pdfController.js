@@ -1141,8 +1141,28 @@ exports.removeWatermark = async (req, res) => {
       throw error;
     }
 
+    if (outStat.size < 1000) {
+      const error = new Error("Watermark removal failed - output file too small, likely corrupt");
+      error.statusCode = 500;
+      throw error;
+    }
+
     if (outStat.size === originalSize) {
       console.warn("Possible unchanged PDF after watermark removal - file size identical");
+    }
+
+    // Verify page count preserved
+    try {
+      const origPdf = await PDFDocument.load(fs.readFileSync(filePath));
+      const outPdf = await PDFDocument.load(fs.readFileSync(outputPath));
+      if (origPdf.getPageCount() !== outPdf.getPageCount()) {
+        const error = new Error(`Page count mismatch: ${origPdf.getPageCount()} vs ${outPdf.getPageCount()}. Output rejected to prevent data loss.`);
+        error.statusCode = 500;
+        throw error;
+      }
+    } catch (pageErr) {
+      if (pageErr.statusCode) throw pageErr;
+      console.warn("Page count validation skipped:", pageErr.message);
     }
 
     if (req.user) {
