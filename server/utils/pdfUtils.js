@@ -509,7 +509,8 @@ const redactText = async (filePath, outputPath, redactions = []) => {
             s: item.str,
             x: item.transform[4],
             y: item.transform[5],
-            w: item.width
+            w: item.width,
+            h: item.height || 0
           }));
           return JSON.stringify(items);
         }
@@ -521,30 +522,35 @@ const redactText = async (filePath, outputPath, redactions = []) => {
 
       for (const term of redactions) {
         const termLower = term.toLowerCase();
+        const escapedTerm = termLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const wordRegex = new RegExp(`(?:^|[^a-zA-Z0-9@.\\-_/])(${escapedTerm})(?:$|[^a-zA-Z0-9@.\\-_/])`, 'gi');
         for (let pi = 0; pi < Math.min(pages.length, pageTextItems.length); pi++) {
           const items = pageTextItems[pi];
           if (!items || items.length === 0) continue;
           const page = pages[pi];
-          const fontHeight = 16;
           const padding = 3;
           for (const item of items) {
-            if (!item.s || !item.s.toLowerCase().includes(termLower)) continue;
+            if (!item.s) continue;
             const itemText = item.s;
-            const itemLower = itemText.toLowerCase();
-            let searchIdx = 0;
-            while (true) {
-              const matchIdx = itemLower.indexOf(termLower, searchIdx);
-              if (matchIdx === -1) break;
-              const matchWidth = item.w * (term.length / itemText.length);
+            const fontSize = item.h || 16;
+            const lineHeight = fontSize + (padding * 2);
+            wordRegex.lastIndex = 0;
+            let match;
+            while ((match = wordRegex.exec(itemText)) !== null) {
+              const matchText = match[1];
+              if (!matchText || itemText.length === 0) continue;
+              const termOffsetInMatch = match[0].toLowerCase().indexOf(matchText.toLowerCase());
+              if (termOffsetInMatch === -1) continue;
+              const matchIdx = match.index + termOffsetInMatch;
+              const matchWidth = item.w * (matchText.length / itemText.length);
               const matchX = item.x + (item.w * (matchIdx / itemText.length));
               page.drawRectangle({
                 x: Math.max(0, matchX - padding),
-                y: item.y - padding,
+                y: item.y - (fontSize * 0.2) - padding,
                 width: Math.max(4, matchWidth) + (padding * 2),
-                height: fontHeight + (padding * 2),
+                height: lineHeight,
                 color: rgb(0, 0, 0)
               });
-              searchIdx = matchIdx + 1;
             }
           }
         }
