@@ -52,7 +52,7 @@ jobs:
         working-directory: client
         env:
           CI: false
-          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL || 'http://localhost:5000' }}
+          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL || 'http://localhost' }}
 
       - name: Run server tests
         run: npm test -- --passWithNoTests

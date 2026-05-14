@@ -133,12 +133,12 @@ Edit `.env` with your values:
 
 | Variable | Required | Description | Default |
 |---|---|---|---|
-| `PORT` | No | Backend server port | `5000` |
+| `PORT` | No | Backend server port | `80` |
 | `MONGO_URI` | **Yes** | MongoDB connection string | — |
 | `JWT_SECRET` | **Yes** | Secret key for signing JWT tokens | — |
 | `JWT_EXPIRES_IN` | No | Access token TTL | `30d` |
 | `OWNER_PASSWORD` | No | PDF owner password for encryption | `doczen-admin` |
-| `FRONTEND_URL` | No | Allowed CORS origin | `http://localhost:3000` |
+ | `FRONTEND_URL` | No | Allowed CORS origin | `http://localhost` |
 | `NODE_ENV` | No | Environment mode | `development` |
 
 ### 2. Install backend dependencies
@@ -159,20 +159,20 @@ npm install
 
 Edit `client/.env`:
 ```
-REACT_APP_API_URL=http://localhost:5000
+REACT_APP_API_URL=http://localhost
 ```
 
 ## Running Locally
 
 ### Development mode (two terminals)
 
-**Terminal 1 — Backend** (port 5000, hot-reload):
+**Terminal 1 — Backend** (port 80, hot-reload):
 ```bash
 cd server
 npm run dev
 ```
 
-**Terminal 2 — Frontend** (port 3000):
+**Terminal 2 — Frontend** (port 80):
 ```bash
 cd client
 npm start
