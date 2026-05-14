@@ -28,7 +28,7 @@ const loadPdf = async (filePath, options = {}) => {
 };
 
 const savePdf = async (pdfDoc, outputPath) => {
-  const data = await pdfDoc.save({ useObjectStreams: false });
+  const data = await pdfDoc.save();
   await fs.promises.writeFile(outputPath, data);
   if (!fs.existsSync(outputPath)) {
     throw new Error(`Failed to write output file: ${outputPath}`);
@@ -191,12 +191,20 @@ const unlockPDF = async (filePath, outputPath, password) => {
 };
 
 const addPageNumbers = async (filePath, outputPath, options = {}) => {
-  const pdfDoc = await loadPdf(filePath);
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const pages = pdfDoc.getPages();
-  if (pages.length === 0) {
+  const sourceDoc = await loadPdf(filePath);
+  const pageCount = sourceDoc.getPageCount();
+  if (pageCount === 0) {
     throw new Error('PDF has no pages to number');
   }
+
+  const pdfDoc = await PDFDocument.create();
+  const copiedPages = await pdfDoc.copyPages(sourceDoc, sourceDoc.getPageIndices());
+  for (const page of copiedPages) {
+    pdfDoc.addPage(page);
+  }
+
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const pages = pdfDoc.getPages();
 
   const startNumber = options.startNumber || 1;
   const x = options.x;
