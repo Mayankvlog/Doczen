@@ -79,19 +79,107 @@ const compressPDF = async (filePath, outputPath, quality = 0.5) => {
   const pages = await newPdf.copyPages(pdfDoc, indices);
   pages.forEach((page) => newPdf.addPage(page));
 
-  if (quality > 0.3) {
-    const title = pdfDoc.getTitle();
-    const author = pdfDoc.getAuthor();
-    if (title) newPdf.setTitle(title);
-    if (author) newPdf.setAuthor(author);
+  if (quality > 0.5) {
+    try {
+      const title = pdfDoc.getTitle();
+      const author = pdfDoc.getAuthor();
+      if (title) newPdf.setTitle(title);
+      if (author) newPdf.setAuthor(author);
+    } catch (e) {}
+  } else {
+    try { newPdf.setTitle(''); } catch (e) {}
+    try { newPdf.setAuthor(''); } catch (e) {}
+    try { newPdf.setSubject(''); } catch (e) {}
+    try { newPdf.setKeywords([]); } catch (e) {}
+    try { newPdf.setProducer(''); } catch (e) {}
+    try { newPdf.setCreator(''); } catch (e) {}
   }
 
-  const data = await newPdf.save({ 
-    useObjectStreams: quality < 0.8,
-    compress: true,
-    objectsPerTick: quality < 0.3 ? 10 : 50
-  });
-  await fs.promises.writeFile(outputPath, data);
+  const originalSize = (await fs.promises.stat(filePath)).size;
+
+  const trySave = async (opts) => {
+    try {
+      const d = await newPdf.save(opts);
+      return d;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const candidates = [];
+
+  if (quality > 0.7) {
+    const d = await trySave({ useObjectStreams: true, compress: true, objectsPerTick: 100 });
+    if (d) candidates.push(d);
+  } else {
+    const d1 = await trySave({ useObjectStreams: true, compress: true, objectsPerTick: quality < 0.3 ? 10 : 50 });
+    if (d1) candidates.push(d1);
+    const d2 = await trySave({ useObjectStreams: false, compress: true, objectsPerTick: 50 });
+    if (d2) candidates.push(d2);
+  }
+
+  const d3 = await trySave({ compress: true, objectsPerTick: 20 });
+  if (d3) candidates.push(d3);
+
+  let best = candidates[0] || Buffer.alloc(0);
+  for (const c of candidates) {
+    if (c.length < best.length && c.length > 100) best = c;
+  }
+
+  if (best.length === 0) {
+    best = await newPdf.save();
+  }
+
+  if (best.length >= originalSize && quality < 0.5) {
+    const textData = await (async () => {
+      try {
+        const pdfParse = require('pdf-parse');
+        const r = await pdfParse(await fs.promises.readFile(filePath));
+        const text = r.text.trim();
+        if (!text) return null;
+        const minimalPdf = await PDFDocument.create();
+        const font = await minimalPdf.embedFont(StandardFonts.Helvetica);
+        const pageWidth = 612, pageHeight = 792;
+        const margin = 50, fontSize = 11, lineHeight = 16;
+        const maxWidth = pageWidth - margin * 2;
+        const lines = text.split('\n').flatMap(line => {
+          const words = line.split(' ');
+          const wrapped = [];
+          let cur = '';
+          for (const w of words) {
+            const t = cur ? `${cur} ${w}` : w;
+            if (font.widthOfTextAtSize(t, fontSize) > maxWidth && cur) {
+              wrapped.push(cur);
+              cur = w;
+            } else {
+              cur = t;
+            }
+          }
+          if (cur) wrapped.push(cur);
+          return wrapped.length ? wrapped : [''];
+        });
+
+        let page = minimalPdf.addPage([pageWidth, pageHeight]);
+        let y = pageHeight - margin - lineHeight;
+        for (const line of lines) {
+          if (y < margin) {
+            page = minimalPdf.addPage([pageWidth, pageHeight]);
+            y = pageHeight - margin - lineHeight;
+          }
+          page.drawText(line, { x: margin, y, size: fontSize, font });
+          y -= lineHeight;
+        }
+        return await minimalPdf.save({ compress: true });
+      } catch (e) {
+        return null;
+      }
+    })();
+    if (textData && textData.length < originalSize * 0.6) {
+      best = textData;
+    }
+  }
+
+  await fs.promises.writeFile(outputPath, best);
   return outputPath;
 };
 
@@ -569,6 +657,48 @@ const htmlToPdf = async (textContent, outputPath, options = {}) => {
   return outputPath;
 };
 
+const CHAR_PROPORTIONS = {
+  'a':0.5,'b':0.5,'c':0.45,'d':0.5,'e':0.48,'f':0.28,'g':0.5,'h':0.5,'i':0.22,'j':0.22,
+  'k':0.45,'l':0.22,'m':0.75,'n':0.5,'o':0.5,'p':0.5,'q':0.5,'r':0.32,'s':0.42,'t':0.3,
+  'u':0.5,'v':0.45,'w':0.65,'x':0.45,'y':0.45,'z':0.45,
+  'A':0.65,'B':0.6,'C':0.6,'D':0.65,'E':0.55,'F':0.5,'G':0.65,'H':0.65,'I':0.25,'J':0.45,
+  'K':0.55,'L':0.5,'M':0.78,'N':0.65,'O':0.65,'P':0.55,'Q':0.65,'R':0.6,'S':0.52,'T':0.55,
+  'U':0.65,'V':0.55,'W':0.8,'X':0.55,'Y':0.55,'Z':0.55,
+  '0':0.5,'1':0.5,'2':0.5,'3':0.5,'4':0.5,'5':0.5,'6':0.5,'7':0.5,'8':0.5,'9':0.5,
+  ' ':0.3,'.':0.25,',':0.25,'!':0.25,'?':0.45,':':0.25,';':0.25,'-':0.35,'_':0.45,
+  '"':0.4,"'":0.22,'(':0.3,')':0.3,'/':0.35,'\\':0.35,'@':0.55,'#':0.5,'$':0.5,'%':0.7,
+  '^':0.45,'&':0.55,'*':0.4,'+':0.5,'=':0.5,'[':0.3,']':0.3,'{':0.3,'}':0.3,'|':0.2,
+  '<':0.45,'>':0.45,'`':0.2,'~':0.5
+};
+
+const estimateTextWidth = (text, totalWidth, totalText) => {
+  if (!text || !totalText) return totalWidth * 0.5;
+  let sum = 0;
+  for (const ch of text) {
+    sum += CHAR_PROPORTIONS[ch.toLowerCase()] || CHAR_PROPORTIONS[ch] || 0.5;
+  }
+  let totalSum = 0;
+  for (const ch of totalText) {
+    totalSum += CHAR_PROPORTIONS[ch.toLowerCase()] || CHAR_PROPORTIONS[ch] || 0.5;
+  }
+  if (totalSum === 0) return totalWidth * (text.length / Math.max(1, totalText.length));
+  return totalWidth * (sum / totalSum);
+};
+
+const estimateTextX = (beforeText, totalWidth, totalText) => {
+  if (!beforeText || !totalText) return 0;
+  let sum = 0;
+  for (const ch of beforeText) {
+    sum += CHAR_PROPORTIONS[ch.toLowerCase()] || CHAR_PROPORTIONS[ch] || 0.5;
+  }
+  let totalSum = 0;
+  for (const ch of totalText) {
+    totalSum += CHAR_PROPORTIONS[ch.toLowerCase()] || CHAR_PROPORTIONS[ch] || 0.5;
+  }
+  if (totalSum === 0) return totalWidth * (beforeText.length / Math.max(1, totalText.length));
+  return totalWidth * (sum / totalSum);
+};
+
 const redactText = async (filePath, outputPath, redactions = []) => {
   const pdfDoc = await loadPdf(filePath);
   const pages = pdfDoc.getPages();
@@ -603,16 +733,18 @@ const redactText = async (filePath, outputPath, redactions = []) => {
       for (const term of redactions) {
         const termLower = term.toLowerCase();
         const escapedTerm = termLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const wordRegex = new RegExp(`(?:^|[^a-zA-Z0-9@.\\-_/])(${escapedTerm})(?:$|[^a-zA-Z0-9@.\\-_/])`, 'gi');
+        const boundaryStart = '(?:^|[^a-zA-Z0-9])';
+        const boundaryEnd = '(?=$|[^a-zA-Z0-9])';
+        const wordRegex = new RegExp(boundaryStart + '(' + escapedTerm + ')' + boundaryEnd, 'gi');
         for (let pi = 0; pi < Math.min(pages.length, pageTextItems.length); pi++) {
           const items = pageTextItems[pi];
           if (!items || items.length === 0) continue;
           const page = pages[pi];
-          const padding = 3;
           for (const item of items) {
             if (!item.s) continue;
             const itemText = item.s;
             const fontSize = item.h || 16;
+            const padding = Math.max(3, fontSize * 0.25);
             const lineHeight = fontSize + (padding * 2);
             wordRegex.lastIndex = 0;
             let match;
@@ -622,11 +754,12 @@ const redactText = async (filePath, outputPath, redactions = []) => {
               const termOffsetInMatch = match[0].toLowerCase().indexOf(matchText.toLowerCase());
               if (termOffsetInMatch === -1) continue;
               const matchIdx = match.index + termOffsetInMatch;
-              const matchWidth = item.w * (matchText.length / itemText.length);
-              const matchX = item.x + (item.w * (matchIdx / itemText.length));
+              const beforeText = itemText.substring(0, matchIdx);
+              const matchWidth = estimateTextWidth(matchText, item.w, itemText);
+              const matchX = item.x + estimateTextWidth(beforeText, item.w, itemText);
               page.drawRectangle({
                 x: Math.max(0, matchX - padding),
-                y: item.y - (fontSize * 0.2) - padding,
+                y: item.y - (fontSize * 0.15) - padding,
                 width: Math.max(4, matchWidth) + (padding * 2),
                 height: lineHeight,
                 color: rgb(0, 0, 0)

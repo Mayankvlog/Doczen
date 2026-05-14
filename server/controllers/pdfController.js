@@ -696,36 +696,79 @@ exports.pdfToJpg = async (req, res) => {
 
       const page = pdfDoc.getPage(i);
       const { width, height } = page.getSize();
-      const scale = Math.min(1200 / width, 1200 / height);
+      const scale = Math.min(1600 / width, 1600 / height);
       const imgW = Math.round(width * scale);
       const imgH = Math.round(height * scale);
 
-      const linesPerPage = Math.max(20, Math.floor((imgH - 120) / 24));
-      const pageTextLines = pageTexts.slice(i * linesPerPage, (i + 1) * linesPerPage);
-      const textElements = pageTextLines.map((line, idx) => {
-        const escaped = line
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;');
-        const maxChars = Math.floor((imgW - 80) / 8);
-        const displayText = escaped.length > maxChars ? escaped.substring(0, maxChars - 3) + '...' : escaped;
-        return `<text x="40" y="${90 + idx * 24}" font-size="14" font-family="sans-serif" fill="#333">${displayText}</text>`;
-      }).join('');
+      const margin = Math.round(imgW * 0.08);
+      const contentW = imgW - margin * 2;
+      const headerY = Math.round(imgH * 0.08);
+      const contentTop = Math.round(imgH * 0.13);
+      const charWidth = 9;
+      const lineH = 22;
+      const colGap = 30;
+      const maxChars = Math.floor((contentW - colGap) / charWidth);
+      const useCols = contentW > 600 && pageTexts.length > 50 ? 2 : 1;
+      const colW = useCols === 2 ? Math.floor((contentW - colGap) / 2) : contentW;
+      const colChars = Math.floor(colW / charWidth);
+      const linesPerPage = Math.max(15, Math.floor((imgH - contentTop - margin) / lineH));
+
+      const pageTextLines = pageTexts.slice(i * (linesPerPage * useCols), (i + 1) * (linesPerPage * useCols));
+
+      let textElements = '';
+      if (pageTextLines.length > 0) {
+        if (useCols === 2) {
+          const mid = Math.ceil(pageTextLines.length / 2);
+          const col1 = pageTextLines.slice(0, mid);
+          const col2 = pageTextLines.slice(mid);
+          const renderLine = (line, idx, colX) => {
+            const escaped = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            const display = escaped.length > colChars ? escaped.substring(0, colChars - 2) + '\u2026' : escaped;
+            return `<text x="${colX}" y="${contentTop + idx * lineH}" font-size="13" font-family="Georgia,serif" fill="#222">${display}</text>`;
+          };
+          for (let li = 0; li < col1.length; li++) textElements += renderLine(col1[li], li, margin);
+          for (let li = 0; li < col2.length; li++) textElements += renderLine(col2[li], li, margin + colW + colGap);
+        } else {
+          for (let li = 0; li < pageTextLines.length; li++) {
+            const line = pageTextLines[li];
+            const escaped = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            const display = escaped.length > maxChars ? escaped.substring(0, maxChars - 2) + '\u2026' : escaped;
+            textElements += `<text x="${margin}" y="${contentTop + li * lineH}" font-size="13" font-family="Georgia,serif" fill="#222">${display}</text>`;
+          }
+        }
+      }
+
+      const shadeColor = i % 2 === 0 ? '#fafafa' : '#ffffff';
 
       const svgContent = `<svg width="${imgW}" height="${imgH}" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="white"/>
-        <rect x="20" y="20" width="${imgW - 40}" height="${imgH - 40}" fill="none" stroke="#ddd" stroke-width="1"/>
-        <text x="${imgW/2}" y="50" text-anchor="middle" font-size="18" font-weight="bold" font-family="sans-serif" fill="#333">Page ${i + 1} of ${pageCount}</text>
-        <line x1="30" y1="65" x2="${imgW - 30}" y2="65" stroke="#eee" stroke-width="1"/>
+        <defs>
+          <filter id="shadow" x="-2%" y="-2%" width="104%" height="104%">
+            <feDropShadow dx="1" dy="2" stdDeviation="3" flood-opacity="0.12"/>
+          </filter>
+          <filter id="inner-shadow" x="-1%" y="-1%" width="102%" height="102%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur"/>
+            <feOffset dx="0" dy="1" result="offset"/>
+            <feComposite in="SourceGraphic" in2="offset" operator="over"/>
+          </filter>
+          <linearGradient id="pageBg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${shadeColor}"/>
+            <stop offset="100%" stop-color="#f5f5f5"/>
+          </linearGradient>
+        </defs>
+        <rect width="100%" height="100%" fill="#e8e8e8"/>
+        <rect x="${margin * 0.5}" y="${margin * 0.5}" width="${imgW - margin}" height="${imgH - margin}" rx="3" fill="url(#pageBg)" filter="url(#shadow)"/>
+        <rect x="${margin}" y="${margin}" width="${contentW}" height="${imgH - margin * 2}" fill="none" stroke="#ddd" stroke-width="0.5"/>
+        <text x="${imgW / 2}" y="${headerY + 16}" text-anchor="middle" font-size="15" font-weight="bold" font-family="Helvetica,Arial,sans-serif" fill="#444">Page ${i + 1} of ${pageCount}</text>
+        <line x1="${margin + 10}" y1="${headerY + 26}" x2="${imgW - margin - 10}" y2="${headerY + 26}" stroke="#ccc" stroke-width="0.5"/>
         ${textElements}
-        ${pageTextLines.length === 0 ? `<text x="${imgW/2}" y="${imgH/2}" text-anchor="middle" font-size="16" font-family="sans-serif" fill="#999">No extractable text on this page</text>` : ''}
+        ${pageTextLines.length === 0 ? '<text x="' + (imgW/2) + '" y="' + (imgH/2) + '" text-anchor="middle" font-size="15" font-family="Helvetica,Arial,sans-serif" fill="#aaa">This page has no extractable text content.</text>' : ''}
+        <text x="${imgW - margin - 10}" y="${imgH - margin + 4}" text-anchor="end" font-size="9" font-family="Helvetica,Arial,sans-serif" fill="#bbb">Generated by Doczen</text>
       </svg>`;
 
       try {
         await sharp(Buffer.from(svgContent))
-          .resize(imgW, imgH)
-          .jpeg({ quality: 90 })
+          .resize(imgW, imgH, { fit: 'outside' })
+          .jpeg({ quality: 92, chromaSubsampling: '4:4:4' })
           .toFile(jpgPath);
         outputFiles.push(jpgPath);
       } catch (err) {
