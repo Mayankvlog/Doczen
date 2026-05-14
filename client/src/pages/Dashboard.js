@@ -70,7 +70,7 @@ export default function Dashboard() {
   }
 
   const filesToday = user?.dailyFileCount ?? 0;
-  const dailyLimit = user?.dailyLimit ?? 10000;
+  const dailyLimit = user?.dailyLimit ?? 1000;
   const storageUsed = user?.storageUsed ? Math.round(user.storageUsed / (1024 * 1024)) : 0;
   const storageLimit = user?.storageLimit ? Math.round(user.storageLimit / (1024 * 1024)) : 500;
 

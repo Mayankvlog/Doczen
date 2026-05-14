@@ -86,9 +86,12 @@ exports.login = async (req, res) => {
     }
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    if (user.lastFileDate < today) {
-      user.dailyFileCount = 0;
-      user.lastFileDate = new Date();
+    // Reset dailyFileCount to 0 and update lastFileDate
+    user.dailyFileCount = 0;
+    user.lastFileDate = new Date();
+    // Update dailyLimit to 1000 if it has the old value
+    if (user.dailyLimit !== 1000) {
+      user.dailyLimit = 1000;
     }
     const refreshToken = generateRefreshToken();
     user.refreshToken = refreshToken;
@@ -144,11 +147,14 @@ exports.getProfile = async (req, res) => {
     }
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    if (user.lastFileDate < today) {
-      user.dailyFileCount = 0;
-      user.lastFileDate = new Date();
-      await user.save();
+    // Reset dailyFileCount to 0 and update lastFileDate
+    user.dailyFileCount = 0;
+    user.lastFileDate = new Date();
+    // Update dailyLimit to 1000 if it has the old value
+    if (user.dailyLimit !== 1000) {
+      user.dailyLimit = 1000;
     }
+    await user.save();
     res.json({
       _id: user._id, name: user.name, email: user.email,
       storageUsed: user.storageUsed, storageLimit: user.storageLimit,
@@ -203,11 +209,14 @@ exports.checkDailyLimit = async (userId) => {
   if (!user) return { allowed: false, reason: 'User not found' };
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  if (user.lastFileDate < today) {
-    user.dailyFileCount = 0;
-    user.lastFileDate = new Date();
-    await user.save();
+  // Reset dailyFileCount to 0 and update lastFileDate
+  user.dailyFileCount = 0;
+  user.lastFileDate = new Date();
+  // Update dailyLimit to 1000 if it has the old value
+  if (user.dailyLimit !== 1000) {
+    user.dailyLimit = 1000;
   }
+  await user.save();
   if (user.dailyFileCount >= user.dailyLimit) {
     return { allowed: false, reason: 'Daily limit reached' };
   }

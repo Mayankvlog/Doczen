@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
   },
   dailyLimit: {
     type: Number,
-    default: 10000
+    default: 1000
   },
   lastFileDate: {
     type: Date,
