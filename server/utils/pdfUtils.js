@@ -588,6 +588,26 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
   const isWs = (ch) => ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r' || ch === '\f';
   const isDigit = (ch) => ch >= '0' && ch <= '9';
 
+  // Helper: extract strings from TJ array content like (Hello) -120 (World)
+  const extractStringsFromArray = (arrStr) => {
+    const result = [];
+    let i = 0;
+    while (i < arrStr.length) {
+      if (arrStr[i] === '(') {
+        let depth = 1; i++;
+        let str = '';
+        while (i < arrStr.length && depth > 0) {
+          if (arrStr[i] === '\\') { str += arrStr[i] + (arrStr[i + 1] || ''); i += 2; }
+          else if (arrStr[i] === '(') { depth++; str += arrStr[i]; i++; }
+          else if (arrStr[i] === ')') { depth--; if (depth > 0) str += arrStr[i]; i++; }
+          else { str += arrStr[i]; i++; }
+        }
+        result.push(str);
+      } else { i++; }
+    }
+    return result.join(' ');
+  };
+
   // Enhanced tokenizer to handle PDF stream content
   const tokenize = (str) => {
     const tokens = [];
@@ -682,13 +702,11 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
   }).join('\n') + '\n';
 
   // Improved watermark detection
-  const isWatermarkBlock = (ops) => {
+  const isWatermarkBlock = (ops, gsOpacityMap = {}) => {
     let fontSize = 0;
     let textContent = '';
     let hasLowOpacity = false;
-    let opacity = 1.0;
     let hasRotation = false;
-    let rotationAngle = 0;
     let gsStateNames = [];
     
     for (const op of ops) {
@@ -701,7 +719,11 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
       // Extract text content - only from Tj/TJ operators
       if ((op.n === 'Tj' || op.n === 'TJ') && op.a.length > 0) {
         for (const arg of op.a) {
-          if (arg.t === 'str') textContent += (arg.v || '').replace(/\\/g, '').substring(0, 50);
+          if (arg.t === 'str') {
+            textContent += (arg.v || '').replace(/\\/g, '').substring(0, 50);
+          } else if (arg.t === 'arr') {
+            textContent += extractStringsFromArray(arg.v || '').substring(0, 100);
+          }
         }
       }
       
@@ -710,55 +732,59 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
         for (const arg of op.a) {
           if (arg.t === 'name') {
             gsStateNames.push(arg.v.toLowerCase());
+            // Check actual opacity value from pre-built map
+            const opacity = gsOpacityMap[arg.v.toLowerCase()];
+            if (opacity !== undefined && opacity < 0.8) {
+              hasLowOpacity = true;
+            }
           }
         }
       }
       
-      // Detect diagonal rotation
+      // Detect diagonal rotation - broader detection
       if (op.n === 'Tm' && op.a.length >= 6) {
         const a = parseFloat(op.a[0].v || '1');
         const b = parseFloat(op.a[1].v || '0');
         
-        // Calculate rotation angle - watermarks have significant rotation like -45 or 45 degrees
         const angle = Math.atan2(b, a) * (180 / Math.PI);
-        if (Math.abs(angle) > 20 && (Math.abs(angle - 45) < 10 || Math.abs(angle + 45) < 10)) {
+        // Detect any significant non-0/90 degree rotation
+        if (Math.abs(angle) > 15 && Math.abs(angle) < 85 && Math.abs(Math.abs(angle) - 90) > 5 && Math.abs(angle) < 175) {
           hasRotation = true;
-          rotationAngle = Math.abs(angle);
         }
       }
     }
     
-    // Check for watermark-related graphics states
-    if (gsStateNames.length > 0) {
+    // Check for watermark-related graphics state names
+    if (!hasLowOpacity && gsStateNames.length > 0) {
       hasLowOpacity = gsStateNames.some(name => /wm|water|overlay|stamp|transparent|fade/.test(name));
     }
     
     // Watermark keyword detection
-    const watermarkKeywords = /watermark|draft|confidential|proprietary|secret|sample|internal|copy|reserved|trademark|®|™|©/i;
+    const watermarkKeywords = /watermark|draft|confidential|proprietary|secret|sample|internal|copy|reserved|trademark|®|™|©|preview|demo|trial|test|evaluation|review|unclassified/i;
     const looksLikeWatermark = watermarkKeywords.test(textContent);
     
-    // Conservative watermark detection to avoid removing content
-    // Only mark as watermark if multiple indicators are present
+    // Watermark detection with improved sensitivity
     const indicators = [];
     if (hasRotation) indicators.push('rotation');
     if (looksLikeWatermark) indicators.push('keyword');
     if (hasLowOpacity) indicators.push('opacity');
-    if (fontSize > 100) indicators.push('largeFont');
+    if (fontSize > 60) indicators.push('largeFont');
     
-    // Need at least 2 indicators to be considered a watermark
-    if (indicators.length >= 2) {
-      return true;
-    }
+    // Single strong indicator is enough
+    if (looksLikeWatermark && (hasRotation || hasLowOpacity || fontSize > 40)) return true;
+    if (hasRotation && fontSize > 40 && textContent.length < 80) return true;
+    if (hasLowOpacity && fontSize > 30) return true;
+    
+    // Multiple weak indicators also indicate watermark
+    if (indicators.length >= 2) return true;
     
     // Very large rotated text is likely watermark
-    if (hasRotation && fontSize > 80 && textContent.length < 30) {
-      return true;
-    }
+    if (hasRotation && fontSize > 50 && textContent.length < 60) return true;
     
     return false;
   };
 
-  const removeWatermarkOps = (ops) => {
+  const removeWatermarkOps = (ops, gsOpacityMap = {}) => {
     const result = [];
     let i = 0;
     while (i < ops.length) {
@@ -768,7 +794,7 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
         while (i < ops.length && ops[i].n !== 'ET') i++;
         if (i < ops.length) i++;
         const block = ops.slice(start, i);
-        if (!isWatermarkBlock(block)) result.push(...block);
+        if (!isWatermarkBlock(block, gsOpacityMap)) result.push(...block);
       } else if (ops[i].n === 'BI') {
         // Inline image - generally preserve, watermarks are usually in XObjects
         const imgOps = [];
@@ -793,8 +819,13 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
   for (const page of pages) {
     try {
       // Handle annotations more carefully
-      const annots = page.node.get(PDFName.of('Annots'));
-      if (annots && annots.size) {
+      let annots = page.node.get(PDFName.of('Annots'));
+      if (annots) {
+        if (annots.constructor && annots.constructor.name === 'PDFRef') {
+          try { annots = context.lookup(annots); } catch (e) { annots = null; }
+        }
+      }
+      if (annots && typeof annots.size === 'function') {
         const toRemove = [];
         for (let i = 0; i < annots.size(); i++) {
           try {
@@ -808,8 +839,8 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
               const subTypeStr = subType ? subType.toString().toLowerCase() : '';
               const contentsStr = contents ? contents.toString().toLowerCase() : '';
               
-              // Only remove stamp annotations with watermark text
-              if ((subTypeStr.includes('stamp') || /watermark|draft|confidential/.test(contentsStr))) {
+              // Remove stamp annotations, watermark text annotations, and rubber stamps
+              if ((subTypeStr.includes('stamp') || subTypeStr.includes('rubber') || /watermark|draft|confidential|proprietary|secret|sample/.test(contentsStr))) {
                 toRemove.push(i);
               }
             }
@@ -824,15 +855,25 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
     // Handle image XObjects (external images/watermarks)
     const removedXObjNames = [];
     try {
-      const resources = page.node.get(PDFName.of('Resources'));
+      let resources = page.node.get(PDFName.of('Resources'));
       if (resources) {
-        const xObject = resources.get(PDFName.of('XObject'));
+        if (resources.constructor && resources.constructor.name === 'PDFRef') {
+          try { resources = context.lookup(resources); } catch (e) { resources = null; }
+        }
+      }
+      if (resources) {
+        let xObject = resources.get(PDFName.of('XObject'));
         if (xObject) {
+          if (xObject.constructor && xObject.constructor.name === 'PDFRef') {
+            try { xObject = context.lookup(xObject); } catch (e) { xObject = null; }
+          }
+        }
+        if (xObject && typeof xObject.keys === 'function') {
           const keys = xObject.keys();
           for (const key of keys) {
             const name = key.toString().toLowerCase();
-            // Conservative: only remove explicitly named watermark XObjects
-            if (/^(watermark|water_?mark|wm|draft_stamp)/.test(name)) {
+            // Remove XObjects whose names suggest watermark content
+            if (/^(watermark|water_?mark|wm|draft|stamp|overlay|secret|confidential)/.test(name)) {
               removedXObjNames.push(key.toString());
               try { xObject.delete(key); } catch (ex) {}
             }
@@ -841,18 +882,67 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
       }
     } catch (e) {}
 
+    // Build opacity map from page's ExtGState resources
+    const gsOpacityMap = {};
+    try {
+      const resources = page.node.get(PDFName.of('Resources'));
+      if (resources) {
+        let resObj = resources;
+        if (resObj.constructor && resObj.constructor.name === 'PDFRef') resObj = context.lookup(resObj);
+        if (resObj) {
+          const extGState = resObj.get(PDFName.of('ExtGState'));
+          if (extGState) {
+            let gsObj = extGState;
+            if (gsObj.constructor && gsObj.constructor.name === 'PDFRef') gsObj = context.lookup(gsObj);
+            if (gsObj && typeof gsObj.keys === 'function') {
+              const gsKeys = gsObj.keys();
+              for (const gsKey of gsKeys) {
+                try {
+                  let gsDict = gsObj.get(gsKey);
+                  if (gsDict.constructor && gsDict.constructor.name === 'PDFRef') gsDict = context.lookup(gsDict);
+                  if (gsDict && typeof gsDict.get === 'function') {
+                    const ca = gsDict.get(PDFName.of('ca'));
+                    const CA = gsDict.get(PDFName.of('CA'));
+                    let minOpacity = 1.0;
+                    if (ca && typeof ca.asNumber === 'function') minOpacity = Math.min(minOpacity, ca.asNumber());
+                    if (CA && typeof CA.asNumber === 'function') minOpacity = Math.min(minOpacity, CA.asNumber());
+                    gsOpacityMap[gsKey.toString().toLowerCase()] = minOpacity;
+                  }
+                } catch (ex) {}
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {}
+
     // Process page content stream
-    const contentsArr = page.node.get(PDFName.of('Contents'));
-    if (contentsArr) {
+    let contentsObj = page.node.get(PDFName.of('Contents'));
+    if (contentsObj) {
+      // Resolve PDFRef if needed
+      if (contentsObj.constructor && contentsObj.constructor.name === 'PDFRef') {
+        try { contentsObj = context.lookup(contentsObj); } catch (e) { contentsObj = null; }
+      }
+    }
+    if (contentsObj) {
+      // Normalize to array for consistent processing
+      const contentsItems = [];
+      if (contentsObj.constructor && contentsObj.constructor.name === 'PDFArray') {
+        for (let ci = 0; ci < contentsObj.size(); ci++) {
+          contentsItems.push(contentsObj.get(ci));
+        }
+      } else {
+        contentsItems.push(contentsObj);
+      }
+
       let allContent = '';
-      for (let ci = 0; ci < contentsArr.size(); ci++) {
+      for (const item of contentsItems) {
         let raw = null;
         try {
-          const item = contentsArr.get(ci);
           let obj;
           if (item && item.constructor && item.constructor.name === 'PDFRef') obj = context.lookup(item);
           else obj = item;
-          raw = getContentString(obj);
+          if (obj) raw = getContentString(obj);
         } catch (e) {}
         if (raw) {
           try { 
@@ -874,7 +964,7 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
         
         if (ops.length === 0) continue;
 
-        const filtered = removeWatermarkOps(ops);
+        const filtered = removeWatermarkOps(ops, gsOpacityMap);
 
         const finalOps = [];
         if (removedXObjNames.length > 0) {
