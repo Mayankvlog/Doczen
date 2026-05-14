@@ -2,10 +2,20 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const archiver = require('archiver');
-const pdfParse = require('pdf-parse');
 const { PDFDocument } = require('pdf-lib');
 const mongoose = require('mongoose');
 const sharp = require('sharp');
+const { createCanvas } = require('canvas');
+
+let _pdfjsLib = null;
+const _standardFontUrl = path.join(
+  path.dirname(require.resolve('pdfjs-dist/package.json')),
+  'standard_fonts'
+) + '/';
+async function getPdfjs() {
+  if (!_pdfjsLib) _pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  return _pdfjsLib;
+}
 
 const guestRateLimit = new Map();
 const GUEST_MAX_FILES = 10000;
@@ -675,104 +685,39 @@ exports.deletePages = async (req, res) => {
 exports.pdfToJpg = async (req, res) => {
   await processRequest(req, res, 'pdfToJpg', async (req) => {
     const filePath = req.files[0].path;
-    const data = await fs.promises.readFile(filePath);
-    const pdfDoc = await PDFDocument.load(data);
-    const pageCount = pdfDoc.getPageCount();
+    const rawData = await fs.promises.readFile(filePath);
+    const data = new Uint8Array(rawData.buffer, rawData.byteOffset, rawData.byteLength);
+
+    const pdfjs = await getPdfjs();
+    const doc = await pdfjs.getDocument({ data, standardFontDataUrl: _standardFontUrl }).promise;
+    const pageCount = doc.numPages;
     const outputDir = getOutputDir();
     const outputFiles = [];
 
-    let pageTexts = [];
-    try {
-      const result = await pdfParse(new Uint8Array(data));
-      pageTexts = result.text.split('\n').filter(l => l.trim());
-    } catch (e) {
-      pageTexts = [];
-    }
+    for (let i = 1; i <= pageCount; i++) {
+      const page = await doc.getPage(i);
+      const vp1 = page.getViewport({ scale: 1.0 });
+      const scale = Math.max(1.0, Math.min(1600 / vp1.width, 1600 / vp1.height, 4.0));
+      const viewport = page.getViewport({ scale });
 
-    const maxPages = Math.min(pageCount, 20);
-    for (let i = 0; i < maxPages; i++) {
-      const jpgName = `page_${i + 1}_${uuidv4()}.jpg`;
+      const jpgName = `page_${i}_${uuidv4()}.jpg`;
       const jpgPath = path.join(outputDir, jpgName);
 
-      const page = pdfDoc.getPage(i);
-      const { width, height } = page.getSize();
-      const scale = Math.min(1600 / width, 1600 / height);
-      const imgW = Math.round(width * scale);
-      const imgH = Math.round(height * scale);
-
-      const margin = Math.round(imgW * 0.08);
-      const contentW = imgW - margin * 2;
-      const headerY = Math.round(imgH * 0.08);
-      const contentTop = Math.round(imgH * 0.13);
-      const charWidth = 9;
-      const lineH = 22;
-      const colGap = 30;
-      const maxChars = Math.floor((contentW - colGap) / charWidth);
-      const useCols = contentW > 600 && pageTexts.length > 50 ? 2 : 1;
-      const colW = useCols === 2 ? Math.floor((contentW - colGap) / 2) : contentW;
-      const colChars = Math.floor(colW / charWidth);
-      const linesPerPage = Math.max(15, Math.floor((imgH - contentTop - margin) / lineH));
-
-      const pageTextLines = pageTexts.slice(i * (linesPerPage * useCols), (i + 1) * (linesPerPage * useCols));
-
-      let textElements = '';
-      if (pageTextLines.length > 0) {
-        if (useCols === 2) {
-          const mid = Math.ceil(pageTextLines.length / 2);
-          const col1 = pageTextLines.slice(0, mid);
-          const col2 = pageTextLines.slice(mid);
-          const renderLine = (line, idx, colX) => {
-            const escaped = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-            const display = escaped.length > colChars ? escaped.substring(0, colChars - 2) + '\u2026' : escaped;
-            return `<text x="${colX}" y="${contentTop + idx * lineH}" font-size="13" font-family="Georgia,serif" fill="#222">${display}</text>`;
-          };
-          for (let li = 0; li < col1.length; li++) textElements += renderLine(col1[li], li, margin);
-          for (let li = 0; li < col2.length; li++) textElements += renderLine(col2[li], li, margin + colW + colGap);
-        } else {
-          for (let li = 0; li < pageTextLines.length; li++) {
-            const line = pageTextLines[li];
-            const escaped = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-            const display = escaped.length > maxChars ? escaped.substring(0, maxChars - 2) + '\u2026' : escaped;
-            textElements += `<text x="${margin}" y="${contentTop + li * lineH}" font-size="13" font-family="Georgia,serif" fill="#222">${display}</text>`;
-          }
-        }
-      }
-
-      const shadeColor = i % 2 === 0 ? '#fafafa' : '#ffffff';
-
-      const svgContent = `<svg width="${imgW}" height="${imgH}" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <filter id="shadow" x="-2%" y="-2%" width="104%" height="104%">
-            <feDropShadow dx="1" dy="2" stdDeviation="3" flood-opacity="0.12"/>
-          </filter>
-          <filter id="inner-shadow" x="-1%" y="-1%" width="102%" height="102%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur"/>
-            <feOffset dx="0" dy="1" result="offset"/>
-            <feComposite in="SourceGraphic" in2="offset" operator="over"/>
-          </filter>
-          <linearGradient id="pageBg" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="${shadeColor}"/>
-            <stop offset="100%" stop-color="#f5f5f5"/>
-          </linearGradient>
-        </defs>
-        <rect width="100%" height="100%" fill="#e8e8e8"/>
-        <rect x="${margin * 0.5}" y="${margin * 0.5}" width="${imgW - margin}" height="${imgH - margin}" rx="3" fill="url(#pageBg)" filter="url(#shadow)"/>
-        <rect x="${margin}" y="${margin}" width="${contentW}" height="${imgH - margin * 2}" fill="none" stroke="#ddd" stroke-width="0.5"/>
-        <text x="${imgW / 2}" y="${headerY + 16}" text-anchor="middle" font-size="15" font-weight="bold" font-family="Helvetica,Arial,sans-serif" fill="#444">Page ${i + 1} of ${pageCount}</text>
-        <line x1="${margin + 10}" y1="${headerY + 26}" x2="${imgW - margin - 10}" y2="${headerY + 26}" stroke="#ccc" stroke-width="0.5"/>
-        ${textElements}
-        ${pageTextLines.length === 0 ? '<text x="' + (imgW/2) + '" y="' + (imgH/2) + '" text-anchor="middle" font-size="15" font-family="Helvetica,Arial,sans-serif" fill="#aaa">This page has no extractable text content.</text>' : ''}
-        <text x="${imgW - margin - 10}" y="${imgH - margin + 4}" text-anchor="end" font-size="9" font-family="Helvetica,Arial,sans-serif" fill="#bbb">Generated by Doczen</text>
-      </svg>`;
-
       try {
-        await sharp(Buffer.from(svgContent))
-          .resize(imgW, imgH, { fit: 'outside' })
+        const canvas = createCanvas(viewport.width, viewport.height);
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, viewport.width, viewport.height);
+
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        const pngBuffer = canvas.toBuffer('image/png');
+        await sharp(pngBuffer)
           .jpeg({ quality: 92, chromaSubsampling: '4:4:4' })
           .toFile(jpgPath);
         outputFiles.push(jpgPath);
       } catch (err) {
-        console.error('Error creating image for page', i + 1, ':', err);
+        console.error('Error rendering page', i, ':', err);
       }
     }
 
