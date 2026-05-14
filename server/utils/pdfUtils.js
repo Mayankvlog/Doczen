@@ -499,46 +499,51 @@ const redactText = async (filePath, outputPath, redactions = []) => {
   }
 
   if (typeof redactions[0] === 'string') {
-    // Text-based redaction
     const pdfData = await fs.promises.readFile(filePath);
-    let pageTexts = [];
     try {
       const pdfParse = require('pdf-parse');
-      const result = await pdfParse(new Uint8Array(pdfData));
-      pageTexts = result.text.split('\n').filter(l => l.trim());
-    } catch (e) {
-      pageTexts = [];
-    }
-    
-    let termIndex = 0;
-    for (const term of redactions) {
-      const foundOnPage = [];
-      for (let i = 0; i < pages.length; i++) {
-        const pageText = pageTexts[i] || '';
-        if (pageText.toLowerCase().includes(term.toLowerCase())) {
-          foundOnPage.push(i);
+      const result = await pdfParse(new Uint8Array(pdfData), {
+        pagerender: async (pageData) => {
+          const textContent = await pageData.getTextContent({ normalizeWhitespace: true });
+          const items = textContent.items.map(item => ({
+            s: item.str,
+            x: item.transform[4],
+            y: item.transform[5],
+            w: item.width
+          }));
+          return JSON.stringify(items);
         }
-      }
-      const targetPages = foundOnPage.length > 0 ? foundOnPage : [0];
-      for (const pi of targetPages) {
-        if (pi < pages.length) {
+      });
+
+      const pageTextItems = result.text.split('\n\n').filter(p => p.trim()).map(p => {
+        try { return JSON.parse(p); } catch { return []; }
+      });
+
+      for (const term of redactions) {
+        const termLower = term.toLowerCase();
+        for (let pi = 0; pi < Math.min(pages.length, pageTextItems.length); pi++) {
+          const items = pageTextItems[pi];
+          if (!items || items.length === 0) continue;
           const page = pages[pi];
-          const { width: pageW, height: pageH } = page.getSize();
-          const barHeight = 18;
-          const yPos = pageH * 0.1 + (termIndex * (barHeight + 4));
-          page.drawRectangle({
-            x: pageW * 0.05,
-            y: yPos,
-            width: pageW * 0.9,
-            height: barHeight,
-            color: rgb(0, 0, 0)
-          });
+          const fontHeight = 16;
+          const padding = 2;
+          for (const item of items) {
+            if (item.s && item.s.toLowerCase().includes(termLower)) {
+              page.drawRectangle({
+                x: Math.max(0, item.x - padding),
+                y: item.y - padding,
+                width: item.w + (padding * 2),
+                height: fontHeight + (padding * 2),
+                color: rgb(0, 0, 0)
+              });
+            }
+          }
         }
       }
-      termIndex++;
+    } catch (e) {
+      console.error('Text-based redaction error:', e.message);
     }
   } else {
-    // Coordinate-based redaction
     for (const redact of redactions) {
       const { pageIndex = 0, x, y, width, height, color = [0, 0, 0] } = redact;
       if (pageIndex < pages.length) {
