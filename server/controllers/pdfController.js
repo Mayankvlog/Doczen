@@ -5,7 +5,7 @@ const archiver = require('archiver');
 const { PDFDocument } = require('pdf-lib');
 const mongoose = require('mongoose');
 const sharp = require('sharp');
-const { createCanvas } = require('canvas');
+const { createCanvas } = require('@napi-rs/canvas');
 
 let _pdfjsLib = null;
 const _standardFontUrl = path.join(
