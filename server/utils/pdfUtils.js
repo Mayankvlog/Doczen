@@ -579,15 +579,17 @@ const removeAnnotations = async (filePath, outputPath) => {
 };
 
 const removeWatermarkFromPdf = async (filePath, outputPath) => {
-  const pdfDoc = await loadPdf(filePath);
-  const { PDFName } = require('pdf-lib');
+  const { PDFName, PDFRawStream } = require('pdf-lib');
+  const zlib = require('zlib');
+  const fileBuffer = fs.readFileSync(filePath);
+  const pdfDoc = await PDFDocument.load(fileBuffer, { ignoreEncryption: true });
   const pages = pdfDoc.getPages();
   const context = pdfDoc.context;
-
   const originalPageCount = pdfDoc.getPageCount();
+  const wmKeywords = /watermark|confidential|draft|sample|proprietary|secret|reviewed|not\s*for\s*distribution/i;
 
   for (const page of pages) {
-    // 1. Remove annotation-based watermarks (Stamp / RubberStamp subtype)
+    // 1. Remove watermark annotations
     try {
       let annots = page.node.get(PDFName.of('Annots'));
       if (annots) {
@@ -606,7 +608,14 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
             if (annot && typeof annot.get === 'function') {
               const subtype = annot.get(PDFName.of('Subtype'));
               const subtypeStr = subtype ? String(subtype) : '';
-              if (subtypeStr.includes('Stamp')) {
+              const contents = annot.get(PDFName.of('Contents'));
+              let contentsStr = '';
+              if (contents) {
+                contentsStr = typeof contents.decodeText === 'function'
+                  ? contents.decodeText()
+                  : String(contents);
+              }
+              if (/stamp/i.test(subtypeStr) || (contentsStr && wmKeywords.test(contentsStr))) {
                 toRemove.push(i);
               }
             }
@@ -621,7 +630,7 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
       }
     } catch (e) {}
 
-    // 2. Remove XObjects whose names indicate watermark content
+    // 2. Remove watermark XObjects
     try {
       let resources = page.node.get(PDFName.of('Resources'));
       if (resources) {
@@ -640,7 +649,7 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
           const toDelete = [];
           for (const key of xObject.keys()) {
             const name = String(key).toLowerCase();
-            if (/^(watermark|water_?mark|wm\d*|draft|stamp|overlay)$/.test(name)) {
+            if (/^(watermark|water_?mark|wm\d*|wtrmrk|draft|stamp|overlay)$/.test(name)) {
               toDelete.push(key);
             }
           }
@@ -650,15 +659,82 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
         }
       }
     } catch (e) {}
+
+    // 3. Remove watermark text from page content streams
+    try {
+      let contentsObj = page.node.get(PDFName.of('Contents'));
+      if (!contentsObj) continue;
+      if (contentsObj.constructor && contentsObj.constructor.name === 'PDFRef') {
+        try { contentsObj = context.lookup(contentsObj); } catch (e) { contentsObj = null; }
+      }
+      if (!contentsObj) continue;
+
+      const streamRefs = [];
+      if (contentsObj.constructor && contentsObj.constructor.name === 'PDFArray') {
+        for (let ci = 0; ci < contentsObj.size(); ci++) {
+          streamRefs.push(contentsObj.get(ci));
+        }
+      } else {
+        streamRefs.push(page.node.get(PDFName.of('Contents')));
+      }
+
+      let allContent = '';
+      for (const itemRef of streamRefs) {
+        let item = itemRef;
+        if (item.constructor && item.constructor.name === 'PDFRef') {
+          try { item = context.lookup(item); } catch (e) { item = null; }
+        }
+        if (!item || !item.contents) continue;
+        const raw = Buffer.from(item.contents);
+        let decoded;
+        try { decoded = zlib.inflateRawSync(raw).toString('utf8'); }
+        catch (e1) {
+          try { decoded = zlib.unzipSync(raw).toString('utf8'); }
+          catch (e2) { decoded = raw.toString('utf8'); }
+        }
+        allContent += decoded;
+      }
+
+      if (!allContent.trim()) continue;
+
+      const cleaned = allContent.replace(
+        /BT[\s\S]*?ET/g,
+        (block) => {
+          const strs = [];
+          const strMatches = block.match(/\(((?:[^\\)]|\\.)*)\)/g);
+          if (strMatches) {
+            for (const s of strMatches) {
+              strs.push(s.slice(1, -1).replace(/\\(.)/g, '$1'));
+            }
+          }
+          if (!strs.length) return block;
+          const joined = strs.join(' ');
+          const concated = strs.join('');
+          if (wmKeywords.test(joined) || wmKeywords.test(concated)) return '';
+          return block;
+        }
+      );
+
+      if (cleaned !== allContent) {
+        const compressed = zlib.deflateRawSync(Buffer.from(cleaned, 'utf8'));
+        const dict = context.obj({ Filter: 'FlateDecode', Length: compressed.length });
+        const rawStream = PDFRawStream.of(dict, new Uint8Array(compressed));
+        const ref = context.register(rawStream);
+        const newArr = context.obj([]);
+        newArr.push(ref);
+        page.node.set(PDFName.of('Contents'), newArr);
+      }
+    } catch (e) {
+      console.warn('Content stream watermark removal error:', e.message);
+    }
   }
 
-  // Validate page count before saving
-  const finalPageCount = pdfDoc.getPageCount();
-  if (finalPageCount !== originalPageCount) {
-    throw new Error(`Page count changed from ${originalPageCount} to ${finalPageCount}. Aborting to prevent data loss.`);
+  if (pdfDoc.getPageCount() !== originalPageCount) {
+    throw new Error(`Page count changed. Aborting to prevent data loss.`);
   }
 
-  await savePdf(pdfDoc, outputPath);
+  const pdfBytes = await pdfDoc.save({ useObjectStreams: false });
+  fs.writeFileSync(outputPath, pdfBytes);
 
   if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size < 1000) {
     throw new Error('Invalid output PDF - file too small or missing');
