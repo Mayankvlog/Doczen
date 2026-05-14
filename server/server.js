@@ -47,7 +47,7 @@ connectDB();
 const app = express();
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://23.22.249.239:3000',
+  origin: process.env.FRONTEND_URL || 'http://23.22.249.239',
   credentials: true
 }));
 app.use(express.json({ limit: '50mb' }));
