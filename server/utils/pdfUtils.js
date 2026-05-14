@@ -526,16 +526,25 @@ const redactText = async (filePath, outputPath, redactions = []) => {
           if (!items || items.length === 0) continue;
           const page = pages[pi];
           const fontHeight = 16;
-          const padding = 2;
+          const padding = 3;
           for (const item of items) {
-            if (item.s && item.s.toLowerCase().includes(termLower)) {
+            if (!item.s || !item.s.toLowerCase().includes(termLower)) continue;
+            const itemText = item.s;
+            const itemLower = itemText.toLowerCase();
+            let searchIdx = 0;
+            while (true) {
+              const matchIdx = itemLower.indexOf(termLower, searchIdx);
+              if (matchIdx === -1) break;
+              const matchWidth = item.w * (term.length / itemText.length);
+              const matchX = item.x + (item.w * (matchIdx / itemText.length));
               page.drawRectangle({
-                x: Math.max(0, item.x - padding),
+                x: Math.max(0, matchX - padding),
                 y: item.y - padding,
-                width: item.w + (padding * 2),
+                width: Math.max(4, matchWidth) + (padding * 2),
                 height: fontHeight + (padding * 2),
                 color: rgb(0, 0, 0)
               });
+              searchIdx = matchIdx + 1;
             }
           }
         }
