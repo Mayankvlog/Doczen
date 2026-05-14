@@ -231,11 +231,12 @@ const addWatermark = async (filePath, outputPath, watermarkText, options = {}) =
     size = 60,
     color = rgb(0.5, 0.5, 0.5)
   } = options;
+  const safeWatermark = sanitizeForPdf(watermarkText);
 
   pages.forEach((page) => {
     const { width, height } = page.getSize();
 
-    page.drawText(watermarkText, {
+    page.drawText(safeWatermark, {
       x: width / 4,
       y: height / 2,
       size,
@@ -438,13 +439,61 @@ const flattenPDF = async (filePath, outputPath) => {
   return outputPath;
 };
 
-const stripHtml = (text) => text.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+const decodeHtmlEntities = (text) => {
+  return text
+    .replace(/&#x([0-9A-Fa-f]+);/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&nbsp;/g, '\u00A0')
+    .replace(/&mdash;/g, '\u2014').replace(/&ndash;/g, '\u2013')
+    .replace(/&lsquo;/g, '\u2018').replace(/&rsquo;/g, '\u2019')
+    .replace(/&ldquo;/g, '\u201C').replace(/&rdquo;/g, '\u201D')
+    .replace(/&bull;/g, '\u2022').replace(/&hellip;/g, '\u2026')
+    .replace(/&middot;/g, '\u00B7').replace(/&trade;/g, '\u2122')
+    .replace(/&euro;/g, '\u20AC').replace(/&copy;/g, '\u00A9')
+    .replace(/&reg;/g, '\u00AE').replace(/&pound;/g, '\u00A3')
+    .replace(/&yen;/g, '\u00A5').replace(/&cent;/g, '\u00A2')
+    .replace(/&sect;/g, '\u00A7').replace(/&deg;/g, '\u00B0')
+    .replace(/&plusmn;/g, '\u00B1').replace(/&sup2;/g, '\u00B2')
+    .replace(/&sup3;/g, '\u00B3').replace(/&acute;/g, '\u00B4')
+    .replace(/&micro;/g, '\u00B5').replace(/&para;/g, '\u00B6')
+    .replace(/&cedil;/g, '\u00B8').replace(/&sup1;/g, '\u00B9')
+    .replace(/&ordm;/g, '\u00BA').replace(/&frac14;/g, '\u00BC')
+    .replace(/&frac12;/g, '\u00BD').replace(/&frac34;/g, '\u00BE')
+    .replace(/&iquest;/g, '\u00BF');
+};
+
+const stripHtml = (text) => {
+  let result = text.replace(/<[^>]*>/g, '');
+  result = decodeHtmlEntities(result);
+  return result;
+};
+
+const sanitizeForPdf = (text) => {
+  let result = text
+    .replace(/\u2018|\u2019|\u201A|\u201B/g, "'")
+    .replace(/\u201C|\u201D|\u201E|\u201F/g, '"')
+    .replace(/\u2013|\u2014/g, '-')
+    .replace(/\u2022/g, '-')
+    .replace(/\u2026/g, '...')
+    .replace(/\u00A0/g, ' ')
+    .replace(/\u2122/g, 'TM')
+    .replace(/\u20AC/g, 'EUR')
+    .replace(/\u00A9/g, '(c)')
+    .replace(/\u00AE/g, '(r)');
+  result = result.replace(/[^\x20-\x7E\xA0-\xFF]/g, '');
+  return result;
+};
 
 const htmlToPdf = async (textContent, outputPath, options = {}) => {
   const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  const { title = 'Converted Document', fontSize = 12, margin = 50 } = options;
+  const { title: rawTitle = 'Converted Document', fontSize = 12, margin = 50 } = options;
+  const title = sanitizeForPdf(rawTitle);
 
   const pageWidth = 612;
   const pageHeight = 792;
@@ -452,7 +501,7 @@ const htmlToPdf = async (textContent, outputPath, options = {}) => {
   const lineHeight = fontSize * 1.5;
   const maxLinesPerPage = Math.floor((pageHeight - margin * 2) / lineHeight);
 
-  const cleanText = stripHtml(textContent);
+  const cleanText = sanitizeForPdf(stripHtml(textContent));
   const lines = cleanText.split('\n').flatMap(line => {
     const words = line.split(' ');
     const wrapped = [];
@@ -1086,7 +1135,7 @@ const excelToPdf = async (filePath, outputPath) => {
       let y = 750;
       let page = pdfDoc.addPage([612, 792]);
       
-      page.drawText(`Worksheet: ${worksheet.name}`, {
+      page.drawText(`Worksheet: ${sanitizeForPdf(worksheet.name)}`, {
         x: 50,
         y,
         size: 16,
@@ -1111,18 +1160,18 @@ const excelToPdf = async (filePath, outputPath) => {
               }
             }
             if (value) {
-              const displayText = value.substring(0, 100);
-              try {
-                page.drawText(displayText, { x, y, size: 10, font, color: rgb(0, 0, 0) });
-              } catch (drawErr) {
-                if (drawErr.message && drawErr.message.includes('cannot encode')) {
-                  const sanitized = displayText.replace(/[^\x20-\x7E\xA0-\xFF]/g, '').replace(/\s+/g, ' ').trim();
-                  page.drawText(sanitized || '.', { x, y, size: 10, font, color: rgb(0, 0, 0) });
-                } else {
-                  throw drawErr;
+                const displayText = sanitizeForPdf(value.substring(0, 100));
+                try {
+                  page.drawText(displayText, { x, y, size: 10, font, color: rgb(0, 0, 0) });
+                } catch (drawErr) {
+                  if (drawErr.message && drawErr.message.includes('cannot encode')) {
+                    const fallback = displayText.replace(/[^\x20-\x7E]/g, '').replace(/\s+/g, ' ').trim();
+                    page.drawText(fallback || '.', { x, y, size: 10, font, color: rgb(0, 0, 0) });
+                  } else {
+                    throw drawErr;
+                  }
                 }
               }
-            }
           } catch (_) {}
           
           x += 100;
@@ -1215,6 +1264,8 @@ const pptToPdf = async (filePath, outputPath) => {
       content = 'PowerPoint presentation\n\nNo text content could be extracted from slides.';
     }
     
+    content = sanitizeForPdf(content);
+    
     // Create PDF from extracted content
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -1291,6 +1342,8 @@ const wordToPdf = async (filePath, outputPath) => {
       content = 'Word document\n\nNo text content could be extracted from the document.';
     }
     
+    content = sanitizeForPdf(content);
+    
     // Create PDF from extracted content
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -1355,7 +1408,7 @@ const editPdf = async (filePath, outputPath, edits = []) => {
     if (pageIndex >= pages.length) continue;
     const page = pages[pageIndex];
     if (type === 'text' && text) {
-      page.drawText(text, {
+      page.drawText(sanitizeForPdf(text), {
         x, y, size: fontSize, font,
         color: rgb(color[0], color[1], color[2])
       });
@@ -1376,7 +1429,7 @@ const signPdf = async (filePath, outputPath, signatureData) => {
   const { text: sigText = 'Signed', pageIndex = 0, x = width - 200, y = 50, fontSize = 16 } = signatureData;
 
   const targetPage = pageIndex < pages.length ? pages[pageIndex] : firstPage;
-  targetPage.drawText(sigText, {
+  targetPage.drawText(sanitizeForPdf(sigText), {
     x, y, size: fontSize, font,
     color: rgb(0, 0, 0.8)
   });
