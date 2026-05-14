@@ -674,6 +674,45 @@ const removeWatermarkFromPdf = async (filePath, outputPath, options = {}) => {
     }
   }
 
+  // Phase 2: Build text frequency map for watermark detection
+  const textFreq = new Map();
+  for (let pi = 0; pi < pages.length; pi++) {
+    const pageContent = getPageContent(pages[pi]);
+    if (!pageContent.trim()) continue;
+    const blockMatches = pageContent.match(/BT[\s\S]*?ET/g);
+    if (!blockMatches) continue;
+    const pageTexts = new Set();
+    for (const block of blockMatches) {
+      const strs = [];
+      const litMatches = block.match(/\(((?:[^\\)]|\\.)*)\)/g);
+      if (litMatches) {
+        for (const s of litMatches) strs.push(s.slice(1, -1).replace(/\\(.)/g, '$1'));
+      }
+      const hexMatches = block.match(/<([0-9A-Fa-f]+)>/g);
+      if (hexMatches) {
+        for (const h of hexMatches) {
+          try {
+            const decoded = Buffer.from(h.slice(1, -1), 'hex').toString('utf8');
+            if (decoded) strs.push(decoded);
+          } catch (e) {}
+        }
+      }
+      if (!strs.length) continue;
+      const text = strs.join(' ').trim();
+      if (text.length < 2) continue;
+      pageTexts.add(text);
+    }
+    for (const t of pageTexts) {
+      if (!textFreq.has(t)) textFreq.set(t, new Set());
+      textFreq.get(t).add(pi);
+    }
+  }
+  const freqThreshold = Math.max(2, Math.ceil(pages.length * 0.5));
+  const frequentTexts = new Set();
+  for (const [text, pageSet] of textFreq) {
+    if (pageSet.size >= freqThreshold) frequentTexts.add(text);
+  }
+
   let pagesModified = 0;
 
   for (let pi = 0; pi < pages.length; pi++) {
@@ -803,6 +842,7 @@ const removeWatermarkFromPdf = async (filePath, outputPath, options = {}) => {
         const concated = strs.join('');
         if (wmKeywords.test(joined) || wmKeywords.test(concated)) return '';
         if (customRegex && (customRegex.test(joined) || customRegex.test(concated))) return '';
+        if (frequentTexts.has(joined) || frequentTexts.has(concated)) return '';
         return block;
       });
       if (content !== before) pageChanged = true;

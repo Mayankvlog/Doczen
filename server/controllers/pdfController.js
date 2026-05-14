@@ -1128,9 +1128,23 @@ exports.removeWatermark = async (req, res) => {
     const result = await removeWatermarkFromPdf(filePath, outputPath, { watermarkText, mode });
 
     if (!result.modified) {
-      const error = new Error(result.message);
-      error.statusCode = 422;
-      throw error;
+      console.log("No watermark detected or removable. Returning original file as fallback.");
+      try {
+        fs.copyFileSync(filePath, outputPath);
+      } catch (copyErr) {
+        const error = new Error("Failed to prepare output file: " + copyErr.message);
+        error.statusCode = 500;
+        throw error;
+      }
+      const outStat = fs.statSync(outputPath);
+      return {
+        __sendFile: true,
+        message: result.message || 'No watermark detected',
+        fileName: path.basename(outputPath),
+        originalName: `clean_${req.files[0].originalname}`,
+        size: outStat.size,
+        originalSize: originalSize
+      };
     }
 
     console.log("Output Path after processing:", outputPath);
