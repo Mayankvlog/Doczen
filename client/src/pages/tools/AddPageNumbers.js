@@ -9,6 +9,7 @@ export default function AddPageNumbers() {
   const [file, setFile] = useState(null);
   const [startNumber, setStartNumber] = useState(1);
   const [fontSize, setFontSize] = useState(12);
+  const [position, setPosition] = useState('bottom');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
@@ -37,7 +38,11 @@ export default function AddPageNumbers() {
       formData.append('file', file);
       formData.append('startNumber', startNumber);
       formData.append('fontSize', fontSize);
+      formData.append('position', position);
       const data = await handleToolSubmit('/pdf/add-page-numbers', formData, 'numbered.pdf');
+      if (data._json && !data.blobUrl) {
+        throw new Error(data.message || 'Server returned unexpected response. Please try again.');
+      }
       setResult(data);
       if (data.blobUrl) {
         setDownload(data.blobUrl, data.filename || 'numbered.pdf');
@@ -82,7 +87,7 @@ export default function AddPageNumbers() {
 
         <div className="card mb-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Page Number Settings</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Start Number</label>
               <input
@@ -103,6 +108,17 @@ export default function AddPageNumbers() {
                 onChange={(e) => setFontSize(parseInt(e.target.value) || 12)}
                 className="input-field"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+              <select
+                value={position}
+                onChange={(e) => setPosition(e.target.value)}
+                className="input-field"
+              >
+                <option value="bottom">Bottom Center</option>
+                <option value="top">Top Center</option>
+              </select>
             </div>
           </div>
         </div>

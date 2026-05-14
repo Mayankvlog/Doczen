@@ -73,15 +73,15 @@ async function parseResponseBlob(response, fallbackFilename) {
   if (contentType.includes('application/json')) {
     const data = await response.json();
     if (data.success === false) throw new Error(data.message || 'Operation failed');
-    return data;
-  }
-  const blob = await response.blob();
-  if (!blob || blob.size === 0) {
-    throw new Error('Server returned empty file');
+    return { ...data, _json: true };
   }
   const disposition = response.headers.get('content-disposition') || '';
   const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^"]+)"?/i);
   const filename = decodeURIComponent(match?.[1] || match?.[2] || fallbackFilename || 'downloaded-file');
+  const blob = await response.blob();
+  if (!blob || blob.size === 0) {
+    throw new Error('Server returned empty file');
+  }
   const blobUrl = window.URL.createObjectURL(blob);
   return { success: true, filename, blobUrl };
 }

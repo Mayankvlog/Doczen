@@ -194,24 +194,38 @@ const addPageNumbers = async (filePath, outputPath, options = {}) => {
   const pdfDoc = await loadPdf(filePath);
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const pages = pdfDoc.getPages();
+  if (pages.length === 0) {
+    throw new Error('PDF has no pages to number');
+  }
+
   const {
     startNumber = 1,
     x = undefined,
-    y = 30,
+    y = undefined,
     size = 12,
+    position = 'bottom',
+    margin = size * 1.5,
     color = rgb(0, 0, 0)
   } = options;
 
+  const textHeight = font.heightAtSize(size);
+
   pages.forEach((page, index) => {
-    const { width } = page.getSize();
+    const { width, height } = page.getSize();
     const pageNum = startNumber + index;
     const text = `${pageNum}`;
     const textWidth = font.widthOfTextAtSize(text, size);
+
     const posX = x !== undefined ? x : (width - textWidth) / 2;
+    const posY = y !== undefined ? y : (
+      position === 'top'
+        ? height - margin - textHeight
+        : margin
+    );
 
     page.drawText(text, {
       x: posX,
-      y,
+      y: posY,
       size,
       font,
       color

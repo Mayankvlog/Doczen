@@ -517,7 +517,9 @@ exports.addPageNumbers = async (req, res) => {
     const filePath = req.files[0].path;
     const options = {
       startNumber: parseInt(req.body.startNumber) || 1,
-      size: parseInt(req.body.fontSize) || 12
+      size: parseInt(req.body.fontSize) || 12,
+      position: req.body.position || 'bottom',
+      margin: req.body.margin !== undefined ? parseFloat(req.body.margin) : undefined
     };
     const outputPath = getOutputPath(req.files[0].originalname, 'numbered');
     await addPageNumbers(filePath, outputPath, options);
