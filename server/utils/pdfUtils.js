@@ -782,33 +782,40 @@ const removeWatermarkFromPdf = async (filePath, outputPath, options = {}) => {
     // Strategy 4: Remove watermark text from content streams
     if (mode === 'auto' || mode === 'text') {
       const before = content;
-      content = content.replace(
-        /BT[\s\S]*?ET/g,
-        (block) => {
-          const strs = [];
-          const literalMatches = block.match(/\(((?:[^\\)]|\\.)*)\)/g);
-          if (literalMatches) {
-            for (const s of literalMatches) {
-              strs.push(s.slice(1, -1).replace(/\\(.)/g, '$1'));
+      content = content.replace(/BT[\s\S]*?ET/g, (block) => {
+        const textMatches = (text) => {
+          if (wmKeywords.test(text)) return true;
+          if (customRegex && customRegex.test(text)) return true;
+          return false;
+        };
+        block = block.replace(/\(((?:[^\\)]|\\.)*)\)\s*Tj/g, (match, raw) => {
+          const decoded = raw.replace(/\\(.)/g, '$1');
+          return textMatches(decoded) ? '' : match;
+        });
+        block = block.replace(/<([0-9A-Fa-f]+)>\s*Tj/g, (match, hex) => {
+          try {
+            const decoded = Buffer.from(hex, 'hex').toString('utf8');
+            if (textMatches(decoded)) return '';
+          } catch (e) {}
+          return match;
+        });
+        block = block.replace(/\[([\s\S]*?)\]\s*TJ/g, (match, arrayContent) => {
+          const newArray = arrayContent.replace(/(?:<([0-9A-Fa-f]+)>|\(((?:[^\\)]|\\.)*)\))\s*-?\d*/g, (elem, hex, lit) => {
+            let decoded;
+            if (hex) {
+              try { decoded = Buffer.from(hex, 'hex').toString('utf8'); } catch (e) {}
+            } else if (lit) {
+              decoded = lit.replace(/\\(.)/g, '$1');
             }
-          }
-          const hexMatches = block.match(/<([0-9A-Fa-f]+)>/g);
-          if (hexMatches) {
-            for (const h of hexMatches) {
-              try {
-                const decoded = Buffer.from(h.slice(1, -1), 'hex').toString('utf8');
-                if (decoded) strs.push(decoded);
-              } catch (e) {}
-            }
-          }
-          if (!strs.length) return block;
-          const joined = strs.join(' ');
-          const concated = strs.join('');
-          if (wmKeywords.test(joined) || wmKeywords.test(concated)) return '';
-          if (customRegex && (customRegex.test(joined) || customRegex.test(concated))) return '';
-          return block;
-        }
-      );
+            if (decoded && textMatches(decoded)) return '';
+            return elem;
+          });
+          const cleaned = newArray.replace(/\s*,\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+          if (!cleaned || cleaned === '[]') return '';
+          return `[${cleaned}] TJ`;
+        });
+        return block;
+      });
       if (content !== before) pageChanged = true;
     }
 
