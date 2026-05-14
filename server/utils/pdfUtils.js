@@ -786,10 +786,19 @@ const removeWatermarkFromPdf = async (filePath, outputPath, options = {}) => {
         /BT[\s\S]*?ET/g,
         (block) => {
           const strs = [];
-          const strMatches = block.match(/\(((?:[^\\)]|\\.)*)\)/g);
-          if (strMatches) {
-            for (const s of strMatches) {
+          const literalMatches = block.match(/\(((?:[^\\)]|\\.)*)\)/g);
+          if (literalMatches) {
+            for (const s of literalMatches) {
               strs.push(s.slice(1, -1).replace(/\\(.)/g, '$1'));
+            }
+          }
+          const hexMatches = block.match(/<([0-9A-Fa-f]+)>/g);
+          if (hexMatches) {
+            for (const h of hexMatches) {
+              try {
+                const decoded = Buffer.from(h.slice(1, -1), 'hex').toString('utf8');
+                if (decoded) strs.push(decoded);
+              } catch (e) {}
             }
           }
           if (!strs.length) return block;
