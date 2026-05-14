@@ -674,6 +674,67 @@ const removeWatermarkFromPdf = async (filePath, outputPath, options = {}) => {
     }
   }
 
+  // --- Phase 2: Scan all pages to identify recurring watermark text ---
+  const wmTextFrequency = new Map();
+  const perPageTexts = [];
+
+  const extractTextsFromBlock = (block) => {
+    const texts = [];
+    const litMatches = block.match(/\(((?:[^\\)]|\\.)*)\)/g);
+    if (litMatches) {
+      for (const s of litMatches) {
+        texts.push(s.slice(1, -1).replace(/\\(.)/g, '$1'));
+      }
+    }
+    const hexMatches = block.match(/<([0-9A-Fa-f]+)>/g);
+    if (hexMatches) {
+      for (const h of hexMatches) {
+        try {
+          const decoded = Buffer.from(h.slice(1, -1), 'hex').toString('utf8');
+          if (decoded) texts.push(decoded);
+        } catch (e) {}
+      }
+    }
+    return texts;
+  };
+
+  const textMatches = (text) => {
+    if (wmKeywords.test(text)) return true;
+    if (customRegex && customRegex.test(text)) return true;
+    return false;
+  };
+
+  for (let pi = 0; pi < pages.length; pi++) {
+    const page = pages[pi];
+    const content = getPageContent(page);
+    if (!content.trim()) { perPageTexts.push([]); continue; }
+    const blocks = content.match(/BT[\s\S]*?ET/g) || [];
+    const pageTexts = new Set();
+    for (const block of blocks) {
+      const texts = extractTextsFromBlock(block);
+      for (const t of texts) {
+        if (textMatches(t)) {
+          const normalized = t.toLowerCase().trim();
+          pageTexts.add(normalized);
+        }
+      }
+    }
+    perPageTexts.push(blocks);
+    for (const normalized of pageTexts) {
+      if (!wmTextFrequency.has(normalized)) wmTextFrequency.set(normalized, new Set());
+      wmTextFrequency.get(normalized).add(pi);
+    }
+  }
+
+  const wmThreshold = Math.ceil(pages.length * 0.4);
+  const recurringWmTexts = new Set();
+  for (const [text, pageSet] of wmTextFrequency) {
+    if (pageSet.size >= wmThreshold) {
+      recurringWmTexts.add(text);
+    }
+  }
+
+  // --- Phase 3: Remove watermark text blocks from each page ---
   let pagesModified = 0;
 
   for (let pi = 0; pi < pages.length; pi++) {
@@ -751,7 +812,6 @@ const removeWatermarkFromPdf = async (filePath, outputPath, options = {}) => {
         }
         if (content !== before) pageChanged = true;
 
-        // Clean up XObject/resource dictionary entries for removed names
         try {
           let resources = page.node.get(PDFName.of('Resources'));
           if (resources) {
@@ -779,41 +839,14 @@ const removeWatermarkFromPdf = async (filePath, outputPath, options = {}) => {
       }
     }
 
-    // Strategy 4: Remove watermark text from content streams
+    // Strategy 4: Remove watermark text from content streams (block-level, frequency-gated)
     if (mode === 'auto' || mode === 'text') {
       const before = content;
       content = content.replace(/BT[\s\S]*?ET/g, (block) => {
-        const textMatches = (text) => {
-          if (wmKeywords.test(text)) return true;
-          if (customRegex && customRegex.test(text)) return true;
-          return false;
-        };
-        block = block.replace(/\(((?:[^\\)]|\\.)*)\)\s*Tj/g, (match, raw) => {
-          const decoded = raw.replace(/\\(.)/g, '$1');
-          return textMatches(decoded) ? '' : match;
-        });
-        block = block.replace(/<([0-9A-Fa-f]+)>\s*Tj/g, (match, hex) => {
-          try {
-            const decoded = Buffer.from(hex, 'hex').toString('utf8');
-            if (textMatches(decoded)) return '';
-          } catch (e) {}
-          return match;
-        });
-        block = block.replace(/\[([\s\S]*?)\]\s*TJ/g, (match, arrayContent) => {
-          const newArray = arrayContent.replace(/(?:<([0-9A-Fa-f]+)>|\(((?:[^\\)]|\\.)*)\))\s*-?\d*/g, (elem, hex, lit) => {
-            let decoded;
-            if (hex) {
-              try { decoded = Buffer.from(hex, 'hex').toString('utf8'); } catch (e) {}
-            } else if (lit) {
-              decoded = lit.replace(/\\(.)/g, '$1');
-            }
-            if (decoded && textMatches(decoded)) return '';
-            return elem;
-          });
-          const cleaned = newArray.replace(/\s*,\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
-          if (!cleaned || cleaned === '[]') return '';
-          return `[${cleaned}] TJ`;
-        });
+        const texts = extractTextsFromBlock(block);
+        if (!texts.length) return block;
+        const hasRecurringWm = texts.some(t => recurringWmTexts.has(t.toLowerCase().trim()));
+        if (hasRecurringWm) return '';
         return block;
       });
       if (content !== before) pageChanged = true;
