@@ -701,22 +701,20 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
     return argStr ? argStr + ' ' + op.n : op.n;
   }).join('\n') + '\n';
 
-  // Improved watermark detection
+  // Watermark detection - conservative approach
   const isWatermarkBlock = (ops, gsOpacityMap = {}) => {
     let fontSize = 0;
     let textContent = '';
     let hasLowOpacity = false;
-    let hasRotation = false;
+    let hasDiagonalRotation = false;
     let gsStateNames = [];
     
     for (const op of ops) {
-      // Extract font size
       if (op.n === 'Tf' && op.a.length >= 2) {
         const sizeArg = op.a[op.a.length - 1];
         if (sizeArg.t === 'num') fontSize = Math.abs(parseFloat(sizeArg.v));
       }
       
-      // Extract text content - only from Tj/TJ operators
       if ((op.n === 'Tj' || op.n === 'TJ') && op.a.length > 0) {
         for (const arg of op.a) {
           if (arg.t === 'str') {
@@ -727,59 +725,59 @@ const removeWatermarkFromPdf = async (filePath, outputPath) => {
         }
       }
       
-      // Check for graphics state with low opacity
       if (op.n === 'gs' && op.a.length > 0) {
         for (const arg of op.a) {
           if (arg.t === 'name') {
             gsStateNames.push(arg.v.toLowerCase());
-            // Check actual opacity value from pre-built map
             const opacity = gsOpacityMap[arg.v.toLowerCase()];
-            if (opacity !== undefined && opacity < 0.8) {
+            if (opacity !== undefined && opacity < 0.5) {
               hasLowOpacity = true;
             }
           }
         }
       }
       
-      // Detect diagonal rotation - broader detection
+      // Detect diagonal rotation (watermarks typically use ~45 degrees)
       if (op.n === 'Tm' && op.a.length >= 6) {
         const a = parseFloat(op.a[0].v || '1');
         const b = parseFloat(op.a[1].v || '0');
-        
         const angle = Math.atan2(b, a) * (180 / Math.PI);
-        // Detect any significant non-0/90 degree rotation
-        if (Math.abs(angle) > 15 && Math.abs(angle) < 85 && Math.abs(Math.abs(angle) - 90) > 5 && Math.abs(angle) < 175) {
-          hasRotation = true;
+        const absAngle = Math.abs(angle);
+        // Only detect angles near 45 degrees (diagonal watermarks)
+        if (absAngle > 25 && absAngle < 65) {
+          hasDiagonalRotation = true;
         }
       }
     }
     
-    // Check for watermark-related graphics state names
+    // Check for watermark-related graphics state names (fallback)
     if (!hasLowOpacity && gsStateNames.length > 0) {
-      hasLowOpacity = gsStateNames.some(name => /wm|water|overlay|stamp|transparent|fade/.test(name));
+      hasLowOpacity = gsStateNames.some(name => /wm|watermark|overlay|stamp|transparent/.test(name));
     }
     
-    // Watermark keyword detection
-    const watermarkKeywords = /watermark|draft|confidential|proprietary|secret|sample|internal|copy|reserved|trademark|®|™|©|preview|demo|trial|test|evaluation|review|unclassified/i;
-    const looksLikeWatermark = watermarkKeywords.test(textContent);
+    // Watermark keyword detection - only specific watermark-related words
+    const watermarkKeywords = /watermark|draft|confidential|proprietary/i;
+    const hasWatermarkKeyword = watermarkKeywords.test(textContent);
     
-    // Watermark detection with improved sensitivity
+    // Build indicators
     const indicators = [];
-    if (hasRotation) indicators.push('rotation');
-    if (looksLikeWatermark) indicators.push('keyword');
+    if (hasDiagonalRotation) indicators.push('rotation');
+    if (hasWatermarkKeyword) indicators.push('keyword');
     if (hasLowOpacity) indicators.push('opacity');
-    if (fontSize > 60) indicators.push('largeFont');
+    if (fontSize >= 60) indicators.push('largeFont');
     
-    // Single strong indicator is enough
-    if (looksLikeWatermark && (hasRotation || hasLowOpacity || fontSize > 40)) return true;
-    if (hasRotation && fontSize > 40 && textContent.length < 80) return true;
-    if (hasLowOpacity && fontSize > 30) return true;
+    // Multiple strong indicators
+    if (indicators.length >= 3) return true;
     
-    // Multiple weak indicators also indicate watermark
-    if (indicators.length >= 2) return true;
+    // Strong combined signals
+    if (hasDiagonalRotation && hasLowOpacity) return true;
+    if (hasDiagonalRotation && hasWatermarkKeyword) return true;
+    if (hasDiagonalRotation && fontSize >= 60) return true;
+    if (hasWatermarkKeyword && hasLowOpacity && fontSize >= 40) return true;
     
-    // Very large rotated text is likely watermark
-    if (hasRotation && fontSize > 50 && textContent.length < 60) return true;
+    // 2 medium indicators
+    if (indicators.length >= 2 && hasLowOpacity) return true;
+    if (indicators.length >= 2 && hasDiagonalRotation) return true;
     
     return false;
   };
