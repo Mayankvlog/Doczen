@@ -613,7 +613,7 @@ const removeWatermarkFromPdf = async (filePath, outputPath, options = {}) => {
       for (let ci = 0; ci < contentsObj.size(); ci++) items.push(contentsObj.get(ci));
       return items;
     }
-    return [page.node.get(PDFName.of('Contents'))];
+    return [contentsObj];
   };
 
   const getPageContent = (page) => {
@@ -631,7 +631,7 @@ const removeWatermarkFromPdf = async (filePath, outputPath, options = {}) => {
   };
 
   const setPageContent = (page, content) => {
-    const compressed = zlib.deflateRawSync(Buffer.from(content, 'utf8'));
+    const compressed = zlib.deflateSync(Buffer.from(content, 'utf8'));
     const dict = context.obj({ Filter: 'FlateDecode', Length: compressed.length });
     const rawStream = PDFRawStream.of(dict, new Uint8Array(compressed));
     const ref = context.register(rawStream);
