@@ -261,6 +261,7 @@ export const pdfAPI = {
     formData.append('file', file);
     formData.append('startNumber', options.startNumber || 1);
     formData.append('fontSize', options.fontSize || 12);
+    formData.append('position', options.position || 'bottom');
     return api.post('/pdf/add-page-numbers', formData, withProgress({
       timeout: 300000,
     }, onProgress));

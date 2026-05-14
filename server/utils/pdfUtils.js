@@ -28,7 +28,7 @@ const loadPdf = async (filePath, options = {}) => {
 };
 
 const savePdf = async (pdfDoc, outputPath) => {
-  const data = await pdfDoc.save();
+  const data = await pdfDoc.save({ useObjectStreams: false });
   await fs.promises.writeFile(outputPath, data);
   if (!fs.existsSync(outputPath)) {
     throw new Error(`Failed to write output file: ${outputPath}`);
@@ -206,20 +206,31 @@ const addPageNumbers = async (filePath, outputPath, options = {}) => {
   const color = options.color || rgb(0, 0, 0);
   const margin = options.margin !== undefined ? options.margin : size * 1.5;
 
-  const textHeight = font.heightAtSize(size);
+  const textHeight = Number.isFinite(font.heightAtSize(size)) ? font.heightAtSize(size) : size;
 
   pages.forEach((page, index) => {
     const { width, height } = page.getSize();
     const pageNum = startNumber + index;
     const text = `${pageNum}`;
-    const textWidth = font.widthOfTextAtSize(text, size);
 
-    const posX = x !== undefined ? x : (width - textWidth) / 2;
-    const posY = y !== undefined ? y : (
+    let textWidth;
+    try {
+      textWidth = font.widthOfTextAtSize(text, size);
+    } catch (_) {
+      textWidth = size * 0.6 * text.length;
+    }
+    if (!Number.isFinite(textWidth)) {
+      textWidth = size * 0.6 * text.length;
+    }
+
+    let posX = x !== undefined ? x : (width - textWidth) / 2;
+    let posY = y !== undefined ? y : (
       position === 'top'
         ? height - margin - textHeight
         : margin
     );
+    if (!Number.isFinite(posX)) posX = 0;
+    if (!Number.isFinite(posY)) posY = margin;
 
     page.drawText(text, {
       x: posX,
