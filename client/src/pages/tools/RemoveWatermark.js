@@ -5,11 +5,19 @@ import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
 
+const MODES = [
+  { value: 'auto', label: 'Auto', description: 'Try all removal strategies' },
+  { value: 'text', label: 'Text', description: 'Target text-based watermarks only' },
+];
+
 export default function RemoveWatermark() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [watermarkText, setWatermarkText] = useState('');
+  const [mode, setMode] = useState('auto');
+  const [removalResult, setRemovalResult] = useState(null);
   const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
 
   const handleProcess = async () => {
@@ -20,21 +28,41 @@ export default function RemoveWatermark() {
     setError('');
     setLoading(true);
     setResult(null);
+    setRemovalResult(null);
     clearDownload();
 
     try {
       const formData = new FormData();
       formData.append('file', file);
+      if (watermarkText.trim()) formData.append('text', watermarkText.trim());
+      formData.append('mode', mode);
       const data = await handleToolSubmit('/pdf/remove-watermark', formData, 'watermark_removed.pdf');
       setResult(data);
       if (data.blobUrl) {
+        setRemovalResult({ status: 'removed', pagesModified: data.pagesModified });
         setDownload(data.blobUrl, data.filename || 'watermark_removed.pdf');
       }
     } catch (err) {
-      setError(err.message || 'Failed to remove watermark. Please try again.');
+      const msg = err.message || '';
+      if (msg.includes('not removable') || msg.includes('flattened') || msg.includes('embedded')) {
+        setRemovalResult({ status: 'not_removable', message: msg });
+      } else {
+        setError(msg || 'Failed to remove watermark. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const getResultMessage = () => {
+    if (!removalResult) return null;
+    if (removalResult.status === 'removed') {
+      return { type: 'success', title: 'Watermark Removed', text: 'The watermark has been successfully removed from your PDF.' };
+    }
+    if (removalResult.status === 'not_removable') {
+      return { type: 'warning', title: 'Could Not Auto-Remove', text: removalResult.message || 'This watermark appears to be flattened or embedded in the page content and cannot be automatically removed.' };
+    }
+    return null;
   };
 
   return (
@@ -56,7 +84,7 @@ export default function RemoveWatermark() {
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
           <FileUploader
             accept=".pdf"
-            onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
+            onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); setRemovalResult(null); clearDownload(); }}
           />
           {file && (
             <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
@@ -68,14 +96,64 @@ export default function RemoveWatermark() {
           )}
         </div>
 
-        <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">About Watermark Removal</h2>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            This tool attempts to remove watermarks from your PDF documents. It works with both
-            text-based and image-based watermarks. Upload your watermarked PDF and we will clean
-            it up for you. Results may vary depending on the complexity of the watermark.
-          </p>
+        <div className="card mb-6 space-y-4">
+          <h2 className="text-lg font-semibold text-gray-800">Options</h2>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Watermark Text <span className="text-gray-400">(optional)</span>
+            </label>
+            <input
+              type="text"
+              value={watermarkText}
+              onChange={(e) => setWatermarkText(e.target.value)}
+              placeholder="e.g. CONFIDENTIAL, DRAFT, SAMPLE"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+            />
+            <p className="text-xs text-gray-400 mt-1">Known watermark text helps detection</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Mode</label>
+            <div className="grid grid-cols-2 gap-3">
+              {MODES.map((m) => (
+                <button
+                  key={m.value}
+                  type="button"
+                  onClick={() => setMode(m.value)}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    mode === m.value
+                      ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-sm font-medium text-gray-800">{m.label}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{m.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
+
+        {removalResult && getResultMessage() && (
+          <div className={`mb-6 p-4 border rounded-xl text-sm flex items-start gap-3 ${
+            getResultMessage().type === 'success'
+              ? 'bg-green-50 border-green-200 text-green-700'
+              : 'bg-amber-50 border-amber-200 text-amber-700'
+          }`}>
+            <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {getResultMessage().type === 'success' ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              )}
+            </svg>
+            <div>
+              <div className="font-medium">{getResultMessage().title}</div>
+              <div className="mt-1">{getResultMessage().text}</div>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
@@ -85,6 +163,16 @@ export default function RemoveWatermark() {
             {error}
           </div>
         )}
+
+        <div className="card mb-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">About Watermark Removal</h2>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            This tool uses multiple strategies to detect and remove watermarks from your PDF documents.
+            It scans for structured watermark artifacts, recurring overlay objects, and text-based watermarks.
+            Results may vary depending on how the watermark was embedded. Flattened or scanned watermarks
+            cannot always be automatically removed.
+          </p>
+        </div>
 
         <button
           onClick={handleProcess}
@@ -109,7 +197,7 @@ export default function RemoveWatermark() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>Your cleaned PDF is ready. Download started automatically.</p>
             {downloadUrl && (
               <button
                 type="button"
@@ -124,7 +212,7 @@ export default function RemoveWatermark() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="watermark removed" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setRemovalResult(null); clearDownload(); }} action="watermark removed" />
           </div>
         )}
       </div>

@@ -1114,14 +1114,24 @@ exports.removeWatermark = async (req, res) => {
 
     const filePath = req.files[0].path;
     const outputPath = getOutputPath(req.files[0].originalname, 'clean');
-    
+    const watermarkText = req.body.text || '';
+    const mode = req.body.mode || 'auto';
+
     console.log("Input Path:", filePath);
     console.log("Output Path:", outputPath);
+    console.log("Watermark Text:", watermarkText || '(not specified)');
+    console.log("Mode:", mode);
 
     const originalSize = fs.statSync(filePath).size;
     console.log("Original File Size:", originalSize);
 
-    await removeWatermarkFromPdf(filePath, outputPath);
+    const result = await removeWatermarkFromPdf(filePath, outputPath, { watermarkText, mode });
+
+    if (!result.modified) {
+      const error = new Error(result.message);
+      error.statusCode = 422;
+      throw error;
+    }
 
     console.log("Output Path after processing:", outputPath);
     console.log("Exists:", fs.existsSync(outputPath));
@@ -1175,7 +1185,7 @@ exports.removeWatermark = async (req, res) => {
 
     return {
       __sendFile: true,
-      message: 'Watermark removed successfully',
+      message: result.message || 'Watermark removed successfully',
       fileName: path.basename(outputPath),
       originalName: `clean_${req.files[0].originalname}`,
       size: outStat.size,
