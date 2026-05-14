@@ -586,7 +586,7 @@ const removeWatermarkFromPdf = async (filePath, outputPath, options = {}) => {
   const pages = pdfDoc.getPages();
   const context = pdfDoc.context;
   const originalPageCount = pdfDoc.getPageCount();
-  const wmKeywords = /watermark|confidential|draft|sample|proprietary|secret|reviewed|not\s*for\s*distribution/i;
+  const wmKeywords = /watermark|confidential|proprietary|not\s*for\s*distribution/i;
   const customText = (options.watermarkText || '').trim();
   const customRegex = customText ? new RegExp(customText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') : null;
   const mode = options.mode || 'auto';
@@ -674,67 +674,6 @@ const removeWatermarkFromPdf = async (filePath, outputPath, options = {}) => {
     }
   }
 
-  // --- Phase 2: Scan all pages to identify recurring watermark text ---
-  const wmTextFrequency = new Map();
-  const perPageTexts = [];
-
-  const extractTextsFromBlock = (block) => {
-    const texts = [];
-    const litMatches = block.match(/\(((?:[^\\)]|\\.)*)\)/g);
-    if (litMatches) {
-      for (const s of litMatches) {
-        texts.push(s.slice(1, -1).replace(/\\(.)/g, '$1'));
-      }
-    }
-    const hexMatches = block.match(/<([0-9A-Fa-f]+)>/g);
-    if (hexMatches) {
-      for (const h of hexMatches) {
-        try {
-          const decoded = Buffer.from(h.slice(1, -1), 'hex').toString('utf8');
-          if (decoded) texts.push(decoded);
-        } catch (e) {}
-      }
-    }
-    return texts;
-  };
-
-  const textMatches = (text) => {
-    if (wmKeywords.test(text)) return true;
-    if (customRegex && customRegex.test(text)) return true;
-    return false;
-  };
-
-  for (let pi = 0; pi < pages.length; pi++) {
-    const page = pages[pi];
-    const content = getPageContent(page);
-    if (!content.trim()) { perPageTexts.push([]); continue; }
-    const blocks = content.match(/BT[\s\S]*?ET/g) || [];
-    const pageTexts = new Set();
-    for (const block of blocks) {
-      const texts = extractTextsFromBlock(block);
-      for (const t of texts) {
-        if (textMatches(t)) {
-          const normalized = t.toLowerCase().trim();
-          pageTexts.add(normalized);
-        }
-      }
-    }
-    perPageTexts.push(blocks);
-    for (const normalized of pageTexts) {
-      if (!wmTextFrequency.has(normalized)) wmTextFrequency.set(normalized, new Set());
-      wmTextFrequency.get(normalized).add(pi);
-    }
-  }
-
-  const wmThreshold = Math.ceil(pages.length * 0.4);
-  const recurringWmTexts = new Set();
-  for (const [text, pageSet] of wmTextFrequency) {
-    if (pageSet.size >= wmThreshold) {
-      recurringWmTexts.add(text);
-    }
-  }
-
-  // --- Phase 3: Remove watermark text blocks from each page ---
   let pagesModified = 0;
 
   for (let pi = 0; pi < pages.length; pi++) {
@@ -839,14 +778,31 @@ const removeWatermarkFromPdf = async (filePath, outputPath, options = {}) => {
       }
     }
 
-    // Strategy 4: Remove watermark text from content streams (block-level, frequency-gated)
+    // Strategy 4: Remove watermark text from content streams
     if (mode === 'auto' || mode === 'text') {
       const before = content;
       content = content.replace(/BT[\s\S]*?ET/g, (block) => {
-        const texts = extractTextsFromBlock(block);
-        if (!texts.length) return block;
-        const hasRecurringWm = texts.some(t => recurringWmTexts.has(t.toLowerCase().trim()));
-        if (hasRecurringWm) return '';
+        const strs = [];
+        const litMatches = block.match(/\(((?:[^\\)]|\\.)*)\)/g);
+        if (litMatches) {
+          for (const s of litMatches) {
+            strs.push(s.slice(1, -1).replace(/\\(.)/g, '$1'));
+          }
+        }
+        const hexMatches = block.match(/<([0-9A-Fa-f]+)>/g);
+        if (hexMatches) {
+          for (const h of hexMatches) {
+            try {
+              const decoded = Buffer.from(h.slice(1, -1), 'hex').toString('utf8');
+              if (decoded) strs.push(decoded);
+            } catch (e) {}
+          }
+        }
+        if (!strs.length) return block;
+        const joined = strs.join(' ');
+        const concated = strs.join('');
+        if (wmKeywords.test(joined) || wmKeywords.test(concated)) return '';
+        if (customRegex && (customRegex.test(joined) || customRegex.test(concated))) return '';
         return block;
       });
       if (content !== before) pageChanged = true;
