@@ -56,7 +56,7 @@ const expectedMimeTypes = {
   reorder: ['application/pdf'],
   deletePages: ['application/pdf'],
   pdfToJpg: ['application/pdf'],
-  jpgToPdf: ['image/jpeg', 'image/png'],
+  jpgToPdf: ['image/jpeg', 'image/png', 'image/webp' ,'image/tiff', 'image/jpg'],
   pdfToTxt: ['application/pdf'],
   repair: ['application/pdf'],
   pdfToPdfa: ['application/pdf'],
@@ -797,17 +797,26 @@ exports.jpgToPdf = async (req, res) => {
         err.statusCode = 400;
         throw err;
       }
+
       let image;
       try {
-        if (file.mimetype === 'image/png') {
+        const metadata = await sharp(imageBytes).metadata();
+        const format = metadata.format;
+
+        if (format === 'png') {
           image = await pdfDoc.embedPng(imageBytes);
         } else {
           image = await pdfDoc.embedJpg(imageBytes);
         }
       } catch {
-        const err = new Error(`Invalid or corrupted image: ${file.originalname}. Only JPEG and PNG files are supported.`);
-        err.statusCode = 400;
-        throw err;
+        try {
+          const jpegBuffer = await sharp(imageBytes).jpeg({ quality: 92 }).toBuffer();
+          image = await pdfDoc.embedJpg(jpegBuffer);
+        } catch {
+          const err = new Error(`Invalid or corrupted image: ${file.originalname}. Only JPEG and PNG files are supported.`);
+          err.statusCode = 400;
+          throw err;
+        }
       }
       const page = pdfDoc.addPage([image.width, image.height]);
       page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
