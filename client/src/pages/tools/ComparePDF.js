@@ -29,7 +29,7 @@ export default function ComparePDF() {
       const data = await handleToolSubmit('/pdf/compare', formData);
       setComparison(data);
     } catch (err) {
-      setError(err.message || t('tool.failedCompare', 'Failed to compare PDFs. Please try again.'));
+      setError(err.message || t('tool.compareError', 'Failed to compare PDFs. Please try again.'));
     } finally {
       setLoading(false);
     }

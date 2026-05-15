@@ -19,13 +19,13 @@ export default function Register() {
 
   const validate = () => {
     if (!form.name || !form.email || !form.password || !form.confirmPassword) {
-      return t('register.errorRequired', 'Please fill in all fields.');
+      return t('register.error.required', 'Please fill in all fields.');
     }
     if (form.password.length < 6) {
-      return t('register.errorPasswordLength', 'Password must be at least 6 characters.');
+      return t('register.error.passwordLength', 'Password must be at least 6 characters.');
     }
     if (form.password !== form.confirmPassword) {
-      return t('register.errorPasswordMatch', 'Passwords do not match.');
+      return t('register.error.passwordMatch', 'Passwords do not match.');
     }
     return null;
   };
@@ -45,7 +45,7 @@ export default function Register() {
       await register(form.name, form.email, form.password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || t('register.errorFailed', 'Registration failed. Please try again.'));
+      setError(err.response?.data?.message || t('register.error.failed', 'Registration failed. Please try again.'));
     } finally {
       setLoading(false);
     }

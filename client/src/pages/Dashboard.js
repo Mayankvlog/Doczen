@@ -35,8 +35,8 @@ export default function Dashboard() {
   const { t } = useLanguage();
 
   const quickActions = [
-    { emoji: '🔗', label: t('dashboard.quick.merge', 'Merge PDF'), path: '/merge-pdf', color: 'bg-indigo-500' },
-    { emoji: '✂️', label: t('dashboard.quick.split', 'Split PDF'), path: '/split-pdf', color: 'bg-blue-500' },
+    { emoji: '🔗', label: t('dashboard.quick.mergePdf', 'Merge PDF'), path: '/merge-pdf', color: 'bg-indigo-500' },
+    { emoji: '✂️', label: t('dashboard.quick.splitPdf', 'Split PDF'), path: '/split-pdf', color: 'bg-blue-500' },
     { emoji: '📦', label: t('dashboard.quick.compress', 'Compress'), path: '/compress-pdf', color: 'bg-emerald-500' },
     { emoji: '🔄', label: t('dashboard.quick.rotate', 'Rotate'), path: '/rotate-pdf', color: 'bg-amber-500' },
     { emoji: '📄', label: t('dashboard.quick.jpgToPdf', 'JPG to PDF'), path: '/jpg-to-pdf', color: 'bg-teal-500' },

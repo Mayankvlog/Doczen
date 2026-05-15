@@ -16,7 +16,7 @@ export default function History() {
     addPageNumbers: t('nav.tools.addPageNumbers', 'Add Page Numbers'),
     addWatermark: t('nav.tools.addWatermark', 'Add Watermark'),
     extractText: t('nav.tools.extractText', 'Extract Text'),
-    reorder: t('nav.tools.reorder', 'Reorder Pages'),
+    reorder: t('nav.tools.reorderPages', 'Reorder Pages'),
     deletePages: t('nav.tools.deletePages', 'Delete Pages'),
     pdfToJpg: t('nav.tools.pdfToJpg', 'PDF to JPG'),
     jpgToPdf: t('nav.tools.jpgToPdf', 'JPG to PDF'),

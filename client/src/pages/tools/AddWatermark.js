@@ -17,7 +17,7 @@ export default function AddWatermark() {
 
   const handleProcess = async () => {
     if (!file) {
-      setError(t('tool.selectPdfFile', 'Please select a PDF file.'));
+      setError(t('tool.selectPdf', 'Please select a PDF file.'));
       return;
     }
     if (!watermarkText.trim()) {
@@ -86,11 +86,11 @@ export default function AddWatermark() {
               type="text"
               value={watermarkText}
               onChange={(e) => setWatermarkText(e.target.value)}
-              placeholder={t('tool.watermarkPlaceholder', 'e.g. CONFIDENTIAL, DRAFT, SAMPLE')}
+              placeholder={t('tool.watermarkExample', 'e.g. CONFIDENTIAL, DRAFT, SAMPLE')}
               className="input-field"
             />
             <p className="mt-2 text-xs text-gray-500">
-              {t('tool.watermarkHint', 'The watermark will be applied diagonally across every page.')}
+              {t('tool.watermarkDesc', 'The watermark will be applied diagonally across every page.')}
             </p>
           </div>
         </div>

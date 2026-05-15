@@ -19,7 +19,7 @@ export default function AddPageNumbers() {
 
   const handleProcess = async () => {
     if (!file) {
-      setError(t('tool.selectPdfFile', 'Please select a PDF file.'));
+      setError(t('tool.selectPdf', 'Please select a PDF file.'));
       return;
     }
     if (startNumber < 1) {

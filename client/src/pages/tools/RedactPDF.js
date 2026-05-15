@@ -128,7 +128,7 @@ export default function RedactPDF() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>{t('tool.fileConvertedSuccess', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"

@@ -2262,15 +2262,18 @@ export function LanguageProvider({ children }) {
     return String(text || key);
   }, [lang]);
 
-  // Enhanced RTL detection for all RTL languages
   const rtlLanguages = ['ar', 'he', 'fa', 'ur', 'yi', 'ji', 'iw'];
   const dir = rtlLanguages.includes(lang) ? 'rtl' : 'ltr';
 
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.body.dir = dir;
+    document.documentElement.dir = dir;
+  }, [lang, dir]);
+
   return (
     <TranslationContext.Provider value={{ lang, setLanguage, currentLang, t, dir, LANGUAGE_MAP }}>
-      <div dir={dir} lang={lang}>
-        {children}
-      </div>
+      {children}
     </TranslationContext.Provider>
   );
 }

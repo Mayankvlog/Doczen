@@ -27,7 +27,7 @@ export default function RemoveWatermark() {
 
   const handleProcess = async () => {
     if (!file) {
-      setError(t('tool.selectPdfWatermark', 'Please select a PDF file to remove watermark from.'));
+      setError(t('tool.selectPdfRemoveWatermark', 'Please select a PDF file to remove watermark from.'));
       return;
     }
     setError('');
@@ -52,7 +52,7 @@ export default function RemoveWatermark() {
       if (msg.includes('not removable') || msg.includes('flattened') || msg.includes('embedded')) {
         setRemovalResult({ status: 'not_removable', message: msg });
       } else {
-        setError(msg || t('tool.failedRemoveWatermark', 'Failed to remove watermark. Please try again.'));
+        setError(msg || t('tool.watermarkRemoveError', 'Failed to remove watermark. Please try again.'));
       }
     } finally {
       setLoading(false);
@@ -170,9 +170,9 @@ export default function RemoveWatermark() {
         )}
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.aboutWatermark', 'About Watermark Removal')}</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.watermarkRemoval', 'About Watermark Removal')}</h2>
           <p className="text-sm text-gray-600 leading-relaxed">
-            {t('tool.watermarkAboutDesc', 'This tool uses multiple strategies to detect and remove watermarks from your PDF documents. It scans for structured watermark artifacts, recurring overlay objects, and text-based watermarks. Results may vary depending on how the watermark was embedded. Flattened or scanned watermarks cannot always be automatically removed.')}
+            {t('tool.watermarkRemovalDesc', 'This tool uses multiple strategies to detect and remove watermarks from your PDF documents. It scans for structured watermark artifacts, recurring overlay objects, and text-based watermarks. Results may vary depending on how the watermark was embedded. Flattened or scanned watermarks cannot always be automatically removed.')}
           </p>
         </div>
 
@@ -214,7 +214,7 @@ export default function RemoveWatermark() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setRemovalResult(null); clearDownload(); }} action={t('tool.watermarkRemovedAction', 'watermark removed')} />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setRemovalResult(null); clearDownload(); }} action={t('tool.watermarkRemovedResult', 'watermark removed')} />
           </div>
         )}
       </div>

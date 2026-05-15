@@ -36,7 +36,7 @@ export default function Metadata() {
       const data = await handleToolSubmit('/pdf/read-metadata', formData);
       setMetadataData(data.metadata);
     } catch (err) {
-      setError(err.message || t('tool.failedReadMetadata', 'Failed to read metadata. Please try again.'));
+      setError(err.message || t('tool.metadataReadError', 'Failed to read metadata. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export default function Metadata() {
         setDownload(data.blobUrl, data.filename || 'metadata.pdf');
       }
     } catch (err) {
-      setError(err.message || t('tool.failedWriteMetadata', 'Failed to write metadata. Please try again.'));
+      setError(err.message || t('tool.metadataWriteError', 'Failed to write metadata. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -166,7 +166,7 @@ export default function Metadata() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder={t('tool.documentTitlePlaceholder', 'Document title')}
+                  placeholder={t('tool.documentTitle', 'Document title')}
                   className="input-field"
                 />
               </div>
@@ -176,7 +176,7 @@ export default function Metadata() {
                   type="text"
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
-                  placeholder={t('tool.authorNamePlaceholder', 'Author name')}
+                  placeholder={t('tool.author', 'Author name')}
                   className="input-field"
                 />
               </div>
@@ -186,7 +186,7 @@ export default function Metadata() {
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder={t('tool.documentSubjectPlaceholder', 'Document subject')}
+                  placeholder={t('tool.subject', 'Document subject')}
                   className="input-field"
                 />
               </div>
@@ -196,7 +196,7 @@ export default function Metadata() {
                   type="text"
                   value={keywords}
                   onChange={(e) => setKeywords(e.target.value)}
-                  placeholder={t('tool.keywordsPlaceholder', 'keyword1, keyword2, keyword3')}
+                  placeholder={t('tool.keywords', 'keyword1, keyword2, keyword3')}
                   className="input-field"
                 />
               </div>
@@ -267,7 +267,7 @@ export default function Metadata() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>{t('tool.fileConvertedSuccess', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
@@ -282,7 +282,7 @@ export default function Metadata() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setMetadataData(null); clearDownload(); }} action={t('tool.processed', 'processed')} />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setMetadataData(null); clearDownload(); }} action={t('tool.edited', 'processed')} />
           </div>
         )}
       </div>

@@ -22,7 +22,7 @@ export default function Login() {
     setError('');
 
     if (!form.email || !form.password) {
-      setError(t('login.errorRequired', 'Please fill in all fields.'));
+      setError(t('login.error.required', 'Please fill in all fields.'));
       return;
     }
 
@@ -31,7 +31,7 @@ export default function Login() {
       await login(form.email, form.password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || t('login.errorInvalid', 'Invalid email or password.'));
+      setError(err.response?.data?.message || t('login.error.invalid', 'Invalid email or password.'));
     } finally {
       setLoading(false);
     }

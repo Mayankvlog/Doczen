@@ -32,7 +32,7 @@ export default function ResultCard({ result, onReset, action = 'processed', onDo
         </div>
         <div>
           <h3 className="text-sm font-semibold text-gray-900 capitalize">{action}</h3>
-          <p className="text-xs text-gray-500">Your file was successfully {action}.</p>
+          <p className="text-xs text-gray-500">{t('result.action', 'Your file was successfully {action}.', { action })}</p>
         </div>
       </div>
 
