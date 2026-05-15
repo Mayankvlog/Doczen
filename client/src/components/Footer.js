@@ -63,10 +63,14 @@ export default function Footer() {
               {t('footer.company', 'Company')}
             </h3>
             <ul className="space-y-2.5">
-              {[t('footer.about', 'About'), t('footer.privacy', 'Privacy Policy'), t('footer.terms', 'Terms of Service')].map((item) => (
-                <li key={item}>
-                  <Link to={`/${item.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm text-gray-400 hover:text-indigo-400 transition-colors">
-                    {item}
+              {[
+                { label: t('footer.about', 'About'), path: '/about' },
+                { label: t('footer.privacy', 'Privacy Policy'), path: '/privacy-policy' },
+                { label: t('footer.terms', 'Terms of Service'), path: '/terms-of-service' },
+              ].map((item) => (
+                <li key={item.path}>
+                  <Link to={item.path} className="text-sm text-gray-400 hover:text-indigo-400 transition-colors">
+                    {item.label}
                   </Link>
                 </li>
               ))}

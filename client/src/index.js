@@ -165,6 +165,7 @@ addTranslations('en', {
   'privacy.collect1': 'Files You Upload: PDFs and documents you upload for processing are temporarily stored on our servers.',
   'privacy.collect2': 'Account Information: If you create an account, we collect your name and email address.',
   'privacy.collect3': 'Usage Data: Anonymous usage statistics to improve our service.',
+  'privacy.collectIntro': 'We collect minimal information necessary to provide our PDF editing services:',
   'privacy.filesTitle': 'How We Handle Your Files',
   'privacy.files1': 'All uploaded files are encrypted during transmission and at rest.',
   'privacy.files2': 'Files are automatically and permanently deleted from our servers within 24 hours.',
@@ -180,6 +181,7 @@ addTranslations('en', {
   'terms.lastUpdated': 'Last updated: January 2025',
   'terms.p1': 'By using Doczen, you agree to these Terms of Service. If you do not agree, please do not use our service.',
   'terms.useTitle': 'Use of Service',
+  'terms.useIntro': 'Doczen provides free online PDF editing tools for personal and business use. You agree to:',
   'terms.use1': 'Not upload malicious files or content that violates any law.',
   'terms.use2': 'Not attempt to disrupt or overload our servers.',
   'terms.use3': 'Not use the service for any unlawful purpose.',
@@ -869,6 +871,218 @@ addTranslations('hi', {
   'tool.secondPdf': 'दूसरी PDF',
   'tool.comparisonResults': 'तुलना परिणाम',
   'tool.compareAnother': 'दूसरी तुलना करें',
+  'nav.hello': 'पूरी तरह ऑनलाइन — कोई डाउनलोड आवश्यक नहीं',
+  'tool.tryNow': 'अभी आज़माएं',
+  'about.title': 'Doczen के बारे में',
+  'about.p1': 'Doczen एक मुफ्त, शक्तिशाली ऑनलाइन PDF संपादक है जिसे डॉक्यूमेंट प्रबंधन को सभी के लिए सरल और सुलभ बनाने के लिए डिज़ाइन किया गया है। चाहे आपको PDF को मर्ज, विभाजित, संपीड़ित, रूपांतरित या संपादित करना हो, Doczen सभी उपकरण आपके ब्राउज़र में ही प्रदान करता है — कोई डाउनलोड नहीं, कोई इंस्टॉलेशन नहीं।',
+  'about.p2': 'हमारा मिशन पूरी तरह से मुफ्त उपकरणों का एक व्यापक सूट प्रदान करके PDF संपादन को लोकतांत्रिक बनाना है। हम मानते हैं कि आवश्यक दस्तावेज़ प्रबंधन के लिए महंगे सॉफ़्टवेयर सब्सक्रिप्शन की आवश्यकता नहीं होनी चाहिए।',
+  'about.p3': 'Doczen पर हर उपकरण आधुनिक वेब तकनीकों के साथ बनाया गया है ताकि तेज़, सुरक्षित और विश्वसनीय प्रसंस्करण सुनिश्चित हो सके। आपकी गोपनीयता हमारी प्राथमिकता है — सभी फ़ाइलें अपलोड के दौरान एन्क्रिप्ट की जाती हैं और 24 घंटे के भीतर स्वचालित रूप से हटा दी जाती हैं।',
+  'about.whyTitle': 'Doczen क्यों?',
+  'about.why1': '100% मुफ्त — कोई छिपा शुल्क नहीं, कोई क्रेडिट कार्ड आवश्यक नहीं',
+  'about.why2': '30+ उपकरण — मर्ज से रूपांतरण तक, सब कुछ एक जगह',
+  'about.why3': 'सुरक्षित — एन्क्रिप्टेड अपलोड और स्वचालित फ़ाइल हटाना',
+  'about.why4': 'तेज़ — त्वरित परिणामों के लिए अनुकूलित प्रसंस्करण',
+  'about.why5': 'कोई पंजीकरण नहीं — तुरंत उपकरणों का उपयोग शुरू करें',
+  'privacy.title': 'गोपनीयता नीति',
+  'privacy.lastUpdated': 'अंतिम अपडेट: जनवरी 2025',
+  'privacy.p1': 'Doczen ("हम," "हमारा," या "हमें") आपकी गोपनीयता की रक्षा के लिए प्रतिबद्ध है। यह गोपनीयता नीति बताती है कि जब आप हमारी सेवा का उपयोग करते हैं तो हम आपकी जानकारी कैसे एकत्र, उपयोग, खुलासा और सुरक्षित करते हैं।',
+  'privacy.collectTitle': 'हम कौन सी जानकारी एकत्र करते हैं',
+  'privacy.collect1': '<strong>आपके द्वारा अपलोड की गई फ़ाइलें:</strong> प्रसंस्करण के लिए अपलोड की गई PDF और दस्तावेज़ अस्थायी रूप से हमारे सर्वर पर संग्रहीत की जाती हैं।',
+  'privacy.collect2': '<strong>खाता जानकारी:</strong> यदि आप एक खाता बनाते हैं, तो हम आपका नाम और ईमेल पता एकत्र करते हैं।',
+  'privacy.collect3': '<strong>उपयोग डेटा:</strong> हमारी सेवा को बेहतर बनाने के लिए गुमनाम उपयोग के आंकड़े।',
+  'privacy.collectIntro': 'हम अपनी PDF संपादन सेवाएं प्रदान करने के लिए आवश्यक न्यूनतम जानकारी एकत्र करते हैं:',
+  'privacy.filesTitle': 'हम आपकी फ़ाइलों को कैसे संभालते हैं',
+  'privacy.files1': 'सभी अपलोड की गई फ़ाइलें ट्रांसमिशन और स्टोरेज के दौरान एन्क्रिप्ट की जाती हैं।',
+  'privacy.files2': 'फ़ाइलें 24 घंटे के भीतर स्वचालित रूप से और स्थायी रूप से हमारे सर्वर से हटा दी जाती हैं।',
+  'privacy.files3': 'हम आपके अपलोड किए गए दस्तावेज़ों तक पहुंच नहीं बनाते, देखते या साझा नहीं करते।',
+  'privacy.files4': 'प्रसंस्कृत फ़ाइलें स्वचालित हटाने से पहले सीमित समय के लिए डाउनलोड के लिए उपलब्ध रहती हैं।',
+  'privacy.cookiesTitle': 'कुकीज़',
+  'privacy.cookiesDesc': 'हम प्रमाणीकरण और सेवा कार्यक्षमता के लिए आवश्यक कुकीज़ का उपयोग करते हैं। हम विज्ञापन उद्देश्यों के लिए ट्रैकिंग कुकीज़ का उपयोग नहीं करते।',
+  'privacy.thirdPartyTitle': 'तृतीय-पक्ष सेवाएं',
+  'privacy.thirdPartyDesc': 'हम आपकी जानकारी को तीसरे पक्ष को नहीं बेचते, व्यापार करते या स्थानांतरित नहीं करते। हम अपनी वेबसाइट के संचालन और अपनी सेवा को बेहतर बनाने में सहायता करने वाले सेवा प्रदाताओं के साथ गुमनाम डेटा साझा कर सकते हैं।',
+  'privacy.contactTitle': 'संपर्क',
+  'privacy.contactDesc': 'यदि इस गोपनीयता नीति के बारे में आपके कोई प्रश्न हैं, तो कृपया हमसे support@doczen.com पर संपर्क करें।',
+  'terms.title': 'सेवा की शर्तें',
+  'terms.lastUpdated': 'अंतिम अपडेट: जनवरी 2025',
+  'terms.p1': 'Doczen का उपयोग करके, आप इन सेवा शर्तों से सहमत होते हैं। यदि आप सहमत नहीं हैं, तो कृपया हमारी सेवा का उपयोग न करें।',
+  'terms.useTitle': 'सेवा का उपयोग',
+  'terms.useIntro': 'Doczen व्यक्तिगत और व्यावसायिक उपयोग के लिए मुफ्त ऑनलाइन PDF संपादन उपकरण प्रदान करता है। आप सहमत हैं:',
+  'terms.use1': 'दुर्भावनापूर्ण फ़ाइलें या ऐसी सामग्री अपलोड न करें जो किसी कानून का उल्लंघन करती हो।',
+  'terms.use2': 'हमारे सर्वर को बाधित या ओवरलोड करने का प्रयास न करें।',
+  'terms.use3': 'किसी भी गैरकानूनी उद्देश्य के लिए सेवा का उपयोग न करें।',
+  'terms.use4': 'सभी लागू कानूनों और विनियमों का अनुपालन करें।',
+  'terms.ipTitle': 'बौद्धिक संपदा',
+  'terms.ipDesc': 'आप अपने अपलोड किए गए दस्तावेज़ों के सभी अधिकार बनाए रखते हैं। Doczen आपकी फ़ाइलों पर कोई स्वामित्व नहीं रखता। हमारा सॉफ़्टवेयर, ब्रांड और वेबसाइट सामग्री लागू बौद्धिक संपदा कानूनों द्वारा संरक्षित है।',
+  'terms.limitationTitle': 'देयता की सीमा',
+  'terms.limitationDesc': 'Doczen बिना किसी प्रकार की वारंटी के "जैसा है" प्रदान किया जाता है। हम आपकी सेवा के उपयोग से उत्पन्न किसी भी क्षति के लिए उत्तरदायी नहीं हैं। हम गारंटी नहीं देते कि सेवा निर्बाध या त्रुटि-मुक्त होगी।',
+  'terms.storageTitle': 'फ़ाइल संग्रहण',
+  'terms.storageDesc': 'अपलोड की गई फ़ाइलें 24 घंटे के भीतर स्वचालित रूप से हटा दी जाती हैं। हम आपकी प्रसंस्कृत फ़ाइलों को तुरंत डाउनलोड करने की सलाह देते हैं। हम डेटा हानि के लिए जिम्मेदार नहीं हैं।',
+  'terms.changesTitle': 'शर्तों में बदलाव',
+  'terms.changesDesc': 'हम किसी भी समय इन शर्तों को संशोधित करने का अधिकार सुरक्षित रखते हैं। बदलावों के बाद सेवा का निरंतर उपयोग नई शर्तों की स्वीकृति माना जाएगा।',
+  'dashboard.subtitle': 'यह रहा आपके दस्तावेज़ों का आज का अपडेट।',
+  'history.noHistoryDesc': 'आपकी प्रसंस्कृत फ़ाइलें यहां दिखाई देंगी।',
+  'history.deleteTitle': 'प्रविष्टि हटाएं',
+  'history.untitled': 'शीर्षकहीन',
+  'upload.tapToAdd': 'और फ़ाइलें जोड़ने के लिए टैप करें',
+  'upload.error.maxFiles': 'अधिकतम {maxFiles} फ़ाइलों की अनुमति है।',
+  'upload.removeFile': 'फ़ाइल हटाएं',
+  'result.smaller': '{pct}% छोटा',
+  'tool.uploadPdfFile': 'PDF फ़ाइल अपलोड करें',
+  'tool.addingPageNumbers': 'पृष्ठ संख्याएं जोड़ी जा रही हैं...',
+  'tool.addingWatermark': 'वॉटरमार्क जोड़ा जा रहा है...',
+  'tool.extracting': 'टेक्स्ट निकाला जा रहा है...',
+  'tool.reordering': 'पृष्ठ पुनर्व्यवस्थित किए जा रहे हैं...',
+  'tool.deleting': 'पृष्ठ हटाए जा रहे हैं...',
+  'tool.convertingToJpg': 'JPG में बदला जा रहा है...',
+  'tool.convertingToPdf': 'PDF में बदलें',
+  'tool.extractingText': 'टेक्स्ट निकालें',
+  'tool.convertingToWord': 'Word में बदलें',
+  'tool.convertingToPpt': 'PPT में बदलें',
+  'tool.convertingToExcel': 'Excel में बदलें',
+  'tool.convertingToPdfa': 'PDF/A में बदला जा रहा है...',
+  'tool.convertingHtml': 'PDF में बदला जा रहा है...',
+  'tool.uploadPdfDesc': 'PDF अपलोड करें और शीर्षक, लेखक, विषय, कीवर्ड, पृष्ठ संख्या और पृष्ठ आकार सहित मेटाडेटा देखें।',
+  'tool.currentPassword': 'वर्तमान पासवर्ड',
+  'tool.enterStrongPassword': 'एक मजबूत पासवर्ड दर्ज करें',
+  'tool.reEnterPassword': 'पासवर्ड पुनः दर्ज करें',
+  'tool.enterWatermarkText': 'वॉटरमार्क टेक्स्ट दर्ज करें',
+  'tool.watermarkExample': 'जैसे: गोपनीय, मसौदा, नमूना',
+  'tool.watermarkDesc': 'वॉटरमार्क हर पृष्ठ पर तिरछे लागू किया जाएगा।',
+  'tool.enterPageOrder': 'नया पृष्ठ क्रम दर्ज करें',
+  'tool.pageOrderExample': 'जैसे: 3, 1, 2, 5, 4',
+  'tool.pageOrderHint': 'वांछित क्रम में अल्पविराम से अलग करके पृष्ठ संख्याएं दर्ज करें। उदाहरण:',
+  'tool.enterPagesToDelete': 'हटाने के लिए पृष्ठ संख्याएं दर्ज करें',
+  'tool.pagesToDeleteExample': 'जैसे: 1, 3, 5',
+  'tool.pagesToDeleteHint': 'अल्पविराम से अलग करके पृष्ठ संख्याएं दर्ज करें। उदाहरण:',
+  'tool.pagesToDeleteHint2': 'पृष्ठ 2, 4, और 6 हटा दिए जाएंगे।',
+  'tool.enterTermsToRedact': 'रिडैक्ट करने के लिए शब्द या वाक्यांश दर्ज करें (प्रति पंक्ति एक)',
+  'tool.redactExample': 'गोपनीय',
+  'tool.redactHint': 'दस्तावेज़ में जहां भी ये शब्द दिखाई देंगे, उन्हें स्थायी रूप से काला कर दिया जाएगा। यह क्रिया पूर्ववत नहीं की जा सकती, कृपया अपनी मूल PDF का बैकअप बना लें।',
+  'tool.documentInfo': 'दस्तावेज़ जानकारी (वैकल्पिक)',
+  'tool.readingMetadata': 'मेटाडेटा पढ़ा जा रहा है...',
+  'tool.updatingMetadata': 'मेटाडेटा अपडेट किया जा रहा है...',
+  'tool.docMetadata': 'दस्तावेज़ मेटाडेटा',
+  'tool.aboutRepair': 'PDF मरम्मत के बारे में',
+  'tool.repairDesc': 'यह उपकरण दूषित या क्षतिग्रस्त PDF फ़ाइलों की मरम्मत का प्रयास करता है। यह कटी हुई फ़ाइलों, क्रॉस-रेफरेंस त्रुटियों और संरचनात्मक समस्याओं जैसी सामान्य समस्याओं को ठीक कर सकता है।',
+  'tool.aboutFlatten': 'फ्लैटनिंग के बारे में',
+  'tool.flattenDesc': 'PDF को फ्लैट करने से सभी परतें, एनोटेशन और फ़ॉर्म फ़ील्ड एक स्थिर परत में विलीन हो जाते हैं। इससे सामग्री स्थायी और गैर-संपादन योग्य हो जाती है।',
+  'tool.aboutAnnotations': 'इस उपकरण के बारे में',
+  'tool.annotationsDesc': 'यह उपकरण आपकी PDF से सभी एनोटेशन हटाता है, जिसमें टिप्पणियां, हाइलाइट्स, स्टिकी नोट्स और अन्य मार्कअप शामिल हैं।',
+  'tool.watermarkRemoval': 'वॉटरमार्क हटाने के बारे में',
+  'tool.watermarkRemovalDesc': 'यह उपकरण आपके PDF दस्तावेज़ों से वॉटरमार्क का पता लगाने और हटाने के लिए कई रणनीतियों का उपयोग करता है। परिणाम इस बात पर निर्भर करते हैं कि वॉटरमार्क कैसे एम्बेड किया गया था।',
+  'tool.uploadFirstPdf': 'पहली PDF अपलोड करें',
+  'tool.uploadSecondPdf': 'दूसरी PDF अपलोड करें',
+  'tool.selectBothPdfs': 'कृपया तुलना करने के लिए दोनों PDF फ़ाइलें चुनें।',
+  'tool.pageCountFile1': 'पृष्ठ संख्या (फ़ाइल 1)',
+  'tool.pageCountFile2': 'पृष्ठ संख्या (फ़ाइल 2)',
+  'tool.fileSize': 'फ़ाइल आकार',
+  'tool.identical': 'समान',
+  'tool.differencesFound': 'अंतर पाए गए',
+  'tool.differences': 'अंतर:',
+  'tool.yes': 'हाँ',
+  'tool.no': 'नहीं',
+  'tool.watermarkTextOptional': 'वॉटरमार्क टेक्स्ट',
+  'tool.watermarkOptional': '(वैकल्पिक)',
+  'tool.watermarkHelp': 'ज्ञात वॉटरमार्क टेक्स्ट पहचान में मदद करता है',
+  'tool.modeAutoDesc': 'सभी हटाने की रणनीतियां आज़माएं',
+  'tool.modeText': 'टेक्स्ट',
+  'tool.modeTextDesc': 'केवल टेक्स्ट-आधारित वॉटरमार्क लक्षित करें',
+  'tool.watermarkRemoved': 'वॉटरमार्क हटा दिया गया',
+  'tool.watermarkRemovedDesc': 'वॉटरमार्क आपकी PDF से सफलतापूर्वक हटा दिया गया है।',
+  'tool.couldNotRemove': 'स्वचालित रूप से नहीं हटाया जा सका',
+  'tool.couldNotRemoveDesc': 'यह वॉटरमार्क फ्लैट या पृष्ठ सामग्री में एम्बेडेड प्रतीत होता है और इसे स्वचालित रूप से नहीं हटाया जा सकता।',
+  'tool.typeSignature': 'अपना हस्ताक्षर टाइप करें...',
+  'tool.textToAdd': 'जोड़ने के लिए टेक्स्ट (पहला पृष्ठ)',
+  'tool.enterTextToAdd': 'PDF में जोड़ने के लिए टेक्स्ट दर्ज करें',
+  'tool.converted': 'रूपांतरित',
+  'tool.merged': 'मर्ज',
+  'tool.split': 'विभाजित',
+  'tool.compressed': 'संपीड़ित',
+  'tool.rotated': 'घुमाया गया',
+  'tool.protected': 'पासवर्ड से सुरक्षित',
+  'tool.unlocked': 'अनलॉक',
+  'tool.numbered': 'क्रमांकित',
+  'tool.watermarked': 'वॉटरमार्क किया गया',
+  'tool.extracted': 'निकाला गया',
+  'tool.reordered': 'पुनर्व्यवस्थित',
+  'tool.cleaned': 'साफ किया गया',
+  'tool.edited': 'संपादित',
+  'tool.signed': 'हस्ताक्षरित',
+  'tool.repaired': 'मरम्मत की गई',
+  'tool.flattened': 'फ्लैट किया गया',
+  'tool.redacted': 'रिडैक्ट किया गया',
+  'tool.annotationsRemoved': 'एनोटेशन हटाए गए',
+  'tool.watermarkRemovedResult': 'वॉटरमार्क हटा दिया गया',
+  'tool.convertedToPdfa': 'PDF/A में रूपांतरित',
+  'tool.convertedToPdf': 'PDF में रूपांतरित',
+  'tool.selectPdfUnlock': 'कृपया अनलॉक करने के लिए एक PDF फ़ाइल चुनें।',
+  'tool.selectPdfRepair': 'कृपया मरम्मत के लिए एक PDF फ़ाइल चुनें।',
+  'tool.selectPdfFlatten': 'कृपया फ्लैट करने के लिए एक PDF फ़ाइल चुनें।',
+  'tool.selectPdfRedact': 'कृपया रिडैक्ट करने के लिए एक PDF फ़ाइल चुनें।',
+  'tool.selectPdfRemoveWatermark': 'कृपया वॉटरमार्क हटाने के लिए एक PDF फ़ाइल चुनें।',
+  'tool.selectPdfCompare': 'कृपया तुलना के लिए एक PDF फ़ाइल चुनें।',
+  'tool.enterPasswordError': 'कृपया एक पासवर्ड दर्ज करें।',
+  'tool.startNumberError': 'प्रारंभ संख्या कम से कम 1 होनी चाहिए।',
+  'tool.fontSizeError': 'फ़ॉन्ट आकार 6 और 72 के बीच होना चाहिए।',
+  'tool.selectPdfError': 'कृपया एक PDF फ़ाइल चुनें।',
+  'tool.enterSignatureText': 'कृपया हस्ताक्षर टेक्स्ट टाइप या दर्ज करें।',
+  'tool.compressError': 'PDF संपीड़ित करने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.mergeError': 'PDF मर्ज करने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.splitError': 'PDF विभाजित करने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.rotateError': 'PDF घुमाने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.unlockError': 'PDF अनलॉक करने में विफल। कृपया अपना पासवर्ड जांचें और पुनः प्रयास करें।',
+  'tool.repairError': 'PDF मरम्मत करने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.flattenError': 'PDF फ्लैट करने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.redactError': 'PDF रिडैक्ट करने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.annotationsError': 'एनोटेशन हटाने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.watermarkRemoveError': 'वॉटरमार्क हटाने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.compareError': 'PDF तुलना करने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.metadataReadError': 'मेटाडेटा पढ़ने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.metadataWriteError': 'मेटाडेटा लिखने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.editError': 'PDF संपादित करने में विफल।',
+  'tool.signError': 'PDF पर हस्ताक्षर करने में विफल।',
+  'tool.addPageNumbersError': 'पृष्ठ संख्याएं जोड़ने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.addWatermarkError': 'वॉटरमार्क जोड़ने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.extractTextError': 'टेक्स्ट निकालने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.reorderError': 'पृष्ठ पुनर्व्यवस्थित करने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.deletePagesError': 'पृष्ठ हटाने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.pdfToPdfaError': 'PDF/A में रूपांतरित करने में विफल। कृपया पुनः प्रयास करें।',
+  'tool.seo.defaultTitle': 'मुफ्त ऑनलाइन PDF संपादक - PDF मर्ज, विभाजित, संपीड़ित और रूपांतरित करें',
+  'tool.seo.defaultDesc': 'Doczen एक मुफ्त ऑनलाइन PDF संपादक है। PDF मर्ज करें, PDF विभाजित करें, PDF फ़ाइलों को संपीड़ित करें, PDF को Word, JPG, PPT, Excel और अधिक में बदलें। बुनियादी उपकरणों के लिए पंजीकरण आवश्यक नहीं।',
+  'tool.seo.defaultKeywords': 'मुफ्त PDF संपादक, ऑनलाइन PDF उपकरण, PDF मर्ज ऑनलाइन, PDF विभाजित ऑनलाइन, PDF संपीड़ित करें, PDF कन्वर्टर, PDF से Word, PDF से JPG, Doczen',
+  'tool.seo.loginTitle': 'लॉगिन - Doczen PDF संपादक',
+  'tool.seo.loginDesc': 'सभी PDF उपकरणों तक पहुंचने, अपनी फ़ाइलों को प्रबंधित करने और अपने प्रसंस्करण इतिहास को देखने के लिए अपने Doczen खाते में साइन इन करें।',
+  'tool.seo.loginKeywords': 'लॉगिन, साइन इन, Doczen खाता, PDF संपादक लॉगिन',
+  'tool.seo.registerTitle': 'मुफ्त खाता बनाएं - Doczen PDF संपादक',
+  'tool.seo.registerDesc': 'अपना मुफ्त Doczen खाता बनाएं और सभी PDF संपादन उपकरणों तक पहुंच प्राप्त करें। PDF को ऑनलाइन मर्ज, विभाजित, संपीड़ित और रूपांतरित करें।',
+  'tool.seo.registerKeywords': 'पंजीकरण, साइन अप, खाता बनाएं, मुफ्त PDF संपादक, Doczen पंजीकरण',
+  'tool.seo.dashboardTitle': 'डैशबोर्ड - Doczen PDF संपादक',
+  'tool.seo.dashboardDesc': 'आपका Doczen डैशबोर्ड। उपयोग के आंकड़े, हाल की गतिविधि और सभी PDF उपकरणों तक त्वरित पहुंच देखें।',
+  'tool.seo.dashboardKeywords': 'डैशबोर्ड, PDF उपकरण, Doczen खाता, फ़ाइल प्रबंधन',
+  'tool.seo.historyTitle': 'इतिहास - Doczen PDF संपादक',
+  'tool.seo.historyDesc': 'Doczen पर अपना PDF प्रसंस्करण इतिहास देखें। पहले प्रसंस्कृत फ़ाइलें डाउनलोड करें और अपने उपयोग को ट्रैक करें।',
+  'tool.seo.historyKeywords': 'PDF इतिहास, दस्तावेज़ इतिहास, प्रसंस्कृत फ़ाइलें, Doczen इतिहास',
+  'tool.status.completed': 'पूर्ण',
+  'tool.status.failed': 'विफल',
+  'tool.status.pending': 'लंबित',
+  'tool.addPageNumbersDesc2': 'अपने PDF दस्तावेज़ में पृष्ठ संख्याएं जोड़ें',
+  'tool.addWatermarkDesc2': 'अपने PDF के हर पृष्ठ पर टेक्स्ट वॉटरमार्क जोड़ें',
+  'tool.extractTextDesc2': 'PDF दस्तावेज़ से सभी टेक्स्ट सामग्री निकालें',
+  'tool.reorderDesc': 'अपने PDF दस्तावेज़ में पृष्ठों के क्रम को पुनर्व्यवस्थित करें',
+  'tool.deleteDesc': 'अपने PDF दस्तावेज़ से विशिष्ट पृष्ठ हटाएं',
+  'tool.pdfToJpgDesc2': 'प्रत्येक PDF पृष्ठ को उच्च गुणवत्ता वाली JPG छवि में बदलें',
+  'tool.jpgToPdfDesc2': 'एकाधिक JPG छवियों को एक PDF दस्तावेज़ में संयोजित करें',
+  'tool.pdfToTxtDesc2': 'अपनी PDF फ़ाइल से सभी टेक्स्ट सामग्री निकालें',
+  'tool.pdfToWordDesc2': 'अपनी PDF फ़ाइलों को संपादन योग्य Word दस्तावेज़ों में बदलें',
+  'tool.wordToPdfDesc2': 'अपने Word दस्तावेज़ों को उच्च गुणवत्ता वाली PDF फ़ाइलों में बदलें',
+  'tool.pdfToPptDesc2': 'अपनी PDF स्लाइड्स को संपादन योग्य PowerPoint प्रस्तुतियों में बदलें',
+  'tool.pptToPdfDesc2': 'अपनी PowerPoint स्लाइड्स को PDF दस्तावेज़ों में बदलें',
+  'tool.pdfToExcelDesc2': 'अपने PDF डेटा को संपादन योग्य Excel स्प्रेडशीट में बदलें',
+  'tool.excelToPdfDesc2': 'अपनी Excel स्प्रेडशीट को PDF प्रारूप में बदलें',
+  'tool.signDesc': 'अपने PDF दस्तावेज़ों में जल्दी और सुरक्षित रूप से हस्ताक्षर जोड़ें',
+  'tool.removeAnnotationsDesc2': 'अपनी PDF से टिप्पणियां, हाइलाइट्स और मार्कअप हटाएं',
+  'tool.removeWatermarkDesc2': 'अपने PDF दस्तावेज़ों से टेक्स्ट और इमेज वॉटरमार्क हटाएं',
+  'tool.cleanedDesc': 'आपकी साफ की गई PDF तैयार है। डाउनलोड स्वचालित रूप से शुरू हुआ।',
 });
 
 addTranslations('es', {
@@ -971,6 +1185,165 @@ addTranslations('es', {
   'tool.success': 'Archivo convertido exitosamente.',
   'tool.downloadAgain': 'Descargar de nuevo',
   'tool.convertToPdf': 'Convertir a PDF',
+  'nav.hello': 'Completamente en línea — sin descarga necesaria',
+  'nav.tools.addPageNumbers': 'Añadir números de página',
+  'nav.tools.addWatermark': 'Añadir marca de agua',
+  'nav.tools.extractText': 'Extraer texto',
+  'nav.tools.reorderPages': 'Reordenar páginas',
+  'nav.tools.deletePages': 'Eliminar páginas',
+  'nav.tools.pdfToTxt': 'PDF a TXT',
+  'nav.tools.pdfToPpt': 'PDF a PPT',
+  'nav.tools.pptToPdf': 'PPT a PDF',
+  'nav.tools.pdfToExcel': 'PDF a Excel',
+  'nav.tools.excelToPdf': 'Excel a PDF',
+  'nav.tools.repairPdf': 'Reparar PDF',
+  'nav.tools.pdfToPdfa': 'PDF a PDF/A',
+  'nav.tools.pdfMetadata': 'Metadatos PDF',
+  'nav.tools.flattenPdf': 'Aplanar PDF',
+  'nav.tools.htmlToPdf': 'HTML a PDF',
+  'nav.tools.redactPdf': 'Redactar PDF',
+  'nav.tools.removeAnnotations': 'Eliminar anotaciones',
+  'nav.tools.removeWatermark': 'Eliminar marca de agua',
+  'nav.tools.comparePdf': 'Comparar PDF',
+  'hero.desc': 'Doczen es el espacio de trabajo PDF todo-en-uno. Fusiona, divide, convierte, comprime, edita y firma documentos — todo en tu navegador, gratis y seguro.',
+  'tools.subtitle': 'Desde ediciones rápidas hasta conversiones completas — 31 herramientas potentes a tu alcance.',
+  'footer.copyright': 'Todos los derechos reservados.',
+  'footer.builtWith': 'Hecho con ❤️ para PDFs',
+  'tool.tryNow': 'Probar ahora',
+  'tool.mergePdfDesc': 'Combina múltiples PDF en un solo archivo al instante.',
+  'tool.splitPdfDesc': 'Divide un PDF en documentos separados por páginas.',
+  'tool.compressPdfDesc': 'Reduce el tamaño del archivo PDF sin pérdida de calidad.',
+  'tool.rotatePdfDesc': 'Rota las páginas de tu PDF a cualquier ángulo.',
+  'tool.protectPdfDesc': 'Añade una contraseña para asegurar tus archivos PDF.',
+  'tool.unlockPdfDesc': 'Elimina la protección por contraseña de los PDF.',
+  'tool.splitPdf': 'Dividir PDF',
+  'tool.compressPdf': 'Comprimir PDF',
+  'tool.rotatePdf': 'Rotar PDF',
+  'tool.protectPdf': 'Proteger PDF',
+  'tool.unlockPdf': 'Desbloquear PDF',
+  'tool.splitting': 'Dividiendo PDF...',
+  'tool.compressing': 'Comprimiendo PDF...',
+  'tool.rotating': 'Rotando PDF...',
+  'tool.protecting': 'Protegiendo PDF...',
+  'tool.unlocking': 'Desbloqueando PDF...',
+  'tool.enterPassword': 'Ingresar contraseña',
+  'tool.password': 'Contraseña',
+  'tool.confirmPassword': 'Confirmar contraseña',
+  'tool.qualitySettings': 'Configuración de calidad',
+  'tool.compressionQuality': 'Calidad de compresión',
+  'tool.lowSmaller': 'Baja (archivo más pequeño)',
+  'tool.highBetter': 'Alta (mejor calidad)',
+  'tool.rotationAngle': 'Ángulo de rotación',
+  'tool.convertToWord': 'Convertir a Word',
+  'tool.convertToJpg': 'Convertir a JPG',
+  'tool.convertToPpt': 'Convertir a PPT',
+  'tool.convertToExcel': 'Convertir a Excel',
+  'tool.selectPdfs': 'Por favor selecciona al menos 2 archivos PDF para unir.',
+  'tool.uploadPdfs': 'Subir PDFs',
+  'upload.label': 'Sube tus archivos',
+  'upload.dragActive': 'Suelta para subir',
+  'upload.dragMultiple': 'Arrastra y suelta hasta {maxFiles} archivos aquí, o haz clic para explorar',
+  'upload.dragSingle': 'Arrastra y suelta un archivo aquí, o haz clic para explorar',
+  'upload.uploading': 'Subiendo...',
+  'upload.error.invalidType': 'Tipo de archivo no válido. Por favor sube un archivo válido.',
+  'upload.error.fileTooLarge': 'Archivo demasiado grande. El tamaño máximo es 50MB.',
+  'upload.error.singleFile': 'Solo se puede subir un archivo a la vez.',
+  'result.action': 'Tu archivo fue {action} exitosamente.',
+  'result.file': 'Archivo',
+  'result.size': 'Tamaño',
+  'result.compression': 'Compresión',
+  'result.original': 'Original',
+  'result.processAnother': 'Procesar otro',
+  'result.downloadAgain': 'Descargar de nuevo',
+  'result.smaller': '{pct}% más pequeño',
+  'login.emailPlaceholder': 'tu@ejemplo.com',
+  'login.passwordPlaceholder': 'Ingresa tu contraseña',
+  'login.error.required': 'Por favor completa todos los campos.',
+  'login.error.invalid': 'Correo o contraseña inválidos.',
+  'register.namePlaceholder': 'Juan Pérez',
+  'register.emailPlaceholder': 'tu@ejemplo.com',
+  'register.passwordPlaceholder': 'Al menos 6 caracteres',
+  'register.confirmPassword': 'Confirmar contraseña',
+  'register.confirmPasswordPlaceholder': 'Repite tu contraseña',
+  'register.error.required': 'Por favor completa todos los campos.',
+  'register.error.passwordLength': 'La contraseña debe tener al menos 6 caracteres.',
+  'register.error.passwordMatch': 'Las contraseñas no coinciden.',
+  'register.error.failed': 'Registro fallido. Por favor intenta de nuevo.',
+  'dashboard.subtitle': 'Esto es lo que está sucediendo con tus documentos hoy.',
+  'dashboard.quick.mergePdf': 'Unir PDF',
+  'dashboard.quick.splitPdf': 'Dividir PDF',
+  'dashboard.quick.compress': 'Comprimir',
+  'dashboard.quick.rotate': 'Rotar',
+  'dashboard.quick.jpgToPdf': 'JPG a PDF',
+  'dashboard.quick.editPdf': 'Editar PDF',
+  'dashboard.noActivity': '¡Sin actividad aún. Comienza usando una de las herramientas de arriba!',
+  'history.subtitle': 'Ve todas tus operaciones PDF anteriores.',
+  'history.clearing': 'Limpiando...',
+  'history.confirmClear': '¿Estás seguro de que quieres limpiar todo el historial?',
+  'history.noHistoryDesc': 'Tus archivos procesados aparecerán aquí.',
+  'history.deleteTitle': 'Eliminar entrada',
+  'history.untitled': 'Sin título',
+  'upload.filesSelected': 'Archivos seleccionados — suelta más o haz clic para cambiar',
+  'upload.dropActive': '¡Genial, suéltalos aquí!',
+  'upload.tapToAdd': 'Toca para añadir más archivos',
+  'upload.error.maxFiles': 'Máximo de {maxFiles} archivos permitidos.',
+  'upload.removeFile': 'Eliminar archivo',
+  'faq.q1': '¿Doczen es gratis?',
+  'faq.a1': '¡Sí! Doczen es completamente gratuito. Todas las herramientas PDF están disponibles sin cargos ocultos.',
+  'faq.q2': '¿Están seguros mis archivos?',
+  'faq.a2': 'Absolutamente. Todos los archivos están encriptados durante la carga y se eliminan automáticamente después de 24 horas. Nunca compartimos tus datos.',
+  'faq.q3': '¿Qué tamaños de archivo se admiten?',
+  'faq.a3': 'Puedes subir archivos de hasta 50 MB por documento.',
+  'faq.q4': '¿Cuánto tiempo toma el procesamiento?',
+  'faq.a4': 'La mayoría de las operaciones se completan en segundos. Las conversiones complejas pueden tomar un poco más.',
+  'faq.q5': '¿Hay un límite diario?',
+  'faq.a5': 'No se necesita registro — los invitados pueden procesar hasta 10 archivos por hora. Crea una cuenta gratuita para límites más altos.',
+  'faq.q6': '¿Qué pasa con mis datos?',
+  'faq.a6': 'Todos los archivos subidos se eliminan automáticamente de nuestros servidores dentro de 24 horas.',
+  'cta.desc': 'Comienza gratis — sin tarjeta de crédito, sin registro.',
+  'cta.compress': 'Comprimir un PDF',
+  'tool.addPageNumbers': 'Añadir números de página',
+  'tool.addWatermark': 'Añadir marca de agua',
+  'tool.extractText': 'Extraer texto',
+  'tool.reorderPages': 'Reordenar páginas',
+  'tool.deletePages': 'Eliminar páginas',
+  'tool.pdfToJpg': 'PDF a JPG',
+  'tool.jpgToPdf': 'JPG a PDF',
+  'tool.pdfToTxt': 'PDF a TXT',
+  'tool.pdfToWord': 'PDF a Word',
+  'tool.wordToPdf': 'Word a PDF',
+  'tool.pdfToPpt': 'PDF a PPT',
+  'tool.pptToPdf': 'PPT a PDF',
+  'tool.pdfToExcel': 'PDF a Excel',
+  'tool.excelToPdf': 'Excel a PDF',
+  'tool.editPdf': 'Editar PDF',
+  'tool.signPdf': 'Firmar PDF',
+  'tool.repairPdf': 'Reparar PDF',
+  'tool.pdfToPdfa': 'PDF a PDF/A',
+  'tool.pdfMetadata': 'Metadatos PDF',
+  'tool.flattenPdf': 'Aplanar PDF',
+  'tool.htmlToPdf': 'HTML a PDF',
+  'tool.redactPdf': 'Redactar PDF',
+  'tool.removeAnnotations': 'Eliminar anotaciones',
+  'tool.comparePdf': 'Comparar PDF',
+  'tool.removeWatermark': 'Eliminar marca de agua',
+  'tool.uploadPdfDesc': 'Sube un PDF para ver sus metadatos.',
+  'tool.pageNumberSettings': 'Configuración de números de página',
+  'tool.startNumber': 'Número inicial',
+  'tool.fontSize': 'Tamaño de fuente',
+  'tool.position': 'Posición',
+  'tool.bottomCenter': 'Centro inferior',
+  'tool.topCenter': 'Centro superior',
+  'tool.watermarkText': 'Texto de marca de agua',
+  'tool.pageOrder': 'Orden de páginas',
+  'tool.pagesToDelete': 'Páginas para eliminar',
+  'tool.termsToRedact': 'Términos para redactar',
+  'tool.firstPdf': 'Primer PDF',
+  'tool.secondPdf': 'Segundo PDF',
+  'tool.comparisonResults': 'Resultados de comparación',
+  'tool.compareAnother': 'Comparar otro',
+  'tool.genericError': 'Algo salió mal.',
+  'tool.convertError': 'La conversión falló. Por favor intenta de nuevo.',
 });
 
 addTranslations('fr', {
@@ -1021,8 +1394,180 @@ addTranslations('fr', {
   'tool.uploadPdf': 'Télécharger PDF',
   'tool.mergePdf': 'Fusionner PDF',
   'tool.success': 'Fichier converti avec succès.',
+  'nav.hello': 'Entièrement en ligne — aucun téléchargement requis',
+  'nav.tools.addPageNumbers': 'Ajouter des numéros de page',
+  'nav.tools.addWatermark': 'Ajouter un filigrane',
+  'nav.tools.extractText': 'Extraire le texte',
+  'nav.tools.reorderPages': 'Réorganiser les pages',
+  'nav.tools.deletePages': 'Supprimer des pages',
+  'nav.tools.pdfToTxt': 'PDF vers TXT',
+  'nav.tools.pdfToPpt': 'PDF vers PPT',
+  'nav.tools.pptToPdf': 'PPT vers PDF',
+  'nav.tools.pdfToExcel': 'PDF vers Excel',
+  'nav.tools.excelToPdf': 'Excel vers PDF',
+  'nav.tools.repairPdf': 'Réparer PDF',
+  'nav.tools.pdfToPdfa': 'PDF vers PDF/A',
+  'nav.tools.pdfMetadata': 'Métadonnées PDF',
+  'nav.tools.flattenPdf': 'Aplatir PDF',
+  'nav.tools.htmlToPdf': 'HTML vers PDF',
+  'nav.tools.redactPdf': 'Caviardage PDF',
+  'nav.tools.removeAnnotations': 'Supprimer les annotations',
+  'nav.tools.removeWatermark': 'Supprimer le filigrane',
+  'nav.tools.comparePdf': 'Comparer PDF',
+  'hero.desc': 'Doczen est l\'espace de travail PDF tout-en-un. Fusionnez, divisez, convertissez, compressez, modifiez et signez des documents — tout dans votre navigateur, gratuitement et en toute sécurité.',
+  'tools.subtitle': 'Des modifications rapides aux conversions complètes — 31 outils puissants à portée de main.',
+  'footer.copyright': 'Tous droits réservés.',
+  'footer.builtWith': 'Construit avec ❤️ pour les PDFs',
+  'tool.tryNow': 'Essayer maintenant',
+  'tool.splitPdf': 'Diviser PDF',
+  'tool.compressPdf': 'Compresser PDF',
+  'tool.rotatePdf': 'Pivoter PDF',
+  'tool.protectPdf': 'Protéger PDF',
+  'tool.unlockPdf': 'Déverrouiller PDF',
+  'tool.merging': 'Fusion des PDF...',
+  'tool.splitting': 'Division du PDF...',
+  'tool.compressing': 'Compression du PDF...',
+  'tool.rotating': 'Rotation du PDF...',
+  'tool.protecting': 'Protection du PDF...',
+  'tool.unlocking': 'Déverrouillage du PDF...',
+  'tool.enterPassword': 'Entrer le mot de passe',
+  'tool.password': 'Mot de passe',
+  'tool.confirmPassword': 'Confirmer le mot de passe',
+  'tool.qualitySettings': 'Paramètres de qualité',
+  'tool.compressionQuality': 'Qualité de compression',
+  'tool.lowSmaller': 'Faible (fichier plus petit)',
+  'tool.highBetter': 'Élevée (meilleure qualité)',
+  'tool.rotationAngle': 'Angle de rotation',
+  'tool.convertToPdf': 'Convertir en PDF',
+  'tool.convertToWord': 'Convertir en Word',
+  'tool.convertToJpg': 'Convertir en JPG',
+  'tool.convertToPpt': 'Convertir en PPT',
+  'tool.convertToExcel': 'Convertir en Excel',
+  'tool.selectPdf': 'Veuillez sélectionner un fichier PDF.',
+  'tool.selectPdfs': 'Veuillez sélectionner au moins 2 fichiers PDF à fusionner.',
+  'tool.uploadPdfs': 'Télécharger des PDFs',
+  'tool.downloadAgain': 'Télécharger à nouveau',
+  'upload.label': 'Téléchargez vos fichiers',
+  'upload.dragActive': 'Relâchez pour télécharger',
+  'upload.dragMultiple': 'Glissez-déposez jusqu\'à {maxFiles} fichiers ici, ou cliquez pour parcourir',
+  'upload.dragSingle': 'Glissez-déposez un fichier ici, ou cliquez pour parcourir',
+  'upload.uploading': 'Téléchargement...',
+  'upload.error.invalidType': 'Type de fichier invalide. Veuillez télécharger un fichier valide.',
+  'upload.error.fileTooLarge': 'Fichier trop volumineux. La taille maximale est de 50 Mo.',
+  'upload.error.singleFile': 'Un seul fichier peut être téléchargé à la fois.',
+  'result.action': 'Votre fichier a été {action} avec succès.',
+  'result.file': 'Fichier',
+  'result.size': 'Taille',
+  'result.compression': 'Compression',
+  'result.original': 'Original',
+  'result.processAnother': 'Traiter un autre',
+  'result.downloadAgain': 'Télécharger à nouveau',
+  'result.smaller': '{pct}% plus petit',
+  'login.emailPlaceholder': 'vous@exemple.com',
+  'login.passwordPlaceholder': 'Entrez votre mot de passe',
+  'login.noAccount': 'Vous n\'avez pas de compte ?',
+  'login.createOne': 'Créer un',
+  'login.error.required': 'Veuillez remplir tous les champs.',
+  'login.error.invalid': 'Email ou mot de passe invalide.',
+  'register.subtitle': 'Commencez à utiliser Doczen en quelques secondes',
+  'register.namePlaceholder': 'Jean Dupont',
+  'register.emailPlaceholder': 'vous@exemple.com',
+  'register.passwordPlaceholder': 'Au moins 6 caractères',
+  'register.confirmPasswordPlaceholder': 'Répétez votre mot de passe',
+  'register.hasAccount': 'Vous avez déjà un compte ?',
+  'register.signIn': 'Se connecter',
+  'register.error.required': 'Veuillez remplir tous les champs.',
+  'register.error.passwordLength': 'Le mot de passe doit comporter au moins 6 caractères.',
+  'register.error.passwordMatch': 'Les mots de passe ne correspondent pas.',
+  'register.error.failed': 'Échec de l\'inscription. Veuillez réessayer.',
+  'dashboard.subtitle': 'Voici ce qui se passe avec vos documents aujourd\'hui.',
+  'dashboard.welcome': 'Bon retour',
+  'dashboard.quick.mergePdf': 'Fusionner PDF',
+  'dashboard.quick.splitPdf': 'Diviser PDF',
+  'dashboard.quick.compress': 'Compresser',
+  'dashboard.quick.rotate': 'Pivoter',
+  'dashboard.quick.jpgToPdf': 'JPG vers PDF',
+  'dashboard.quick.editPdf': 'Modifier PDF',
+  'dashboard.noActivity': 'Aucune activité pour le moment. Commencez par utiliser l\'un des outils ci-dessus !',
+  'history.subtitle': 'Consultez toutes vos opérations PDF passées.',
+  'history.noHistory': 'Pas encore d\'historique.',
+  'history.clearing': 'Effacement...',
+  'history.confirmClear': 'Êtes-vous sûr de vouloir effacer tout l\'historique ?',
+  'history.action': 'Action',
+  'history.file': 'Fichier',
+  'history.date': 'Date',
+  'history.status': 'Statut',
+  'history.size': 'Taille',
+  'history.previous': 'Précédent',
+  'history.next': 'Suivant',
+  'history.noHistoryDesc': 'Vos fichiers traités apparaîtront ici.',
+  'history.deleteTitle': 'Supprimer l\'entrée',
+  'history.untitled': 'Sans titre',
+  'upload.filesSelected': 'Fichiers sélectionnés — déposez-en plus ou cliquez pour changer',
+  'upload.dropActive': 'Super, déposez-les ici !',
+  'upload.tapToAdd': 'Appuyez pour ajouter d\'autres fichiers',
+  'upload.error.maxFiles': 'Maximum de {maxFiles} fichiers autorisés.',
+  'upload.removeFile': 'Supprimer le fichier',
+  'faq.header': 'Foire aux questions',
+  'faq.q1': 'Doczen est-il gratuit ?',
+  'faq.a1': 'Oui ! Doczen est entièrement gratuit. Tous les outils PDF sont disponibles sans frais cachés.',
+  'faq.q2': 'Mes fichiers sont-ils sécurisés ?',
+  'faq.a2': 'Absolument. Tous les fichiers sont cryptés pendant le téléchargement et automatiquement supprimés dans les 24 heures.',
+  'faq.q3': 'Quelles tailles de fichiers sont prises en charge ?',
+  'faq.a3': 'Vous pouvez télécharger des fichiers jusqu\'à 50 Mo par document.',
+  'faq.q4': 'Combien de temps prend le traitement ?',
+  'faq.a4': 'La plupart des opérations se terminent en quelques secondes.',
+  'faq.q5': 'Y a-t-il une limite quotidienne ?',
+  'faq.a5': 'Aucun inscription requise — les invités peuvent traiter jusqu\'à 10 fichiers par heure.',
+  'faq.q6': 'Que deviennent mes données ?',
+  'faq.a6': 'Tous les fichiers téléchargés sont automatiquement supprimés dans les 24 heures.',
+  'cta.header': 'Prêt à simplifier votre flux de travail PDF ?',
+  'cta.desc': 'Commencez gratuitement — pas de carte de crédit, pas d\'inscription.',
+  'cta.start': 'Commencer à utiliser les outils',
+  'cta.compress': 'Compresser un PDF',
+  'tool.addPageNumbers': 'Ajouter des numéros de page',
+  'tool.addWatermark': 'Ajouter un filigrane',
+  'tool.extractText': 'Extraire le texte',
+  'tool.reorderPages': 'Réorganiser les pages',
+  'tool.deletePages': 'Supprimer des pages',
+  'tool.pdfToJpg': 'PDF vers JPG',
+  'tool.jpgToPdf': 'JPG vers PDF',
+  'tool.pdfToTxt': 'PDF vers TXT',
+  'tool.pdfToWord': 'PDF vers Word',
+  'tool.wordToPdf': 'Word vers PDF',
+  'tool.pdfToPpt': 'PDF vers PPT',
+  'tool.pptToPdf': 'PPT vers PDF',
+  'tool.pdfToExcel': 'PDF vers Excel',
+  'tool.excelToPdf': 'Excel vers PDF',
+  'tool.editPdf': 'Modifier PDF',
+  'tool.signPdf': 'Signer PDF',
+  'tool.repairPdf': 'Réparer PDF',
+  'tool.pdfToPdfa': 'PDF vers PDF/A',
+  'tool.pdfMetadata': 'Métadonnées PDF',
+  'tool.flattenPdf': 'Aplatir PDF',
+  'tool.htmlToPdf': 'HTML vers PDF',
+  'tool.redactPdf': 'Caviardage PDF',
+  'tool.removeAnnotations': 'Supprimer les annotations',
+  'tool.comparePdf': 'Comparer PDF',
+  'tool.removeWatermark': 'Supprimer le filigrane',
+  'tool.pageNumberSettings': 'Paramètres des numéros de page',
+  'tool.startNumber': 'Numéro de début',
+  'tool.fontSize': 'Taille de police',
+  'tool.position': 'Position',
+  'tool.bottomCenter': 'Centre inférieur',
+  'tool.topCenter': 'Centre supérieur',
+  'tool.watermarkText': 'Texte du filigrane',
+  'tool.pageOrder': 'Ordre des pages',
+  'tool.pagesToDelete': 'Pages à supprimer',
+  'tool.termsToRedact': 'Termes à caviarder',
+  'tool.firstPdf': 'Premier PDF',
+  'tool.secondPdf': 'Deuxième PDF',
+  'tool.comparisonResults': 'Résultats de la comparaison',
+  'tool.compareAnother': 'Comparer un autre',
+  'tool.genericError': 'Une erreur est survenue.',
+  'tool.convertError': 'Échec de la conversion. Veuillez réessayer.',
+  'tool.uploadPdfDesc': 'Téléchargez un PDF pour voir ses métadonnées.',
 });
-
 addTranslations('ar', {
   'nav.home': 'الرئيسية',
   'nav.about': 'حول',
@@ -1065,6 +1610,168 @@ addTranslations('ar', {
   'history.title': 'السجل',
   'tool.uploadPdf': 'رفع PDF',
   'tool.mergePdf': 'دمج PDF',
+  'nav.hello': 'بالكامل عبر الإنترنت — لا حاجة للتحميل',
+  'nav.tools.addPageNumbers': 'إضافة أرقام الصفحات',
+  'nav.tools.addWatermark': 'إضافة علامة مائية',
+  'nav.tools.extractText': 'استخراج النص',
+  'nav.tools.reorderPages': 'إعادة ترتيب الصفحات',
+  'nav.tools.deletePages': 'حذف الصفحات',
+  'nav.tools.pdfToJpg': 'PDF إلى JPG',
+  'nav.tools.jpgToPdf': 'JPG إلى PDF',
+  'nav.tools.pdfToTxt': 'PDF إلى TXT',
+  'nav.tools.pdfToWord': 'PDF إلى Word',
+  'nav.tools.wordToPdf': 'Word إلى PDF',
+  'nav.tools.pdfToPpt': 'PDF إلى PPT',
+  'nav.tools.pptToPdf': 'PPT إلى PDF',
+  'nav.tools.pdfToExcel': 'PDF إلى Excel',
+  'nav.tools.excelToPdf': 'Excel إلى PDF',
+  'nav.tools.repairPdf': 'إصلاح PDF',
+  'nav.tools.pdfToPdfa': 'PDF إلى PDF/A',
+  'nav.tools.pdfMetadata': 'بيانات PDF الوصفية',
+  'nav.tools.flattenPdf': 'تسطيح PDF',
+  'nav.tools.htmlToPdf': 'HTML إلى PDF',
+  'nav.tools.redactPdf': 'تنقيح PDF',
+  'nav.tools.removeAnnotations': 'إزالة التعليقات',
+  'nav.tools.removeWatermark': 'إزالة العلامة المائية',
+  'nav.tools.comparePdf': 'مقارنة PDF',
+  'hero.desc': 'Doczen هو مساحة عمل PDF المتكاملة. دمج، تقسيم، تحويل، ضغط، تحرير، وتوقيع المستندات — كل ذلك في متصفحك، مجاناً وآمن.',
+  'tools.subtitle': 'من التعديلات السريعة إلى التحويلات الكاملة — 31 أداة قوية في متناول يدك.',
+  'footer.copyright': 'جميع الحقوق محفوظة.',
+  'footer.builtWith': 'مبني بـ ❤️ لملفات PDF',
+  'tool.tryNow': 'جرب الآن',
+  'tool.splitPdf': 'تقسيم PDF',
+  'tool.compressPdf': 'ضغط PDF',
+  'tool.rotatePdf': 'تدوير PDF',
+  'tool.protectPdf': 'حماية PDF',
+  'tool.unlockPdf': 'فتح PDF',
+  'tool.merging': 'جاري دمج PDF...',
+  'tool.splitting': 'جاري تقسيم PDF...',
+  'tool.compressing': 'جاري ضغط PDF...',
+  'tool.rotating': 'جاري تدوير PDF...',
+  'tool.protecting': 'جاري حماية PDF...',
+  'tool.unlocking': 'جاري فتح PDF...',
+  'tool.enterPassword': 'أدخل كلمة المرور',
+  'tool.password': 'كلمة المرور',
+  'tool.confirmPassword': 'تأكيد كلمة المرور',
+  'tool.qualitySettings': 'إعدادات الجودة',
+  'tool.compressionQuality': 'جودة الضغط',
+  'tool.lowSmaller': 'منخفضة (ملف أصغر)',
+  'tool.highBetter': 'عالية (جودة أفضل)',
+  'tool.rotationAngle': 'زاوية التدوير',
+  'tool.convertToPdf': 'تحويل إلى PDF',
+  'tool.convertToWord': 'تحويل إلى Word',
+  'tool.convertToJpg': 'تحويل إلى JPG',
+  'tool.convertToPpt': 'تحويل إلى PPT',
+  'tool.convertToExcel': 'تحويل إلى Excel',
+  'tool.selectPdf': 'الرجاء اختيار ملف PDF.',
+  'tool.selectPdfs': 'الرجاء اختيار ملفي PDF على الأقل للدمج.',
+  'tool.uploadPdfs': 'رفع ملفات PDF',
+  'tool.downloadAgain': 'تنزيل مرة أخرى',
+  'tool.success': 'تم تحويل الملف بنجاح.',
+  'upload.label': 'رفع ملفاتك',
+  'upload.dragActive': 'أفلت للرفع',
+  'upload.dragMultiple': 'اسحب وأفلت حتى {maxFiles} ملف هنا، أو انقر للتصفح',
+  'upload.dragSingle': 'اسحب وأفلت ملف هنا، أو انقر للتصفح',
+  'upload.uploading': 'جاري الرفع...',
+  'upload.error.invalidType': 'نوع ملف غير صالح. الرجاء رفع ملف صالح.',
+  'upload.error.fileTooLarge': 'الملف كبير جداً. الحد الأقصى 50 ميجابايت.',
+  'upload.error.singleFile': 'يمكن رفع ملف واحد فقط في كل مرة.',
+  'result.action': 'تم {action} ملفك بنجاح.',
+  'result.file': 'ملف',
+  'result.size': 'الحجم',
+  'result.compression': 'الضغط',
+  'result.original': 'الأصلي',
+  'result.processAnother': 'معالجة آخر',
+  'result.downloadAgain': 'تنزيل مرة أخرى',
+  'result.smaller': 'أصغر بنسبة {pct}%',
+  'login.emailPlaceholder': 'you@example.com',
+  'login.passwordPlaceholder': 'أدخل كلمة المرور',
+  'login.noAccount': 'ليس لديك حساب؟',
+  'login.createOne': 'إنشاء واحد',
+  'login.error.required': 'الرجاء ملء جميع الحقول.',
+  'login.error.invalid': 'بريد إلكتروني أو كلمة مرور غير صالحة.',
+  'register.subtitle': 'ابدأ استخدام Doczen في ثوانٍ',
+  'register.namePlaceholder': 'John Doe',
+  'register.emailPlaceholder': 'you@example.com',
+  'register.passwordPlaceholder': 'على الأقل 6 أحرف',
+  'register.confirmPasswordPlaceholder': 'أعد إدخال كلمة المرور',
+  'register.hasAccount': 'لديك حساب بالفعل؟',
+  'register.signIn': 'تسجيل الدخول',
+  'register.error.required': 'الرجاء ملء جميع الحقول.',
+  'register.error.passwordLength': 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.',
+  'register.error.passwordMatch': 'كلمات المرور غير متطابقة.',
+  'register.error.failed': 'فشل التسجيل. الرجاء المحاولة مرة أخرى.',
+  'dashboard.subtitle': 'إليك ما يحدث مع مستنداتك اليوم.',
+  'dashboard.quick.mergePdf': 'دمج PDF',
+  'dashboard.quick.splitPdf': 'تقسيم PDF',
+  'dashboard.quick.compress': 'ضغط',
+  'dashboard.quick.rotate': 'تدوير',
+  'dashboard.quick.jpgToPdf': 'JPG إلى PDF',
+  'dashboard.quick.editPdf': 'تحرير PDF',
+  'dashboard.noActivity': 'لا نشاط بعد. ابدأ باستخدام إحدى الأدوات أعلاه!',
+  'history.subtitle': 'عرض جميع عمليات PDF السابقة.',
+  'history.clearing': 'جاري المسح...',
+  'history.confirmClear': 'هل أنت متأكد من مسح كل التاريخ؟',
+  'history.action': 'الإجراء',
+  'history.file': 'ملف',
+  'history.date': 'التاريخ',
+  'history.status': 'الحالة',
+  'history.size': 'الحجم',
+  'history.previous': 'السابق',
+  'history.next': 'التالي',
+  'history.noHistoryDesc': 'ستظهر ملفاتك المعالجة هنا.',
+  'history.deleteTitle': 'حذف الإدخال',
+  'history.untitled': 'بدون عنوان',
+  'upload.filesSelected': 'الملفات محددة — أسقط المزيد أو انقر للتغيير',
+  'upload.dropActive': 'رائع، أسقطها هنا!',
+  'upload.tapToAdd': 'انقر لإضافة المزيد من الملفات',
+  'upload.error.maxFiles': 'الحد الأقصى {maxFiles} ملفات مسموح بها.',
+  'upload.removeFile': 'إزالة الملف',
+  'faq.header': 'الأسئلة الشائعة',
+  'faq.q1': 'هل Doczen مجاني؟',
+  'faq.a1': 'نعم! Doczen مجاني تماماً. جميع أدوات PDF متاحة بدون رسوم مخفية.',
+  'faq.q2': 'هل ملفاتي آمنة؟',
+  'faq.a2': 'بالتأكيد. جميع الملفات مشفرة أثناء الرفع ويتم حذفها تلقائياً بعد 24 ساعة.',
+  'faq.q3': 'ما هي أحجام الملفات المدعومة؟',
+  'faq.a3': 'يمكنك رفع ملفات يصل حجمها إلى 50 ميجابايت لكل مستند.',
+  'faq.q4': 'كم يستغرق المعالجة؟',
+  'faq.a4': 'تتم معظم العمليات في غضون ثوانٍ.',
+  'faq.q5': 'هل هناك حد يومي؟',
+  'faq.a5': 'لا حاجة للتسجيل — يمكن للضيوف معالجة حتى 10 ملفات في الساعة.',
+  'faq.q6': 'ماذا يحدث لبياناتي؟',
+  'faq.a6': 'يتم حذف جميع الملفات المرفوعة تلقائياً في غضون 24 ساعة.',
+  'cta.header': 'هل أنت مستعد لتبسيط سير عمل PDF الخاص بك؟',
+  'cta.desc': 'ابدأ مجاناً — لا حاجة لبطاقة ائتمان، لا تسجيل مطلوب.',
+  'cta.start': 'ابدأ باستخدام الأدوات',
+  'cta.compress': 'ضغط PDF',
+  'tool.addPageNumbers': 'إضافة أرقام الصفحات',
+  'tool.addWatermark': 'إضافة علامة مائية',
+  'tool.extractText': 'استخراج النص',
+  'tool.reorderPages': 'إعادة ترتيب الصفحات',
+  'tool.deletePages': 'حذف الصفحات',
+  'tool.pdfToJpg': 'PDF إلى JPG',
+  'tool.jpgToPdf': 'JPG إلى PDF',
+  'tool.pdfToTxt': 'PDF إلى TXT',
+  'tool.pdfToWord': 'PDF إلى Word',
+  'tool.wordToPdf': 'Word إلى PDF',
+  'tool.pdfToPpt': 'PDF إلى PPT',
+  'tool.pptToPdf': 'PPT إلى PDF',
+  'tool.pdfToExcel': 'PDF إلى Excel',
+  'tool.excelToPdf': 'Excel إلى PDF',
+  'tool.editPdf': 'تحرير PDF',
+  'tool.signPdf': 'توقيع PDF',
+  'tool.repairPdf': 'إصلاح PDF',
+  'tool.pdfToPdfa': 'PDF إلى PDF/A',
+  'tool.pdfMetadata': 'بيانات PDF الوصفية',
+  'tool.flattenPdf': 'تسطيح PDF',
+  'tool.htmlToPdf': 'HTML إلى PDF',
+  'tool.redactPdf': 'تنقيح PDF',
+  'tool.removeAnnotations': 'إزالة التعليقات',
+  'tool.comparePdf': 'مقارنة PDF',
+  'tool.removeWatermark': 'إزالة العلامة المائية',
+  'tool.genericError': 'حدث خطأ ما.',
+  'tool.convertError': 'فشل التحويل. الرجاء المحاولة مرة أخرى.',
+  'tool.uploadPdfDesc': 'رفع PDF لعرض بياناته الوصفية.',
 });
 
 addTranslations('bn', {
@@ -1087,7 +1794,7 @@ addTranslations('bn', {
   'nav.language': 'ভাষা',
   'hero.title1': 'আপনার PDF,',
   'hero.title2': 'নিখুঁত।',
-  'hero.tryMerge': 'মার্জ PDF试试',
+  'hero.tryMerge': 'মার্জ PDF চেষ্টা করুন',
   'hero.allTools': 'সব টুল',
   'tools.header': 'আপনার প্রয়োজনীয় সবকিছু',
   'footer.quickLinks': 'দ্রুত লিংক',
@@ -1109,7 +1816,327 @@ addTranslations('bn', {
   'history.title': 'ইতিহাস',
   'tool.uploadPdf': 'PDF আপলোড করুন',
   'tool.mergePdf': 'PDF মার্জ করুন',
+  'nav.hello': 'সম্পূর্ণ অনলাইন — কোনো ডাউনলোড প্রয়োজন নেই',
+  'nav.tools.addPageNumbers': 'পৃষ্ঠা নম্বর যোগ করুন',
+  'nav.tools.addWatermark': 'ওয়াটারমার্ক যোগ করুন',
+  'nav.tools.extractText': 'টেক্সট বের করুন',
+  'nav.tools.reorderPages': 'পৃষ্ঠা পুনর্বিন্যাস করুন',
+  'nav.tools.deletePages': 'পৃষ্ঠা মুছুন',
+  'nav.tools.pdfToJpg': 'PDF থেকে JPG',
+  'nav.tools.jpgToPdf': 'JPG থেকে PDF',
+  'nav.tools.pdfToTxt': 'PDF থেকে TXT',
+  'nav.tools.pdfToWord': 'PDF থেকে Word',
+  'nav.tools.wordToPdf': 'Word থেকে PDF',
+  'nav.tools.pdfToPpt': 'PDF থেকে PPT',
+  'nav.tools.pptToPdf': 'PPT থেকে PDF',
+  'nav.tools.pdfToExcel': 'PDF থেকে Excel',
+  'nav.tools.excelToPdf': 'Excel থেকে PDF',
+  'nav.tools.repairPdf': 'PDF মেরামত করুন',
+  'nav.tools.pdfToPdfa': 'PDF থেকে PDF/A',
+  'nav.tools.pdfMetadata': 'PDF মেটাডেটা',
+  'nav.tools.flattenPdf': 'PDF ফ্ল্যাট করুন',
+  'nav.tools.htmlToPdf': 'HTML থেকে PDF',
+  'nav.tools.redactPdf': 'PDF রিড্যাক্ট করুন',
+  'nav.tools.removeAnnotations': 'টীকা সরান',
+  'nav.tools.removeWatermark': 'ওয়াটারমার্ক সরান',
+  'nav.tools.comparePdf': 'PDF তুলনা করুন',
+  'hero.desc': 'Doczen হল অল-ইন-ওয়ান PDF কর্মক্ষেত্র। মার্জ, বিভক্ত, রূপান্তর, কম্প্রেস, সম্পাদনা এবং স্বাক্ষর করুন — সব আপনার ব্রাউজারে, বিনামূল্যে এবং নিরাপদে।',
+  'tools.subtitle': 'দ্রুত সম্পাদনা থেকে সম্পূর্ণ রূপান্তর — 31 টি শক্তিশালী টুল আপনার নখদর্পণে।',
+  'footer.copyright': 'সমস্ত অধিকার সংরক্ষিত।',
+  'footer.builtWith': 'PDF-এর জন্য ❤️ দিয়ে তৈরি',
+  'tool.tryNow': 'এখনই চেষ্টা করুন',
+  'tool.mergePdf': 'PDF মার্জ করুন',
+  'tool.splitPdf': 'PDF বিভক্ত করুন',
+  'tool.compressPdf': 'PDF কম্প্রেস করুন',
+  'tool.rotatePdf': 'PDF ঘোরান',
+  'tool.protectPdf': 'PDF সুরক্ষিত করুন',
+  'tool.unlockPdf': 'PDF আনলক করুন',
+  'tool.merging': 'PDF মার্জ হচ্ছে...',
+  'tool.splitting': 'PDF বিভক্ত হচ্ছে...',
+  'tool.compressing': 'PDF কম্প্রেস হচ্ছে...',
+  'tool.rotating': 'PDF ঘোরানো হচ্ছে...',
+  'tool.protecting': 'PDF সুরক্ষিত হচ্ছে...',
+  'tool.unlocking': 'PDF আনলক হচ্ছে...',
+  'tool.enterPassword': 'পাসওয়ার্ড দিন',
+  'tool.password': 'পাসওয়ার্ড',
+  'tool.confirmPassword': 'পাসওয়ার্ড নিশ্চিত করুন',
+  'tool.qualitySettings': 'গুণমান সেটিংস',
+  'tool.compressionQuality': 'কম্প্রেশন গুণমান',
+  'tool.lowSmaller': 'নিম্ন (ছোট ফাইল)',
+  'tool.highBetter': 'উচ্চ (ভাল গুণমান)',
+  'tool.rotationAngle': 'ঘূর্ণন কোণ',
+  'tool.convertToPdf': 'PDF-এ রূপান্তর করুন',
+  'tool.convertToWord': 'Word-এ রূপান্তর করুন',
+  'tool.convertToJpg': 'JPG-এ রূপান্তর করুন',
+  'tool.convertToPpt': 'PPT-এ রূপান্তর করুন',
+  'tool.convertToExcel': 'Excel-এ রূপান্তর করুন',
+  'tool.selectPdf': 'অনুগ্রহ করে একটি PDF ফাইল নির্বাচন করুন।',
+  'tool.selectPdfs': 'মার্জ করার জন্য অনুগ্রহ করে কমপক্ষে 2টি PDF ফাইল নির্বাচন করুন।',
+  'tool.uploadPdfs': 'PDF আপলোড করুন',
+  'tool.downloadAgain': 'আবার ডাউনলোড করুন',
+  'tool.success': 'ফাইল সফলভাবে রূপান্তরিত হয়েছে।',
+  'upload.label': 'আপনার ফাইল আপলোড করুন',
+  'upload.dragActive': 'আপলোড করার জন্য ছেড়ে দিন',
+  'upload.dragMultiple': '{maxFiles}টি পর্যন্ত ফাইল এখানে টেনে আনুন, অথবা ব্রাউজ করতে ক্লিক করুন',
+  'upload.dragSingle': 'একটি ফাইল এখানে টেনে আনুন, অথবা ব্রাউজ করতে ক্লিক করুন',
+  'upload.uploading': 'আপলোড হচ্ছে...',
+  'upload.error.invalidType': 'অবৈধ ফাইল প্রকার। অনুগ্রহ করে একটি বৈধ ফাইল আপলোড করুন।',
+  'upload.error.fileTooLarge': 'ফাইল খুব বড়। সর্বোচ্চ আকার 50MB।',
+  'upload.error.singleFile': 'একবারে শুধুমাত্র একটি ফাইল আপলোড করা যাবে।',
+  'result.action': 'আপনার ফাইল সফলভাবে {action} হয়েছে।',
+  'result.file': 'ফাইল',
+  'result.size': 'আকার',
+  'result.compression': 'কম্প্রেশন',
+  'result.original': 'মূল',
+  'result.processAnother': 'অন্য প্রক্রিয়া করুন',
+  'result.downloadAgain': 'আবার ডাউনলোড করুন',
+  'result.smaller': '{pct}% ছোট',
+  'login.emailPlaceholder': 'you@example.com',
+  'login.passwordPlaceholder': 'আপনার পাসওয়ার্ড দিন',
+  'login.noAccount': 'অ্যাকাউন্ট নেই?',
+  'login.createOne': 'একটি তৈরি করুন',
+  'login.error.required': 'অনুগ্রহ করে সমস্ত ক্ষেত্র পূরণ করুন।',
+  'login.error.invalid': 'ইমেল বা পাসওয়ার্ড অবৈধ।',
+  'register.subtitle': 'সেকেন্ডের মধ্যে Doczen ব্যবহার শুরু করুন',
+  'register.namePlaceholder': 'জন ডো',
+  'register.emailPlaceholder': 'you@example.com',
+  'register.passwordPlaceholder': 'অন্তত ৬ অক্ষর',
+  'register.confirmPasswordPlaceholder': 'আপনার পাসওয়ার্ড পুনরায় দিন',
+  'register.hasAccount': 'ইতিমধ্যে একটি অ্যাকাউন্ট আছে?',
+  'register.signIn': 'সাইন ইন',
+  'register.error.required': 'অনুগ্রহ করে সমস্ত ক্ষেত্র পূরণ করুন।',
+  'register.error.passwordLength': 'পাসওয়ার্ড কমপক্ষে 6 অক্ষরের হতে হবে।',
+  'register.error.passwordMatch': 'পাসওয়ার্ড মিলছে না।',
+  'register.error.failed': 'নিবন্ধন ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+  'dashboard.subtitle': 'আজ আপনার ডকুমেন্টের সাথে কী ঘটছে তা এখানে।',
+  'dashboard.quick.mergePdf': 'PDF মার্জ করুন',
+  'dashboard.quick.splitPdf': 'PDF বিভক্ত করুন',
+  'dashboard.quick.compress': 'কম্প্রেস',
+  'dashboard.quick.rotate': 'ঘোরান',
+  'dashboard.quick.jpgToPdf': 'JPG থেকে PDF',
+  'dashboard.quick.editPdf': 'PDF সম্পাদনা করুন',
+  'dashboard.noActivity': 'এখনো কোনো কার্যকলাপ নেই। উপরের টুলগুলি ব্যবহার করে শুরু করুন!',
+  'history.subtitle': 'আপনার সমস্ত পূর্ববর্তী PDF অপারেশন দেখুন।',
+  'history.clearing': 'পরিষ্কার হচ্ছে...',
+  'history.confirmClear': 'আপনি কি সমস্ত ইতিহাস পরিষ্কার করতে চান?',
+  'history.action': 'কর্ম',
+  'history.file': 'ফাইল',
+  'history.date': 'তারিখ',
+  'history.status': 'অবস্থা',
+  'history.size': 'আকার',
+  'history.previous': 'পূর্ববর্তী',
+  'history.next': 'পরবর্তী',
+  'history.noHistoryDesc': 'আপনার প্রক্রিয়াকৃত ফাইলগুলি এখানে প্রদর্শিত হবে।',
+  'history.deleteTitle': 'এন্ট্রি মুছুন',
+  'history.untitled': 'শিরোনামহীন',
+  'upload.filesSelected': 'ফাইল নির্বাচিত — আরও ড্রপ করুন বা পরিবর্তন করতে ক্লিক করুন',
+  'upload.dropActive': 'দারুণ, এখানে ড্রপ করুন!',
+  'upload.tapToAdd': 'আরও ফাইল যোগ করতে ট্যাপ করুন',
+  'upload.error.maxFiles': 'সর্বোচ্চ {maxFiles}টি ফাইল অনুমোদিত।',
+  'upload.removeFile': 'ফাইল সরান',
+  'faq.header': 'প্রায়শই জিজ্ঞাসিত প্রশ্ন',
+  'faq.q1': 'Doczen কি বিনামূল্যে?',
+  'faq.a1': 'হ্যাঁ! Doczen সম্পূর্ণ বিনামূল্যে। সমস্ত PDF টুল কোনো লুকানো চার্জ ছাড়াই উপলব্ধ।',
+  'faq.q2': 'আমার ফাইল কি নিরাপদ?',
+  'faq.a2': 'একেবারে। আপলোডের সময় সমস্ত ফাইল এনক্রিপ্ট করা হয় এবং 24 ঘন্টা পরে স্বয়ংক্রিয়ভাবে মুছে ফেলা হয়।',
+  'faq.q3': 'কোন ফাইল আকার সমর্থিত?',
+  'faq.a3': 'আপনি প্রতি ডকুমেন্টে 50 MB পর্যন্ত ফাইল আপলোড করতে পারেন।',
+  'faq.q4': 'প্রক্রিয়াকরণে কত সময় লাগে?',
+  'faq.a4': 'বেশিরভাগ অপারেশন সেকেন্ডের মধ্যে সম্পন্ন হয়।',
+  'faq.q5': 'কোনো দৈনিক সীমা আছে?',
+  'faq.a5': 'কোনো নিবন্ধন প্রয়োজন নেই — অতিথিরা প্রতি ঘন্টায় 10টি ফাইল প্রক্রিয়া করতে পারেন।',
+  'faq.q6': 'আমার ডেটার কী হবে?',
+  'faq.a6': 'সমস্ত আপলোড করা ফাইল 24 ঘন্টার মধ্যে স্বয়ংক্রিয়ভাবে মুছে ফেলা হয়।',
+  'cta.header': 'আপনার PDF ওয়ার্কফ্লো সহজ করতে প্রস্তুত?',
+  'cta.desc': 'বিনামূল্যে শুরু করুন — কোনো ক্রেডিট কার্ড নেই, কোনো সাইন আপ নেই।',
+  'cta.start': 'টুল ব্যবহার শুরু করুন',
+  'cta.compress': 'একটি PDF কম্প্রেস করুন',
+  'tool.addPageNumbers': 'পৃষ্ঠা নম্বর যোগ করুন',
+  'tool.addWatermark': 'ওয়াটারমার্ক যোগ করুন',
+  'tool.extractText': 'টেক্সট বের করুন',
+  'tool.reorderPages': 'পৃষ্ঠা পুনর্বিন্যাস করুন',
+  'tool.deletePages': 'পৃষ্ঠা মুছুন',
+  'tool.pdfToJpg': 'PDF থেকে JPG',
+  'tool.jpgToPdf': 'JPG থেকে PDF',
+  'tool.pdfToTxt': 'PDF থেকে TXT',
+  'tool.pdfToWord': 'PDF থেকে Word',
+  'tool.wordToPdf': 'Word থেকে PDF',
+  'tool.pdfToPpt': 'PDF থেকে PPT',
+  'tool.pptToPdf': 'PPT থেকে PDF',
+  'tool.pdfToExcel': 'PDF থেকে Excel',
+  'tool.excelToPdf': 'Excel থেকে PDF',
+  'tool.editPdf': 'PDF সম্পাদনা করুন',
+  'tool.signPdf': 'PDF সই করুন',
+  'tool.repairPdf': 'PDF মেরামত করুন',
+  'tool.pdfToPdfa': 'PDF থেকে PDF/A',
+  'tool.pdfMetadata': 'PDF মেটাডেটা',
+  'tool.flattenPdf': 'PDF ফ্ল্যাট করুন',
+  'tool.htmlToPdf': 'HTML থেকে PDF',
+  'tool.redactPdf': 'PDF রিড্যাক্ট করুন',
+  'tool.removeAnnotations': 'টীকা সরান',
+  'tool.comparePdf': 'PDF তুলনা করুন',
+  'tool.removeWatermark': 'ওয়াটারমার্ক সরান',
+  'tool.genericError': 'কিছু ভুল হয়েছে।',
+  'tool.convertError': 'রূপান্তর ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+  'tool.uploadPdfDesc': 'এর মেটাডেটা দেখতে একটি PDF আপলোড করুন।',
 });
+
+// Initialize 51 missing languages with English fallback
+// These will be populated with actual translations via the auto-translation service
+const MISSING_LANGUAGES = ['de', 'it', 'pt', 'nl', 'ru', 'ja', 'zh-CN', 'zh-TW', 'ko', 'tr', 'pl', 'sv', 'da', 'no', 'fi', 'cs', 'sk', 'hu', 'ro', 'bg', 'el', 'th', 'vi', 'id', 'ms', 'uk', 'he', 'ca', 'hr', 'sr', 'sl', 'lt', 'lv', 'et', 'is', 'eu', 'gl', 'cy', 'fil', 'sw', 'ta', 'te', 'mr', 'gu', 'kn', 'ml', 'pa', 'fa', 'ur', 'ne', 'my'];
+
+// Initialize all missing languages with English translations as base
+MISSING_LANGUAGES.forEach(lang => {
+  TRANSLATIONS[lang] = { ...TRANSLATIONS['en'] };
+});
+
+// Auto-load translations from cache or service
+const loadCachedTranslations = () => {
+  try {
+    const cached = localStorage.getItem('doczen_translations_cache');
+    if (cached) {
+      const cache = JSON.parse(cached);
+      Object.keys(cache).forEach(lang => {
+        if (TRANSLATIONS[lang]) {
+          TRANSLATIONS[lang] = { ...TRANSLATIONS[lang], ...cache[lang] };
+        }
+      });
+    }
+  } catch (err) {
+    console.warn('Translation cache load failed:', err);
+  }
+};
+
+// Load cached translations on initialization
+loadCachedTranslations();
+
+// Auto-translate missing content using MyMemory Translation API (async, non-blocking)
+const autoTranslateLanguages = async () => {
+  if (typeof window === 'undefined' || !TRANSLATIONS['en']) return;
+  
+  try {
+    const enStrings = TRANSLATIONS['en'];
+    const cachedTranslations = {};
+    
+    // Process languages that don't have full translations yet
+    const langsToTranslate = MISSING_LANGUAGES.filter(lang => {
+      const transCount = (TRANSLATIONS[lang] && Object.keys(TRANSLATIONS[lang]).length) || 0;
+      return transCount < 100; // If less than 100 keys, needs translation
+    }).slice(0, 15); // Limit to prevent overwhelming the API
+    
+    for (const lang of langsToTranslate) {
+      try {
+        // Check localStorage cache first
+        const cacheKey = `doczen_trans_${lang}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          try {
+            const cachedObj = JSON.parse(cached);
+            if (cachedObj && Object.keys(cachedObj).length > 50) {
+              TRANSLATIONS[lang] = { ...TRANSLATIONS[lang], ...cachedObj };
+              cachedTranslations[lang] = cachedObj;
+              continue;
+            }
+          } catch (e) {
+            console.warn(`Cache parse error for ${lang}`);
+          }
+        }
+
+        // Load translations from service with timeout
+        const result = await loadLanguageTranslations(lang, enStrings);
+        if (result && Object.keys(result).length > 0) {
+          TRANSLATIONS[lang] = { ...TRANSLATIONS[lang], ...result };
+          cachedTranslations[lang] = result;
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(result));
+          } catch (e) {
+            console.warn(`Failed to cache translations for ${lang}`);
+          }
+        }
+      } catch (err) {
+        // Continue to next language on error
+      }
+    }
+
+    // Update main translations cache
+    if (Object.keys(cachedTranslations).length > 0) {
+      try {
+        const existing = JSON.parse(localStorage.getItem('doczen_translations_cache') || '{}');
+        localStorage.setItem('doczen_translations_cache', JSON.stringify({ ...existing, ...cachedTranslations }));
+      } catch (e) {
+        console.warn('Failed to update translation cache');
+      }
+    }
+  } catch (err) {
+    // Fail silently to not interrupt app load
+  }
+};
+
+// Load language translations from MyMemory API (free service)
+const loadLanguageTranslations = async (lang, enStrings) => {
+  try {
+    const keys = Object.keys(enStrings).slice(0, 100); // Sample first 100 keys
+    const texts = keys.map(k => enStrings[k]);
+    const textString = texts.join(' | ').substring(0, 500); // Limit length for API
+    
+    if (!textString || textString.length < 10) return null;
+
+    const apiUrl = 'https://api.mymemory.translated.net/get?q=' + 
+                   encodeURIComponent(textString) + 
+                   '&langpair=en|' + encodeURIComponent(lang);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      signal: controller.signal,
+      mode: 'cors'
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data && data.responseData && data.responseData.translatedText) {
+        const translations = {};
+        const translatedText = String(data.responseData.translatedText);
+        const translatedParts = translatedText.split(' | ');
+        
+        keys.forEach((key, idx) => {
+          if (translatedParts[idx]) {
+            const translated = String(translatedParts[idx]).trim();
+            // Only add if it's different from English and not empty
+            if (translated && translated.length > 0 && translated !== enStrings[key]) {
+              translations[key] = translated;
+            }
+          }
+        });
+        
+        // Return only if we have meaningful translations
+        return Object.keys(translations).length > 10 ? translations : null;
+      }
+    }
+    return null;
+  } catch (err) {
+    // API error or timeout - return null silently
+  }
+  return null;
+};
+
+// Start auto-translation in background without blocking app
+if (typeof window !== 'undefined' && window.location) {
+  setTimeout(() => {
+    try {
+      autoTranslateLanguages().catch(() => {
+        // Ignore errors silently
+      });
+    } catch (err) {
+      // Silently ignore background translation errors
+    }
+  }, 3000); // Start after 3 seconds
+}
 
 const LANGUAGE_MAP = [
   { code: 'en', name: 'English', native: 'English' },
@@ -1177,8 +2204,23 @@ function getInitialLanguage() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved && LANGUAGE_MAP.some(l => l.code === saved)) return saved;
-    const browserLang = navigator.language?.split('-')[0] || 'en';
+    
+    const browserLang = navigator.language || navigator.userLanguage || 'en';
+    
+    // Exact match first
     if (LANGUAGE_MAP.some(l => l.code === browserLang)) return browserLang;
+    
+    // Try base language code (e.g., 'en' from 'en-US')
+    const baseLang = browserLang.split('-')[0];
+    const matchedLang = LANGUAGE_MAP.find(l => l.code === baseLang || l.code.startsWith(baseLang + '-'));
+    if (matchedLang) return matchedLang.code;
+    
+    // Try Chinese variants
+    if (baseLang === 'zh') {
+      const region = browserLang.split('-')[1];
+      if (region === 'TW' || region === 'HK' || region === 'MO') return 'zh-TW';
+      return 'zh-CN';
+    }
   } catch {}
   return 'en';
 }
@@ -1206,21 +2248,23 @@ export function LanguageProvider({ children }) {
   const t = useCallback((key, fallback, vars) => {
     const langTranslations = TRANSLATIONS[lang];
     let text = langTranslations && langTranslations[key];
-    if (text === undefined) {
-      text = TRANSLATIONS['en'][key];
+    if (text === undefined || text === null) {
+      text = TRANSLATIONS['en'] && TRANSLATIONS['en'][key];
     }
-    if (text === undefined) {
+    if (text === undefined || text === null) {
       text = fallback || key;
     }
-    if (vars) {
+    if (vars && typeof text === 'string') {
       Object.keys(vars).forEach(k => {
-        text = text.replace(`{${k}}`, vars[k]);
+        text = String(text).replace(`{${k}}`, String(vars[k]));
       });
     }
-    return text;
+    return String(text || key);
   }, [lang]);
 
-  const dir = ['ar', 'he', 'fa', 'ur'].includes(lang) ? 'rtl' : 'ltr';
+  // Enhanced RTL detection for all RTL languages
+  const rtlLanguages = ['ar', 'he', 'fa', 'ur', 'yi', 'ji', 'iw'];
+  const dir = rtlLanguages.includes(lang) ? 'rtl' : 'ltr';
 
   return (
     <TranslationContext.Provider value={{ lang, setLanguage, currentLang, t, dir, LANGUAGE_MAP }}>

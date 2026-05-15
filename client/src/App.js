@@ -81,19 +81,19 @@ function PrivacyPolicy() {
           <li>{t('privacy.collect2', '<strong>Account Information:</strong> If you create an account, we collect your name and email address.')}</li>
           <li>{t('privacy.collect3', '<strong>Usage Data:</strong> Anonymous usage statistics to improve our service.')}</li>
         </ul>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('privacy.handlingTitle', 'How We Handle Your Files')}</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('privacy.filesTitle', 'How We Handle Your Files')}</h2>
         <ul className="list-disc pl-6 space-y-2">
-          <li>{t('privacy.handling1', 'All uploaded files are encrypted during transmission and at rest.')}</li>
-          <li>{t('privacy.handling2', 'Files are automatically and permanently deleted from our servers within 24 hours.')}</li>
-          <li>{t('privacy.handling3', 'We do not access, view, or share your uploaded documents.')}</li>
-          <li>{t('privacy.handling4', 'Processed files are available for download for a limited time before automatic deletion.')}</li>
+          <li>{t('privacy.files1', 'All uploaded files are encrypted during transmission and at rest.')}</li>
+          <li>{t('privacy.files2', 'Files are automatically and permanently deleted from our servers within 24 hours.')}</li>
+          <li>{t('privacy.files3', 'We do not access, view, or share your uploaded documents.')}</li>
+          <li>{t('privacy.files4', 'Processed files are available for download for a limited time before automatic deletion.')}</li>
         </ul>
         <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('privacy.cookiesTitle', 'Cookies')}</h2>
-        <p>{t('privacy.cookies', 'We use essential cookies for authentication and service functionality. We do not use tracking cookies for advertising purposes.')}</p>
+        <p>{t('privacy.cookiesDesc', 'We use essential cookies for authentication and service functionality. We do not use tracking cookies for advertising purposes.')}</p>
         <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('privacy.thirdPartyTitle', 'Third-Party Services')}</h2>
-        <p>{t('privacy.thirdParty', 'We do not sell, trade, or transfer your information to third parties. We may share anonymized data with service providers who assist us in operating our website and improving our service.')}</p>
+        <p>{t('privacy.thirdPartyDesc', 'We do not sell, trade, or transfer your information to third parties. We may share anonymized data with service providers who assist us in operating our website and improving our service.')}</p>
         <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('privacy.contactTitle', 'Contact')}</h2>
-        <p>{t('privacy.contact', 'If you have questions about this Privacy Policy, please contact us at support@doczen.com.')}</p>
+        <p>{t('privacy.contactDesc', 'If you have questions about this Privacy Policy, please contact us at support@doczen.com.')}</p>
       </div>
     </div>
   );
@@ -106,7 +106,7 @@ function TermsOfService() {
       <h1 className="text-4xl font-bold text-gray-900 mb-6">{t('terms.title', 'Terms of Service')}</h1>
       <div className="prose prose-gray max-w-none space-y-4 text-gray-600">
         <p>{t('terms.lastUpdated', 'Last updated: January 2025')}</p>
-        <p>{t('terms.intro', 'By using Doczen, you agree to these Terms of Service. If you do not agree, please do not use our service.')}</p>
+        <p>{t('terms.p1', 'By using Doczen, you agree to these Terms of Service. If you do not agree, please do not use our service.')}</p>
         <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('terms.useTitle', 'Use of Service')}</h2>
         <p>{t('terms.useIntro', 'Doczen provides free online PDF editing tools for personal and business use. You agree to:')}</p>
         <ul className="list-disc pl-6 space-y-2">
@@ -116,13 +116,13 @@ function TermsOfService() {
           <li>{t('terms.use4', 'Comply with all applicable laws and regulations.')}</li>
         </ul>
         <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('terms.ipTitle', 'Intellectual Property')}</h2>
-        <p>{t('terms.ip', 'You retain all rights to your uploaded documents. Doczen claims no ownership over your files. Our software, brand, and website content are protected by applicable intellectual property laws.')}</p>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('terms.liabilityTitle', 'Limitation of Liability')}</h2>
-        <p>{t('terms.liability', 'Doczen is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the service. We do not guarantee that the service will be uninterrupted or error-free.')}</p>
+        <p>{t('terms.ipDesc', 'You retain all rights to your uploaded documents. Doczen claims no ownership over your files. Our software, brand, and website content are protected by applicable intellectual property laws.')}</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('terms.limitationTitle', 'Limitation of Liability')}</h2>
+        <p>{t('terms.limitationDesc', 'Doczen is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the service. We do not guarantee that the service will be uninterrupted or error-free.')}</p>
         <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('terms.storageTitle', 'File Storage')}</h2>
-        <p>{t('terms.storage', 'Uploaded files are automatically deleted within 24 hours. We recommend downloading your processed files promptly. We are not responsible for data loss.')}</p>
+        <p>{t('terms.storageDesc', 'Uploaded files are automatically deleted within 24 hours. We recommend downloading your processed files promptly. We are not responsible for data loss.')}</p>
         <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('terms.changesTitle', 'Changes to Terms')}</h2>
-        <p>{t('terms.changes', 'We reserve the right to modify these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.')}</p>
+        <p>{t('terms.changesDesc', 'We reserve the right to modify these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.')}</p>
       </div>
     </div>
   );
