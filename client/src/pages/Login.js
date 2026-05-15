@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
+import { useLanguage } from '../index';
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -20,7 +22,7 @@ export default function Login() {
     setError('');
 
     if (!form.email || !form.password) {
-      setError('Please fill in all fields.');
+      setError(t('login.errorRequired', 'Please fill in all fields.'));
       return;
     }
 
@@ -29,7 +31,7 @@ export default function Login() {
       await login(form.email, form.password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password.');
+      setError(err.response?.data?.message || t('login.errorInvalid', 'Invalid email or password.'));
     } finally {
       setLoading(false);
     }
@@ -38,9 +40,9 @@ export default function Login() {
   return (
     <>
     <SEO
-  title="Login - Doczen PDF Editor"
-  description="Sign in to your Doczen account to access all PDF tools, manage your files, and view your processing history."
-  keywords="login, sign in, Doczen account, PDF editor login"
+  title={t('login.seoTitle', 'Login - Doczen PDF Editor')}
+  description={t('login.seoDescription', 'Sign in to your Doczen account to access all PDF tools, manage your files, and view your processing history.')}
+  keywords={t('login.seoKeywords', 'login, sign in, Doczen account, PDF editor login')}
   canonical="/login"
   noIndex
 />
@@ -48,9 +50,9 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-8 shadow-sm">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('login.title', 'Welcome Back')}</h1>
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Sign in to your Doczen account
+              {t('login.subtitle', 'Sign in to your Doczen account')}
             </p>
           </div>
 
@@ -63,7 +65,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Email Address
+                {t('login.email', 'Email Address')}
               </label>
               <input
                 id="email"
@@ -73,14 +75,14 @@ export default function Login() {
                 required
                 value={form.email}
                 onChange={handleChange}
-                placeholder="you@example.com"
+                placeholder={t('login.emailPlaceholder', 'you@example.com')}
                 className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-colors"
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Password
+                {t('login.password', 'Password')}
               </label>
               <input
                 id="password"
@@ -90,7 +92,7 @@ export default function Login() {
                 required
                 value={form.password}
                 onChange={handleChange}
-                placeholder="Enter your password"
+                placeholder={t('login.passwordPlaceholder', 'Enter your password')}
                 className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-colors"
               />
             </div>
@@ -106,15 +108,15 @@ export default function Login() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
               ) : (
-                'Sign In'
+                t('login.signIn', 'Sign In')
               )}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-            Don&apos;t have an account?{' '}
+            {t('login.noAccount', "Don't have an account?")}{' '}
             <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
-              Create one
+              {t('login.createOne', 'Create one')}
             </Link>
           </p>
         </div>

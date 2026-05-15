@@ -4,8 +4,10 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function SplitPDF() {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -14,7 +16,7 @@ export default function SplitPDF() {
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file to split.');
+      setError(t('tool.selectPdf', 'Please select a PDF file.'));
       return;
     }
     setError('');
@@ -31,7 +33,7 @@ export default function SplitPDF() {
         setDownload(data.blobUrl, data.filename || 'split_pages.zip');
       }
     } catch (err) {
-      setError(err.message || 'Failed to split PDF. Please try again.');
+      setError(err.message || t('tool.splitError', 'Failed to split PDF. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -39,7 +41,7 @@ export default function SplitPDF() {
 
   return (
     <>
-    <SEO title="Split PDF Online - Separate PDF Pages Free" description="Split PDF files into multiple documents online for free. Extract pages from PDF or split by page ranges with Doczen." keywords="split PDF, separate PDF pages, extract PDF pages, PDF splitter, divide PDF" canonical="/split-pdf" />
+    <SEO title={t('nav.tools.split', 'Split PDF Online - Separate PDF Pages Free')} description={t('tool.splitDesc', 'Split PDF files into multiple documents online for free. Extract pages from PDF or split by page ranges with Doczen.')} keywords={t('tool.splitKeywords', 'split PDF, separate PDF pages, extract PDF pages, PDF splitter, divide PDF')} canonical="/split-pdf" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -48,12 +50,12 @@ export default function SplitPDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l-2 2m0 0l-2-2m2 2v6m0 0l2 2m-2-2l-2 2M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Split PDF</h1>
-          <p className="text-lg text-gray-600 mt-2">Extract individual pages from a PDF into separate files</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.splitPdf', 'Split PDF')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.splitDesc', 'Extract individual pages from a PDF into separate files')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
@@ -89,7 +91,7 @@ export default function SplitPDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l-2 2m0 0l-2-2m2 2v6m0 0l2 2m-2-2l-2 2M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
             </svg>
           )}
-          {loading ? 'Splitting PDF...' : 'Split PDF'}
+          {loading ? t('tool.splitting', 'Splitting PDF...') : t('tool.splitPdf', 'Split PDF')}
         </button>
 
         {loading && (
@@ -100,14 +102,14 @@ export default function SplitPDF() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -115,7 +117,7 @@ export default function SplitPDF() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="split" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.split', 'split')} />
           </div>
         )}
       </div>

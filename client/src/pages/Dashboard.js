@@ -3,15 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { historyAPI } from '../services/api';
 import SEO from '../components/SEO';
-
-const quickActions = [
-  { emoji: '🔗', label: 'Merge PDF', path: '/merge-pdf', color: 'bg-indigo-500' },
-  { emoji: '✂️', label: 'Split PDF', path: '/split-pdf', color: 'bg-blue-500' },
-  { emoji: '📦', label: 'Compress', path: '/compress-pdf', color: 'bg-emerald-500' },
-  { emoji: '🔄', label: 'Rotate', path: '/rotate-pdf', color: 'bg-amber-500' },
-  { emoji: '📄', label: 'JPG to PDF', path: '/jpg-to-pdf', color: 'bg-teal-500' },
-  { emoji: '✏️', label: 'Edit PDF', path: '/edit-pdf', color: 'bg-rose-500' },
-];
+import { useLanguage } from '../index';
 
 const actionColors = {
   merge: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
@@ -40,6 +32,16 @@ const actionColors = {
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
+
+  const quickActions = [
+    { emoji: '🔗', label: t('dashboard.quick.merge', 'Merge PDF'), path: '/merge-pdf', color: 'bg-indigo-500' },
+    { emoji: '✂️', label: t('dashboard.quick.split', 'Split PDF'), path: '/split-pdf', color: 'bg-blue-500' },
+    { emoji: '📦', label: t('dashboard.quick.compress', 'Compress'), path: '/compress-pdf', color: 'bg-emerald-500' },
+    { emoji: '🔄', label: t('dashboard.quick.rotate', 'Rotate'), path: '/rotate-pdf', color: 'bg-amber-500' },
+    { emoji: '📄', label: t('dashboard.quick.jpgToPdf', 'JPG to PDF'), path: '/jpg-to-pdf', color: 'bg-teal-500' },
+    { emoji: '✏️', label: t('dashboard.quick.editPdf', 'Edit PDF'), path: '/edit-pdf', color: 'bg-rose-500' },
+  ];
 
   const [recentActivity, setRecentActivity] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
@@ -77,9 +79,9 @@ export default function Dashboard() {
   return (
     <>
     <SEO
-  title="Dashboard - Doczen PDF Editor"
-  description="Your Doczen dashboard. View usage stats, recent activity, and quick access to all PDF tools."
-  keywords="dashboard, PDF tools, Doczen account, file management"
+  title={t('dashboard.seo.title', 'Dashboard - Doczen PDF Editor')}
+  description={t('dashboard.seo.description', 'Your Doczen dashboard. View usage stats, recent activity, and quick access to all PDF tools.')}
+  keywords={t('dashboard.seo.keywords', 'dashboard, PDF tools, Doczen account, file management')}
   canonical="/dashboard"
   noIndex
 />
@@ -87,10 +89,10 @@ export default function Dashboard() {
       {/* Welcome */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
-          Welcome back{user?.name ? `, ${user.name}` : ''} 👋
+          {t('dashboard.welcome', 'Welcome back')}{user?.name ? `, ${user.name}` : ''} 👋
         </h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Here&apos;s what&apos;s happening with your documents today.
+          {t('dashboard.subtitle', "Here's what's happening with your documents today.")}
         </p>
       </div>
 
@@ -98,7 +100,7 @@ export default function Dashboard() {
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Files Today</span>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('dashboard.filesToday', 'Files Today')}</span>
             <span className="text-xs font-medium text-gray-400">{filesToday}/{dailyLimit}</span>
           </div>
           <div className="mt-2">
@@ -117,7 +119,7 @@ export default function Dashboard() {
 
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Storage Used</span>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('dashboard.storageUsed', 'Storage Used')}</span>
             <span className="text-xs font-medium text-gray-400">{storageUsed}MB / {storageLimit}MB</span>
           </div>
           <div className="mt-2">
@@ -138,7 +140,7 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('dashboard.quickActions', 'Quick Actions')}</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
           {quickActions.map((action) => (
             <Link
@@ -158,12 +160,12 @@ export default function Dashboard() {
       {/* Recent Activity */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.recentActivity', 'Recent Activity')}</h2>
           <Link
             to="/history"
             className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
           >
-            View All
+            {t('dashboard.viewAll', 'View All')}
           </Link>
         </div>
 
@@ -177,7 +179,7 @@ export default function Dashboard() {
             </div>
           ) : recentActivity.length === 0 ? (
             <div className="py-12 text-center text-sm text-gray-400">
-              No activity yet. Start by using one of the tools above!
+              {t('dashboard.noActivity', 'No activity yet. Start by using one of the tools above!')}
             </div>
           ) : (
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -191,7 +193,7 @@ export default function Dashboard() {
                     {item.action?.replace(/-/g, ' ')}
                   </span>
                   <span className="flex-1 truncate text-sm text-gray-600 dark:text-gray-300">
-                    {item.fileName || item.outputFiles?.[0]?.originalName || item.inputFiles?.[0]?.originalName || 'Untitled'}
+                    {item.fileName || item.outputFiles?.[0]?.originalName || item.inputFiles?.[0]?.originalName || t('dashboard.untitled', 'Untitled')}
                   </span>
                   <span className="text-xs text-gray-400">
                     {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}

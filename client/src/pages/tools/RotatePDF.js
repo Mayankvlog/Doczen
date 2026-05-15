@@ -4,8 +4,10 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function RotatePDF() {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [degrees, setDegrees] = useState(90);
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,7 @@ export default function RotatePDF() {
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file to rotate.');
+      setError(t('tool.selectPdfRotate', 'Please select a PDF file to rotate.'));
       return;
     }
     setError('');
@@ -39,7 +41,7 @@ export default function RotatePDF() {
         setDownload(data.blobUrl, data.filename || 'rotated.pdf');
       }
     } catch (err) {
-      setError(err.message || 'Failed to rotate PDF. Please try again.');
+      setError(err.message || t('tool.rotateError', 'Failed to rotate PDF. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -47,7 +49,7 @@ export default function RotatePDF() {
 
   return (
     <>
-    <SEO title="Rotate PDF Online - Rotate PDF Pages Free" description="Rotate PDF pages online for free. Rotate individual pages or entire PDF documents 90, 180, or 270 degrees." keywords="rotate PDF, rotate PDF pages, PDF rotation, flip PDF, turn PDF" canonical="/rotate-pdf" />
+    <SEO title={t('nav.tools.rotate', 'Rotate PDF Online - Rotate PDF Pages Free')} description={t('tool.rotateDesc', 'Rotate PDF pages online for free. Rotate individual pages or entire PDF documents 90, 180, or 270 degrees.')} keywords={t('tool.rotateKeywords', 'rotate PDF, rotate PDF pages, PDF rotation, flip PDF, turn PDF')} canonical="/rotate-pdf" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -56,12 +58,12 @@ export default function RotatePDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Rotate PDF</h1>
-          <p className="text-lg text-gray-600 mt-2">Rotate individual pages or entire PDF documents</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.rotatePdf', 'Rotate PDF')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.rotateDesc', 'Rotate individual pages or entire PDF documents')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
@@ -77,7 +79,7 @@ export default function RotatePDF() {
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Rotation Angle</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.rotationAngle', 'Rotation Angle')}</h2>
           <div className="grid grid-cols-3 gap-3">
             {rotateOptions.map((opt) => (
               <button
@@ -125,7 +127,7 @@ export default function RotatePDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           )}
-          {loading ? 'Rotating PDF...' : 'Rotate PDF'}
+          {loading ? t('tool.rotating', 'Rotating PDF...') : t('tool.rotatePdf', 'Rotate PDF')}
         </button>
 
         {loading && (
@@ -136,14 +138,14 @@ export default function RotatePDF() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -151,7 +153,7 @@ export default function RotatePDF() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="rotated" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.rotated', 'rotated')} />
           </div>
         )}
       </div>

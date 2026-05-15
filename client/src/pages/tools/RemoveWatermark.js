@@ -4,11 +4,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
-
-const MODES = [
-  { value: 'auto', label: 'Auto', description: 'Try all removal strategies' },
-  { value: 'text', label: 'Text', description: 'Target text-based watermarks only' },
-];
+import { useLanguage } from '../../index';
 
 export default function RemoveWatermark() {
   const [file, setFile] = useState(null);
@@ -19,10 +15,19 @@ export default function RemoveWatermark() {
   const [mode, setMode] = useState('auto');
   const [removalResult, setRemovalResult] = useState(null);
   const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
+  const { t } = useLanguage();
+  const MODES = [
+    { value: 'auto', label: t('tool.modeAuto', 'Auto'), description: t('tool.modeAutoDesc', 'Try all removal strategies') },
+    { value: 'text', label: t('tool.modeText', 'Text'), description: t('tool.modeTextDesc', 'Target text-based watermarks only') },
+  ];
+  const modes = [
+    { value: 'auto', label: t('tool.modeAuto', 'Auto'), description: t('tool.modeAutoDesc', 'Try all removal strategies') },
+    { value: 'text', label: t('tool.modeText', 'Text'), description: t('tool.modeTextDesc', 'Target text-based watermarks only') },
+  ];
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file to remove watermark from.');
+      setError(t('tool.selectPdfWatermark', 'Please select a PDF file to remove watermark from.'));
       return;
     }
     setError('');
@@ -47,7 +52,7 @@ export default function RemoveWatermark() {
       if (msg.includes('not removable') || msg.includes('flattened') || msg.includes('embedded')) {
         setRemovalResult({ status: 'not_removable', message: msg });
       } else {
-        setError(msg || 'Failed to remove watermark. Please try again.');
+        setError(msg || t('tool.failedRemoveWatermark', 'Failed to remove watermark. Please try again.'));
       }
     } finally {
       setLoading(false);
@@ -57,17 +62,17 @@ export default function RemoveWatermark() {
   const getResultMessage = () => {
     if (!removalResult) return null;
     if (removalResult.status === 'removed') {
-      return { type: 'success', title: 'Watermark Removed', text: 'The watermark has been successfully removed from your PDF.' };
+      return { type: 'success', title: t('tool.watermarkRemoved', 'Watermark Removed'), text: t('tool.watermarkRemovedDesc', 'The watermark has been successfully removed from your PDF.') };
     }
     if (removalResult.status === 'not_removable') {
-      return { type: 'warning', title: 'Could Not Auto-Remove', text: removalResult.message || 'This watermark appears to be flattened or embedded in the page content and cannot be automatically removed.' };
+      return { type: 'warning', title: t('tool.couldNotRemove', 'Could Not Auto-Remove'), text: removalResult.message || t('tool.couldNotRemoveDesc', 'This watermark appears to be flattened or embedded in the page content and cannot be automatically removed.') };
     }
     return null;
   };
 
   return (
     <>
-    <SEO title="Remove Watermark from PDF Online Free" description="Remove watermarks from PDF files online for free. Clean your PDF documents by removing text and image watermarks with Doczen." keywords="remove watermark from PDF, delete PDF watermark, PDF watermark remover, clean PDF, remove text from PDF" canonical="/remove-watermark" />
+    <SEO title={t('tool.removeWatermarkSeoTitle', 'Remove Watermark from PDF Online Free')} description={t('tool.removeWatermarkSeoDesc', 'Remove watermarks from PDF files online for free. Clean your PDF documents by removing text and image watermarks with Doczen.')} keywords={t('tool.removeWatermarkSeoKeywords', 'remove watermark from PDF, delete PDF watermark, PDF watermark remover, clean PDF, remove text from PDF')} canonical="/remove-watermark" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -76,12 +81,12 @@ export default function RemoveWatermark() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4m16 0a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6a2 2 0 012-2m16 0V6a2 2 0 00-2-2H6a2 2 0 00-2 2v4" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Remove Watermark</h1>
-          <p className="text-lg text-gray-600 mt-2">Remove text and image watermarks from your PDF documents</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.removeWatermark', 'Remove Watermark')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.removeWatermarkDesc2', 'Remove text and image watermarks from your PDF documents')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); setRemovalResult(null); clearDownload(); }}
@@ -97,11 +102,11 @@ export default function RemoveWatermark() {
         </div>
 
         <div className="card mb-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-800">Options</h2>
+          <h2 className="text-lg font-semibold text-gray-800">{t('tool.options', 'Options')}</h2>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Watermark Text <span className="text-gray-400">(optional)</span>
+              {t('tool.watermarkTextOptional', 'Watermark Text')} <span className="text-gray-400">{t('tool.watermarkOptional', '(optional)')}</span>
             </label>
             <input
               type="text"
@@ -110,13 +115,13 @@ export default function RemoveWatermark() {
               placeholder="e.g. CONFIDENTIAL, DRAFT, SAMPLE"
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
             />
-            <p className="text-xs text-gray-400 mt-1">Known watermark text helps detection</p>
+            <p className="text-xs text-gray-400 mt-1">{t('tool.watermarkHelp', 'Known watermark text helps detection')}</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Mode</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t('tool.mode', 'Mode')}</label>
             <div className="grid grid-cols-2 gap-3">
-              {MODES.map((m) => (
+              {modes.map((m) => (
                 <button
                   key={m.value}
                   type="button"
@@ -165,12 +170,9 @@ export default function RemoveWatermark() {
         )}
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">About Watermark Removal</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.aboutWatermark', 'About Watermark Removal')}</h2>
           <p className="text-sm text-gray-600 leading-relaxed">
-            This tool uses multiple strategies to detect and remove watermarks from your PDF documents.
-            It scans for structured watermark artifacts, recurring overlay objects, and text-based watermarks.
-            Results may vary depending on how the watermark was embedded. Flattened or scanned watermarks
-            cannot always be automatically removed.
+            {t('tool.watermarkAboutDesc', 'This tool uses multiple strategies to detect and remove watermarks from your PDF documents. It scans for structured watermark artifacts, recurring overlay objects, and text-based watermarks. Results may vary depending on how the watermark was embedded. Flattened or scanned watermarks cannot always be automatically removed.')}
           </p>
         </div>
 
@@ -186,7 +188,7 @@ export default function RemoveWatermark() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4m16 0a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6a2 2 0 012-2m16 0V6a2 2 0 00-2-2H6a2 2 0 00-2 2v4" />
             </svg>
           )}
-          {loading ? 'Removing Watermark...' : 'Remove Watermark'}
+          {loading ? t('tool.removingWatermark', 'Removing Watermark...') : t('tool.removeWatermark', 'Remove Watermark')}
         </button>
 
         {loading && (
@@ -197,14 +199,14 @@ export default function RemoveWatermark() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>Your cleaned PDF is ready. Download started automatically.</p>
+            <p>{t('tool.cleanedDesc', 'Your cleaned PDF is ready. Download started automatically.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -212,7 +214,7 @@ export default function RemoveWatermark() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setRemovalResult(null); clearDownload(); }} action="watermark removed" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setRemovalResult(null); clearDownload(); }} action={t('tool.watermarkRemovedAction', 'watermark removed')} />
           </div>
         )}
       </div>

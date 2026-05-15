@@ -4,6 +4,7 @@ import ResultCard from '../../components/ResultCard';
 import { useDownloadHandler } from '../../services/api';
 const API_BASE = process.env.REACT_APP_API_URL || '';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function HTMLToPDF() {
   const [content, setContent] = useState('');
@@ -13,10 +14,11 @@ export default function HTMLToPDF() {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
+  const { t } = useLanguage();
 
   const handleProcess = async () => {
     if (!content.trim()) {
-      setError('Please enter HTML or text content to convert.');
+      setError(t('tool.enterContentToConvert', 'Please enter HTML or text content to convert.'));
       return;
     }
     setError('');
@@ -50,7 +52,7 @@ export default function HTMLToPDF() {
       setDownload(blobUrl, filename);
       setResult({ success: true, filename });
     } catch (err) {
-      setError(err.message || 'Failed to convert to PDF. Please try again.');
+      setError(err.message || t('tool.failedConvertToPdf', 'Failed to convert to PDF. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -58,7 +60,7 @@ export default function HTMLToPDF() {
 
   return (
     <>
-    <SEO title="HTML to PDF Converter Online Free" description="Convert HTML and text content to PDF documents online for free. Create PDF from text with Doczen." keywords="HTML to PDF, text to PDF, convert HTML to PDF, create PDF from text, web page to PDF" canonical="/html-to-pdf" />
+    <SEO title={t('tool.htmlToPdfSeoTitle', 'HTML to PDF Converter Online Free')} description={t('tool.htmlToPdfSeoDesc', 'Convert HTML and text content to PDF documents online for free. Create PDF from text with Doczen.')} keywords={t('tool.htmlToPdfSeoKeywords', 'HTML to PDF, text to PDF, convert HTML to PDF, create PDF from text, web page to PDF')} canonical="/html-to-pdf" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -67,15 +69,15 @@ export default function HTMLToPDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">HTML to PDF</h1>
-          <p className="text-lg text-gray-600 mt-2">Convert HTML and text content into a PDF document</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.htmlToPdf', 'HTML to PDF')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.htmlToPdfDesc2', 'Convert HTML and text content into a PDF document')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Content</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.content', 'Content')}</h2>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Enter HTML or plain text
+              {t('tool.enterHtmlOrText', 'Enter HTML or plain text')}
             </label>
             <textarea
               value={content}
@@ -88,10 +90,10 @@ export default function HTMLToPDF() {
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Document Settings</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.documentSettings', 'Document Settings')}</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Document Title</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tool.documentTitle', 'Document Title')}</label>
               <input
                 type="text"
                 value={title}
@@ -101,7 +103,7 @@ export default function HTMLToPDF() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Font Size</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tool.fontSize', 'Font Size')}</label>
               <select
                 value={fontSize}
                 onChange={(e) => setFontSize(parseInt(e.target.value))}
@@ -141,7 +143,7 @@ export default function HTMLToPDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
             </svg>
           )}
-          {loading ? 'Converting to PDF...' : 'Convert to PDF'}
+          {loading ? t('tool.convertingHtml', 'Converting to PDF...') : t('tool.convertToPdf', 'Convert to PDF')}
         </button>
 
         {loading && (
@@ -152,14 +154,14 @@ export default function HTMLToPDF() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.fileConvertedSuccess', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -167,7 +169,7 @@ export default function HTMLToPDF() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setContent(''); clearDownload(); }} action="converted to PDF" />
+            <ResultCard result={result} onReset={() => { setResult(null); setContent(''); clearDownload(); }} action={t('tool.convertedToPdf', 'converted to PDF')} />
           </div>
         )}
       </div>

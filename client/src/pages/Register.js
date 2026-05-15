@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
+import { useLanguage } from '../index';
 
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
@@ -17,13 +19,13 @@ export default function Register() {
 
   const validate = () => {
     if (!form.name || !form.email || !form.password || !form.confirmPassword) {
-      return 'Please fill in all fields.';
+      return t('register.errorRequired', 'Please fill in all fields.');
     }
     if (form.password.length < 6) {
-      return 'Password must be at least 6 characters.';
+      return t('register.errorPasswordLength', 'Password must be at least 6 characters.');
     }
     if (form.password !== form.confirmPassword) {
-      return 'Passwords do not match.';
+      return t('register.errorPasswordMatch', 'Passwords do not match.');
     }
     return null;
   };
@@ -43,7 +45,7 @@ export default function Register() {
       await register(form.name, form.email, form.password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setError(err.response?.data?.message || t('register.errorFailed', 'Registration failed. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -52,9 +54,9 @@ export default function Register() {
   return (
     <>
     <SEO
-  title="Create Free Account - Doczen PDF Editor"
-  description="Create your free Doczen account and get access to all PDF editing tools. Merge, split, compress and convert PDFs online."
-  keywords="register, sign up, create account, free PDF editor, Doczen registration"
+  title={t('register.seoTitle', 'Create Free Account - Doczen PDF Editor')}
+  description={t('register.seoDescription', 'Create your free Doczen account and get access to all PDF editing tools. Merge, split, compress and convert PDFs online.')}
+  keywords={t('register.seoKeywords', 'register, sign up, create account, free PDF editor, Doczen registration')}
   canonical="/register"
   noIndex
 />
@@ -62,9 +64,9 @@ export default function Register() {
       <div className="w-full max-w-md">
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-8 shadow-sm">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Your Account</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('register.title', 'Create Your Account')}</h1>
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Start using Doczen in seconds
+              {t('register.subtitle', 'Start using Doczen in seconds')}
             </p>
           </div>
 
@@ -77,7 +79,7 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Full Name
+                {t('register.name', 'Full Name')}
               </label>
               <input
                 id="name"
@@ -87,14 +89,14 @@ export default function Register() {
                 required
                 value={form.name}
                 onChange={handleChange}
-                placeholder="John Doe"
+                placeholder={t('register.namePlaceholder', 'John Doe')}
                 className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-colors"
               />
             </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Email Address
+                {t('register.email', 'Email Address')}
               </label>
               <input
                 id="email"
@@ -104,14 +106,14 @@ export default function Register() {
                 required
                 value={form.email}
                 onChange={handleChange}
-                placeholder="you@example.com"
+                placeholder={t('register.emailPlaceholder', 'you@example.com')}
                 className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-colors"
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Password
+                {t('register.password', 'Password')}
               </label>
               <input
                 id="password"
@@ -121,14 +123,14 @@ export default function Register() {
                 required
                 value={form.password}
                 onChange={handleChange}
-                placeholder="At least 6 characters"
+                placeholder={t('register.passwordPlaceholder', 'At least 6 characters')}
                 className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-colors"
               />
             </div>
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Confirm Password
+                {t('register.confirmPassword', 'Confirm Password')}
               </label>
               <input
                 id="confirmPassword"
@@ -138,7 +140,7 @@ export default function Register() {
                 required
                 value={form.confirmPassword}
                 onChange={handleChange}
-                placeholder="Repeat your password"
+                placeholder={t('register.confirmPasswordPlaceholder', 'Repeat your password')}
                 className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-colors"
               />
             </div>
@@ -154,15 +156,15 @@ export default function Register() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
               ) : (
-                'Create Account'
+                t('register.createAccount', 'Create Account')
               )}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-            Already have an account?{' '}
+            {t('register.hasAccount', 'Already have an account?')}{' '}
             <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
-              Sign in
+              {t('register.signIn', 'Sign in')}
             </Link>
           </p>
         </div>

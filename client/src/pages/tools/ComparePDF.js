@@ -4,6 +4,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function ComparePDF() {
   const [file1, setFile1] = useState(null);
@@ -11,10 +12,11 @@ export default function ComparePDF() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [comparison, setComparison] = useState(null);
+  const { t } = useLanguage();
 
   const handleProcess = async () => {
     if (!file1 || !file2) {
-      setError('Please select both PDF files to compare.');
+      setError(t('tool.selectBothPdfs', 'Please select both PDF files to compare.'));
       return;
     }
     setError('');
@@ -27,14 +29,14 @@ export default function ComparePDF() {
       const data = await handleToolSubmit('/pdf/compare', formData);
       setComparison(data);
     } catch (err) {
-      setError(err.message || 'Failed to compare PDFs. Please try again.');
+      setError(err.message || t('tool.failedCompare', 'Failed to compare PDFs. Please try again.'));
     } finally {
       setLoading(false);
     }
   };
 
   const formatSize = (bytes) => {
-    if (!bytes) return 'N/A';
+    if (!bytes) return t('tool.na', 'N/A');
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
@@ -42,7 +44,7 @@ export default function ComparePDF() {
 
   return (
     <>
-    <SEO title="Compare PDF Files Online Free" description="Compare two PDF files online for free. Find differences in page count, size, and structure with Doczen's PDF comparison tool." keywords="compare PDF, PDF comparison, diff PDF, PDF differences, compare two PDF files" canonical="/compare-pdf" />
+    <SEO title={t('tool.compareSeoTitle', 'Compare PDF Files Online Free')} description={t('tool.compareSeoDesc', 'Compare two PDF files online for free. Find differences in page count, size, and structure with Doczen\'s PDF comparison tool.')} keywords={t('tool.compareSeoKeywords', 'compare PDF, PDF comparison, diff PDF, PDF differences, compare two PDF files')} canonical="/compare-pdf" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -51,16 +53,16 @@ export default function ComparePDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Compare PDF</h1>
-          <p className="text-lg text-gray-600 mt-2">Compare two PDF files and find differences</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.comparePdf', 'Compare PDF')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.compareDesc', 'Compare two PDF files and find differences')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">First PDF</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.firstPdf', 'First PDF')}</h2>
             <FileUploader
               accept=".pdf"
-              label="Upload first PDF"
+              label={t('tool.uploadFirstPdf', 'Upload first PDF')}
               onFilesSelected={(selected) => { setFile1(selected[0] || null); setComparison(null); setError(''); }}
             />
             {file1 && (
@@ -73,10 +75,10 @@ export default function ComparePDF() {
             )}
           </div>
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Second PDF</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.secondPdf', 'Second PDF')}</h2>
             <FileUploader
               accept=".pdf"
-              label="Upload second PDF"
+              label={t('tool.uploadSecondPdf', 'Upload second PDF')}
               onFilesSelected={(selected) => { setFile2(selected[0] || null); setComparison(null); setError(''); }}
             />
             {file2 && (
@@ -111,7 +113,7 @@ export default function ComparePDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           )}
-          {loading ? 'Comparing PDFs...' : 'Compare PDFs'}
+          {loading ? t('tool.comparing', 'Comparing PDFs...') : t('tool.comparePdf', 'Compare PDFs')}
         </button>
 
         {loading && (
@@ -122,33 +124,33 @@ export default function ComparePDF() {
 
         {comparison && (
           <div className="mt-6 card">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Comparison Results</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.comparisonResults', 'Comparison Results')}</h2>
             <div className="space-y-3">
               <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-500">Page Count (File 1)</span>
-                <span className="text-sm font-medium text-gray-900">{comparison.file1?.pageCount || 'N/A'}</span>
+                <span className="text-sm text-gray-500">{t('tool.pageCountFile1', 'Page Count (File 1)')}</span>
+                <span className="text-sm font-medium text-gray-900">{comparison.file1?.pageCount || t('tool.na', 'N/A')}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-500">Page Count (File 2)</span>
-                <span className="text-sm font-medium text-gray-900">{comparison.file2?.pageCount || 'N/A'}</span>
+                <span className="text-sm text-gray-500">{t('tool.pageCountFile2', 'Page Count (File 2)')}</span>
+                <span className="text-sm font-medium text-gray-900">{comparison.file2?.pageCount || t('tool.na', 'N/A')}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-500">File Size</span>
+                <span className="text-sm text-gray-500">{t('tool.fileSize', 'File Size')}</span>
                 <span className="text-sm font-medium text-gray-900">{formatSize(comparison.originalSize)}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-500">Identical</span>
+                <span className="text-sm text-gray-500">{t('tool.identical', 'Identical')}</span>
                 <span className={`text-sm font-medium ${comparison.isIdentical ? 'text-green-600' : 'text-red-600'}`}>
-                  {comparison.isIdentical ? 'Yes' : 'No'}
+                  {comparison.isIdentical ? t('tool.yes', 'Yes') : t('tool.no', 'No')}
                 </span>
               </div>
               <div className="flex justify-between py-2">
-                <span className="text-sm text-gray-500">Differences Found</span>
+                <span className="text-sm text-gray-500">{t('tool.differencesFound', 'Differences Found')}</span>
                 <span className="text-sm font-medium text-gray-900">{comparison.differences?.length || 0}</span>
               </div>
               {comparison.differences && comparison.differences.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Differences:</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('tool.differences', 'Differences:')}</h3>
                   <ul className="space-y-1">
                     {comparison.differences.map((diff, idx) => (
                       <li key={idx} className="text-xs text-gray-600 bg-gray-50 rounded px-3 py-1.5">
@@ -164,7 +166,7 @@ export default function ComparePDF() {
                 onClick={() => { setComparison(null); setFile1(null); setFile2(null); setError(''); }}
                 className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-indigo-300 hover:text-indigo-600 active:scale-[0.98] transition-all duration-200"
               >
-                Compare Another
+                {t('tool.compareAnother', 'Compare Another')}
               </button>
             </div>
           </div>

@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../index';
 
 export default function ToolCard({ emoji, icon, title, desc, description, path, link }) {
+  const { t } = useLanguage();
   return (
     <Link
       to={path || link}
@@ -17,7 +19,7 @@ export default function ToolCard({ emoji, icon, title, desc, description, path, 
         {desc || description}
       </p>
       <span className="mt-4 text-sm font-medium text-indigo-600 flex items-center gap-1 group-hover:gap-2 transition-all duration-300">
-        Try now
+        {t('tool.tryNow', 'Try now')}
         <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>

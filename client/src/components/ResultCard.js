@@ -1,3 +1,4 @@
+import { useLanguage } from '../index';
 
 function formatSize(bytes) {
   if (!bytes || bytes === 0) return '0 B';
@@ -14,6 +15,7 @@ function getRatioColor(ratio) {
 }
 
 export default function ResultCard({ result, onReset, action = 'processed', onDownloadAgain, downloadAgainLabel }) {
+  const { t } = useLanguage();
   if (!result) return null;
 
   const { fileName, filename, size, originalSize, success } = result;
@@ -37,29 +39,29 @@ export default function ResultCard({ result, onReset, action = 'processed', onDo
       <div className="bg-gray-50 rounded-xl p-4 space-y-2">
         {displayName && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">File</span>
+            <span className="text-gray-500">{t('result.file', 'File')}</span>
             <span className="font-medium text-gray-900 truncate max-w-[200px]">{displayName}</span>
           </div>
         )}
         {size && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">Size</span>
+            <span className="text-gray-500">{t('result.size', 'Size')}</span>
             <span className="font-medium text-gray-900">{formatSize(size)}</span>
           </div>
         )}
         {compressionRatio !== null && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">Compression</span>
+            <span className="text-gray-500">{t('result.compression', 'Compression')}</span>
             <span className={`font-medium px-2 py-0.5 rounded-full text-xs ${getRatioColor(compressionRatio)}`}>
               {originalSize && size
-                ? `${((1 - compressionRatio) * 100).toFixed(0)}% smaller`
+                ? t('result.compressionRatio', '{pct}% smaller', { pct: ((1 - compressionRatio) * 100).toFixed(0) })
                 : '-'}
             </span>
           </div>
         )}
         {originalSize && size && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">Original</span>
+            <span className="text-gray-500">{t('result.original', 'Original')}</span>
             <span className="font-medium text-gray-900">{formatSize(originalSize)}</span>
           </div>
         )}
@@ -72,14 +74,14 @@ export default function ResultCard({ result, onReset, action = 'processed', onDo
             onClick={onDownloadAgain}
             className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-all duration-200 active:scale-[0.98]"
           >
-            {downloadAgainLabel || 'Download Again'}
+            {downloadAgainLabel || t('result.downloadAgain', 'Download Again')}
           </button>
         )}
         <button
           onClick={onReset}
           className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-indigo-300 hover:text-indigo-600 active:scale-[0.98] transition-all duration-200"
         >
-          Process Another
+          {t('result.processAnother', 'Process Another')}
         </button>
       </div>
     </div>

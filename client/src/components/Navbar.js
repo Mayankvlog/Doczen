@@ -3,51 +3,50 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../index';
 
-const navLinks = [
-  { label: 'Home', path: '/' },
-  { label: 'About', path: '/about' },
-  {
-    label: 'All Tools',
-    path: '#',
-    dropdown: [
-      { label: 'Merge PDF', path: '/merge-pdf' },
-      { label: 'Split PDF', path: '/split-pdf' },
-      { label: 'Compress PDF', path: '/compress-pdf' },
-      { label: 'Rotate PDF', path: '/rotate-pdf' },
-      { label: 'Protect PDF', path: '/protect-pdf' },
-      { label: 'Unlock PDF', path: '/unlock-pdf' },
-      { label: 'Add Page Numbers', path: '/add-page-numbers' },
-      { label: 'Add Watermark', path: '/add-watermark' },
-      { label: 'Extract Text', path: '/extract-text' },
-      { label: 'Reorder Pages', path: '/reorder-pages' },
-      { label: 'Delete Pages', path: '/delete-pages' },
-      { label: 'PDF to JPG', path: '/pdf-to-jpg' },
-      { label: 'JPG to PDF', path: '/jpg-to-pdf' },
-      { label: 'PDF to TXT', path: '/pdf-to-txt' },
-      { label: 'PDF to Word', path: '/pdf-to-word' },
-      { label: 'Word to PDF', path: '/word-to-pdf' },
-      { label: 'PDF to PPT', path: '/pdf-to-ppt' },
-      { label: 'PPT to PDF', path: '/ppt-to-pdf' },
-      { label: 'PDF to Excel', path: '/pdf-to-excel' },
-      { label: 'Excel to PDF', path: '/excel-to-pdf' },
-      { label: 'Edit PDF', path: '/edit-pdf' },
-      { label: 'Sign PDF', path: '/sign-pdf' },
-      { label: 'Repair PDF', path: '/repair-pdf' },
-      { label: 'PDF to PDF/A', path: '/pdf-to-pdfa' },
-      { label: 'PDF Metadata', path: '/pdf-metadata' },
-      { label: 'Flatten PDF', path: '/flatten-pdf' },
-      { label: 'HTML to PDF', path: '/html-to-pdf' },
-      { label: 'Redact PDF', path: '/redact-pdf' },
-      { label: 'Remove Annotations', path: '/remove-annotations' },
-      { label: 'Remove Watermark', path: '/remove-watermark' },
-      { label: 'Compare PDF', path: '/compare-pdf' },
-    ],
-  },
-];
-
 export default function Navbar() {
   const { user, logout } = useAuth();
-  const { lang, setLanguage, currentLang, LANGUAGE_MAP } = useLanguage();
+  const { lang, setLanguage, currentLang, LANGUAGE_MAP, t } = useLanguage();
+  const navLinks = [
+    { label: t('nav.home', 'Home'), path: '/' },
+    { label: t('nav.about', 'About'), path: '/about' },
+    {
+      label: t('nav.allTools', 'All Tools'),
+      path: '#',
+      dropdown: [
+        { label: t('tools.mergePdf', 'Merge PDF'), path: '/merge-pdf' },
+        { label: t('tools.splitPdf', 'Split PDF'), path: '/split-pdf' },
+        { label: t('tools.compressPdf', 'Compress PDF'), path: '/compress-pdf' },
+        { label: t('tools.rotatePdf', 'Rotate PDF'), path: '/rotate-pdf' },
+        { label: t('tools.protectPdf', 'Protect PDF'), path: '/protect-pdf' },
+        { label: t('tools.unlockPdf', 'Unlock PDF'), path: '/unlock-pdf' },
+        { label: t('tools.addPageNumbers', 'Add Page Numbers'), path: '/add-page-numbers' },
+        { label: t('tools.addWatermark', 'Add Watermark'), path: '/add-watermark' },
+        { label: t('tools.extractText', 'Extract Text'), path: '/extract-text' },
+        { label: t('tools.reorderPages', 'Reorder Pages'), path: '/reorder-pages' },
+        { label: t('tools.deletePages', 'Delete Pages'), path: '/delete-pages' },
+        { label: t('tools.pdfToJpg', 'PDF to JPG'), path: '/pdf-to-jpg' },
+        { label: t('tools.jpgToPdf', 'JPG to PDF'), path: '/jpg-to-pdf' },
+        { label: t('tools.pdfToTxt', 'PDF to TXT'), path: '/pdf-to-txt' },
+        { label: t('tools.pdfToWord', 'PDF to Word'), path: '/pdf-to-word' },
+        { label: t('tools.wordToPdf', 'Word to PDF'), path: '/word-to-pdf' },
+        { label: t('tools.pdfToPpt', 'PDF to PPT'), path: '/pdf-to-ppt' },
+        { label: t('tools.pptToPdf', 'PPT to PDF'), path: '/ppt-to-pdf' },
+        { label: t('tools.pdfToExcel', 'PDF to Excel'), path: '/pdf-to-excel' },
+        { label: t('tools.excelToPdf', 'Excel to PDF'), path: '/excel-to-pdf' },
+        { label: t('tools.editPdf', 'Edit PDF'), path: '/edit-pdf' },
+        { label: t('tools.signPdf', 'Sign PDF'), path: '/sign-pdf' },
+        { label: t('tools.repairPdf', 'Repair PDF'), path: '/repair-pdf' },
+        { label: t('tools.pdfToPdfa', 'PDF to PDF/A'), path: '/pdf-to-pdfa' },
+        { label: t('tools.pdfMetadata', 'PDF Metadata'), path: '/pdf-metadata' },
+        { label: t('tools.flattenPdf', 'Flatten PDF'), path: '/flatten-pdf' },
+        { label: t('tools.htmlToPdf', 'HTML to PDF'), path: '/html-to-pdf' },
+        { label: t('tools.redactPdf', 'Redact PDF'), path: '/redact-pdf' },
+        { label: t('tools.removeAnnotations', 'Remove Annotations'), path: '/remove-annotations' },
+        { label: t('tools.removeWatermark', 'Remove Watermark'), path: '/remove-watermark' },
+        { label: t('tools.comparePdf', 'Compare PDF'), path: '/compare-pdf' },
+      ],
+    },
+  ];
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -172,14 +171,14 @@ export default function Navbar() {
                 {userMenuOpen && (
                   <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50">
                     <Link to="/dashboard" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 transition-colors">
-                      Dashboard
+                      {t('nav.dashboard', 'Dashboard')}
                     </Link>
                     <Link to="/history" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 transition-colors">
-                      History
+                      {t('nav.history', 'History')}
                     </Link>
                     <hr className="my-1 border-gray-100" />
                     <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                      Logout
+                      {t('nav.logout', 'Logout')}
                     </button>
                   </div>
                 )}
@@ -187,10 +186,10 @@ export default function Navbar() {
             ) : (
               <>
                 <Link to="/login" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
-                  Login
+                  {t('nav.login', 'Login')}
                 </Link>
                 <Link to="/register" className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
-                  Register
+                  {t('nav.register', 'Register')}
                 </Link>
               </>
             )}
@@ -220,7 +219,7 @@ export default function Navbar() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Language
+                {t('nav.language', 'Language')}
               </div>
               <select
                 value={lang}
@@ -271,14 +270,14 @@ export default function Navbar() {
                   </div>
                   {user.email}
                 </div>
-                <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-indigo-50 transition-colors">Dashboard</Link>
-                <Link to="/history" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-indigo-50 transition-colors">History</Link>
-                <button onClick={handleLogout} className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors">Logout</button>
+                <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-indigo-50 transition-colors">{t('nav.dashboard', 'Dashboard')}</Link>
+                <Link to="/history" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-indigo-50 transition-colors">{t('nav.history', 'History')}</Link>
+                <button onClick={handleLogout} className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors">{t('nav.logout', 'Logout')}</button>
               </>
             ) : (
               <>
-                <Link to="/login" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-indigo-50 transition-colors">Login</Link>
-                <Link to="/register" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-white bg-indigo-600 text-center mt-1 hover:bg-indigo-700 transition-colors">Register</Link>
+                <Link to="/login" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-indigo-50 transition-colors">{t('nav.login', 'Login')}</Link>
+                <Link to="/register" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-white bg-indigo-600 text-center mt-1 hover:bg-indigo-700 transition-colors">{t('nav.register', 'Register')}</Link>
               </>
             )}
           </div>

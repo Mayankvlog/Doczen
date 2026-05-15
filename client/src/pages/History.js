@@ -3,33 +3,33 @@ import { historyAPI } from '../services/api';
 import SEO from '../components/SEO';
 import { useLanguage } from '../index';
 
-const actionLabels = {
-  merge: 'Merge PDF',
-  split: 'Split PDF',
-  compress: 'Compress PDF',
-  rotate: 'Rotate PDF',
-  protect: 'Protect PDF',
-  unlock: 'Unlock PDF',
-  addPageNumbers: 'Add Page Numbers',
-  addWatermark: 'Add Watermark',
-  extractText: 'Extract Text',
-  reorder: 'Reorder Pages',
-  deletePages: 'Delete Pages',
-  pdfToJpg: 'PDF to JPG',
-  jpgToPdf: 'JPG to PDF',
-  pdfToTxt: 'PDF to TXT',
-  pdfToWord: 'PDF to Word',
-  wordToPdf: 'Word to PDF',
-  pdfToPpt: 'PDF to PPT',
-  pptToPdf: 'PPT to PDF',
-  pdfToExcel: 'PDF to Excel',
-  excelToPdf: 'Excel to PDF',
-  editPdf: 'Edit PDF',
-  signPdf: 'Sign PDF',
-};
-
 export default function History() {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
+
+  const actionLabels = {
+    merge: t('nav.tools.merge', 'Merge PDF'),
+    split: t('nav.tools.split', 'Split PDF'),
+    compress: t('nav.tools.compress', 'Compress PDF'),
+    rotate: t('nav.tools.rotate', 'Rotate PDF'),
+    protect: t('nav.tools.protect', 'Protect PDF'),
+    unlock: t('nav.tools.unlock', 'Unlock PDF'),
+    addPageNumbers: t('nav.tools.addPageNumbers', 'Add Page Numbers'),
+    addWatermark: t('nav.tools.addWatermark', 'Add Watermark'),
+    extractText: t('nav.tools.extractText', 'Extract Text'),
+    reorder: t('nav.tools.reorder', 'Reorder Pages'),
+    deletePages: t('nav.tools.deletePages', 'Delete Pages'),
+    pdfToJpg: t('nav.tools.pdfToJpg', 'PDF to JPG'),
+    jpgToPdf: t('nav.tools.jpgToPdf', 'JPG to PDF'),
+    pdfToTxt: t('nav.tools.pdfToTxt', 'PDF to TXT'),
+    pdfToWord: t('nav.tools.pdfToWord', 'PDF to Word'),
+    wordToPdf: t('nav.tools.wordToPdf', 'Word to PDF'),
+    pdfToPpt: t('nav.tools.pdfToPpt', 'PDF to PPT'),
+    pptToPdf: t('nav.tools.pptToPdf', 'PPT to PDF'),
+    pdfToExcel: t('nav.tools.pdfToExcel', 'PDF to Excel'),
+    excelToPdf: t('nav.tools.excelToPdf', 'Excel to PDF'),
+    editPdf: t('nav.tools.editPdf', 'Edit PDF'),
+    signPdf: t('nav.tools.signPdf', 'Sign PDF'),
+  };
   const [history, setHistory] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -54,7 +54,7 @@ export default function History() {
   }, [page]);
 
   const handleClearAll = async () => {
-    if (!window.confirm('Are you sure you want to clear all history?')) return;
+    if (!window.confirm(t('history.confirmClear', 'Are you sure you want to clear all history?'))) return;
     setDeleting(true);
     try {
       await historyAPI.clearAll();
@@ -80,9 +80,9 @@ export default function History() {
   return (
     <>
     <SEO
-  title="History - Doczen PDF Editor"
-  description="View your PDF processing history on Doczen. Download previously processed files and track your usage."
-  keywords="PDF history, document history, processed files, Doczen history"
+  title={t('history.seo.title', 'History - Doczen PDF Editor')}
+  description={t('history.seo.description', 'View your PDF processing history on Doczen. Download previously processed files and track your usage.')}
+  keywords={t('history.seo.keywords', 'PDF history, document history, processed files, Doczen history')}
   canonical="/history"
   noIndex
 />
@@ -90,9 +90,9 @@ export default function History() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">History</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">{t('history.title', 'History')}</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            View all your past PDF operations.
+            {t('history.subtitle', 'View all your past PDF operations.')}
           </p>
         </div>
         {history.length > 0 && (
@@ -111,7 +111,7 @@ export default function History() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
             )}
-            {deleting ? 'Clearing...' : 'Clear All'}
+            {deleting ? t('history.clearing', 'Clearing...') : t('history.clearAll', 'Clear All')}
           </button>
         )}
       </div>
@@ -130,19 +130,19 @@ export default function History() {
             <svg className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <p className="mt-4 text-sm text-gray-400">No history yet.</p>
-            <p className="text-sm text-gray-400">Your processed files will appear here.</p>
+            <p className="mt-4 text-sm text-gray-400">{t('history.noHistory', 'No history yet.')}</p>
+            <p className="text-sm text-gray-400">{t('history.noHistoryDesc', 'Your processed files will appear here.')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Action</th>
-                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">File</th>
-                  <th className="hidden sm:table-cell px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Date</th>
-                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
-                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Size</th>
+                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">{t('history.action', 'Action')}</th>
+                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">{t('history.file', 'File')}</th>
+                  <th className="hidden sm:table-cell px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">{t('history.date', 'Date')}</th>
+                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">{t('history.status', 'Status')}</th>
+                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">{t('history.size', 'Size')}</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
@@ -155,7 +155,7 @@ export default function History() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-700 dark:text-gray-300 max-w-[200px] truncate">
-                      {item.fileName || item.outputFiles?.[0]?.originalName || item.inputFiles?.[0]?.originalName || 'Untitled'}
+                      {item.fileName || item.outputFiles?.[0]?.originalName || item.inputFiles?.[0]?.originalName || t('history.untitled', 'Untitled')}
                     </td>
                     <td className="hidden sm:table-cell px-5 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       {item.createdAt ? new Date(item.createdAt).toLocaleDateString(lang || 'en-US', {
@@ -172,7 +172,7 @@ export default function History() {
                             : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300'
                         }`}
                       >
-                        {item.status || 'pending'}
+                        {t('tool.status.' + (item.status || 'pending'), item.status || 'pending')}
                       </span>
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
@@ -182,7 +182,7 @@ export default function History() {
                       <button
                         onClick={() => handleDelete(item._id)}
                         className="text-gray-400 hover:text-red-500 transition-colors"
-                        title="Delete entry"
+                        title={t('history.deleteTitle', 'Delete entry')}
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -208,7 +208,7 @@ export default function History() {
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Previous
+            {t('history.previous', 'Previous')}
           </button>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
             <button
@@ -228,7 +228,7 @@ export default function History() {
             disabled={page === totalPages}
             className="inline-flex items-center gap-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Next
+            {t('history.next', 'Next')}
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

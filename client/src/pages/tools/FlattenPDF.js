@@ -4,6 +4,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function FlattenPDF() {
   const [file, setFile] = useState(null);
@@ -11,10 +12,11 @@ export default function FlattenPDF() {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
+  const { t } = useLanguage();
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file to flatten.');
+      setError(t('tool.selectPdfFlatten', 'Please select a PDF file to flatten.'));
       return;
     }
     setError('');
@@ -31,7 +33,7 @@ export default function FlattenPDF() {
         setDownload(data.blobUrl, data.filename || 'flattened.pdf');
       }
     } catch (err) {
-      setError(err.message || 'Failed to flatten PDF. Please try again.');
+      setError(err.message || t('tool.failedFlatten', 'Failed to flatten PDF. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -39,7 +41,7 @@ export default function FlattenPDF() {
 
   return (
     <>
-    <SEO title="Flatten PDF Online Free - Flatten PDF Forms" description="Flatten PDF forms and annotations online for free. Make your PDF content permanent with Doczen's PDF flattener." keywords="flatten PDF, PDF flattener, flatten PDF form, merge PDF layers, PDF finalize" canonical="/flatten-pdf" />
+    <SEO title={t('tool.flattenSeoTitle', 'Flatten PDF Online Free - Flatten PDF Forms')} description={t('tool.flattenSeoDesc', 'Flatten PDF forms and annotations online for free. Make your PDF content permanent with Doczen\'s PDF flattener.')} keywords={t('tool.flattenSeoKeywords', 'flatten PDF, PDF flattener, flatten PDF form, merge PDF layers, PDF finalize')} canonical="/flatten-pdf" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -48,12 +50,12 @@ export default function FlattenPDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Flatten PDF</h1>
-          <p className="text-lg text-gray-600 mt-2">Flatten form fields, annotations, and layers in your PDF</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.flattenPdf', 'Flatten PDF')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.flattenDesc2', 'Flatten form fields, annotations, and layers in your PDF')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
@@ -69,11 +71,9 @@ export default function FlattenPDF() {
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">About Flattening</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.aboutFlatten', 'About Flattening')}</h2>
           <p className="text-sm text-gray-600 leading-relaxed">
-            Flattening a PDF merges all layers, annotations, and form fields into a single static layer.
-            This makes the content permanent and non-editable. Use this tool to finalize documents before
-            sharing or publishing, ensuring that form inputs, comments, and markups are locked in place.
+            {t('tool.flattenDesc', 'Flattening a PDF merges all layers, annotations, and form fields into a single static layer. This makes the content permanent and non-editable. Use this tool to finalize documents before sharing or publishing, ensuring that form inputs, comments, and markups are locked in place.')}
           </p>
         </div>
 
@@ -98,7 +98,7 @@ export default function FlattenPDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           )}
-          {loading ? 'Flattening PDF...' : 'Flatten PDF'}
+          {loading ? t('tool.flattening', 'Flattening PDF...') : t('tool.flattenPdf', 'Flatten PDF')}
         </button>
 
         {loading && (
@@ -109,14 +109,14 @@ export default function FlattenPDF() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.fileConvertedSuccess', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -124,7 +124,7 @@ export default function FlattenPDF() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="flattened" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.flattened', 'flattened')} />
           </div>
         )}
       </div>

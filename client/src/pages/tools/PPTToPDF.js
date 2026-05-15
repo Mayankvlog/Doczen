@@ -4,8 +4,10 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function PPTToPDF() {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -26,7 +28,7 @@ export default function PPTToPDF() {
         setDownload(data.blobUrl, data.filename || 'converted.pdf');
       }
     } catch (err) {
-      setError(err.message || 'Conversion failed. Please try again.');
+      setError(err.message || t('tool.convertError', 'Conversion failed. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -34,12 +36,12 @@ export default function PPTToPDF() {
 
   return (
     <>
-    <SEO title="PPT to PDF Converter Online Free" description="Convert PowerPoint presentations to PDF format online for free. PPT to PDF converter by Doczen." keywords="PPT to PDF, convert PowerPoint to PDF, PPTX to PDF, presentation to PDF, slide to PDF" canonical="/ppt-to-pdf" />
+    <SEO title={t('tool.pptToPdfTitle', 'PPT to PDF Converter Online Free')} description={t('tool.pptToPdfDesc', 'Convert PowerPoint presentations to PDF format online for free. PPT to PDF converter by Doczen.')} keywords={t('tool.pptToPdfKeywords', 'PPT to PDF, convert PowerPoint to PDF, PPTX to PDF, presentation to PDF, slide to PDF')} canonical="/ppt-to-pdf" />
     <div className="max-w-3xl mx-auto px-4 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">PPT to PDF</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('tool.pptToPdf', 'PPT to PDF')}</h1>
         <p className="mt-2 text-gray-600">
-          Convert your PowerPoint slides into PDF documents.
+          {t('tool.pptToPdfDesc2', 'Convert your PowerPoint slides into PDF documents.')}
         </p>
       </div>
 
@@ -55,7 +57,7 @@ export default function PPTToPDF() {
             onClick={handleProcess}
             className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
           >
-            Convert to PDF
+            {t('tool.convertToPdf', 'Convert to PDF')}
           </button>
         )}
 
@@ -69,14 +71,14 @@ export default function PPTToPDF() {
 
         {isReady && (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -84,7 +86,7 @@ export default function PPTToPDF() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="converted" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.converted', 'converted')} />
           </div>
         )}
       </div>

@@ -2,51 +2,53 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ToolCard from '../components/ToolCard';
 import SEO from '../components/SEO';
-
-const tools = [
-  { emoji: '🔗', color: 'from-indigo-500 to-purple-600', title: 'Merge PDF', desc: 'Combine multiple PDFs into one file instantly.', path: '/merge-pdf' },
-  { emoji: '✂️', color: 'from-blue-500 to-cyan-600', title: 'Split PDF', desc: 'Split a PDF into separate documents by pages.', path: '/split-pdf' },
-  { emoji: '📦', color: 'from-emerald-500 to-teal-600', title: 'Compress PDF', desc: 'Reduce PDF file size without quality loss.', path: '/compress-pdf' },
-  { emoji: '🔄', color: 'from-amber-500 to-orange-600', title: 'Rotate PDF', desc: 'Rotate pages in your PDF to any angle.', path: '/rotate-pdf' },
-  { emoji: '🔐', color: 'from-red-500 to-rose-600', title: 'Protect PDF', desc: 'Add a password to secure your PDF files.', path: '/protect-pdf' },
-  { emoji: '🔓', color: 'from-green-500 to-lime-600', title: 'Unlock PDF', desc: 'Remove password protection from PDFs.', path: '/unlock-pdf' },
-  { emoji: '🔢', color: 'from-violet-500 to-fuchsia-600', title: 'Add Page Numbers', desc: 'Insert page numbers into your PDF document.', path: '/add-page-numbers' },
-  { emoji: '💧', color: 'from-sky-500 to-indigo-600', title: 'Add Watermark', desc: 'Add text or image watermarks to PDFs.', path: '/add-watermark' },
-  { emoji: '📝', color: 'from-yellow-500 to-amber-600', title: 'Extract Text', desc: 'Extract all text content from a PDF file.', path: '/extract-text' },
-  { emoji: '📑', color: 'from-pink-500 to-rose-600', title: 'Reorder Pages', desc: 'Arrange PDF pages in the order you need.', path: '/reorder-pages' },
-  { emoji: '🗑️', color: 'from-gray-500 to-slate-600', title: 'Delete Pages', desc: 'Remove unwanted pages from your PDF.', path: '/delete-pages' },
-  { emoji: '🖼️', color: 'from-orange-500 to-red-600', title: 'PDF to JPG', desc: 'Convert PDF pages to high-quality JPG images.', path: '/pdf-to-jpg' },
-  { emoji: '📄', color: 'from-teal-500 to-emerald-600', title: 'JPG to PDF', desc: 'Convert your images into a PDF document.', path: '/jpg-to-pdf' },
-  { emoji: '📃', color: 'from-indigo-500 to-blue-600', title: 'PDF to TXT', desc: 'Extract text from PDF into a TXT file.', path: '/pdf-to-txt' },
-  { emoji: '📘', color: 'from-blue-600 to-indigo-700', title: 'PDF to Word', desc: 'Convert PDF to editable Word documents.', path: '/pdf-to-word' },
-  { emoji: '📙', color: 'from-cyan-500 to-blue-600', title: 'Word to PDF', desc: 'Convert Word documents to PDF format.', path: '/word-to-pdf' },
-  { emoji: '📊', color: 'from-purple-500 to-violet-600', title: 'PDF to PPT', desc: 'Turn your PDF into PowerPoint slides.', path: '/pdf-to-ppt' },
-  { emoji: '📽️', color: 'from-fuchsia-500 to-purple-600', title: 'PPT to PDF', desc: 'Convert PowerPoint presentations to PDF.', path: '/ppt-to-pdf' },
-  { emoji: '📈', color: 'from-green-500 to-emerald-700', title: 'PDF to Excel', desc: 'Extract PDF tables into Excel spreadsheets.', path: '/pdf-to-excel' },
-  { emoji: '📗', color: 'from-lime-500 to-green-600', title: 'Excel to PDF', desc: 'Convert Excel spreadsheets to PDF format.', path: '/excel-to-pdf' },
-  { emoji: '✏️', color: 'from-rose-500 to-pink-600', title: 'Edit PDF', desc: 'Edit text, images, and pages in your PDF.', path: '/edit-pdf' },
-  { emoji: '✍️', color: 'from-indigo-500 to-purple-700', title: 'Sign PDF', desc: 'Add your digital signature to any document.', path: '/sign-pdf' },
-  { emoji: '🔧', color: 'from-gray-600 to-slate-700', title: 'Repair PDF', desc: 'Fix corrupted or damaged PDF files.', path: '/repair-pdf' },
-  { emoji: '📜', color: 'from-amber-600 to-yellow-700', title: 'PDF to PDF/A', desc: 'Convert PDFs to archival PDF/A format.', path: '/pdf-to-pdfa' },
-  { emoji: '🏷️', color: 'from-cyan-600 to-teal-700', title: 'PDF Metadata', desc: 'View and edit PDF document properties.', path: '/pdf-metadata' },
-  { emoji: '📋', color: 'from-blue-500 to-indigo-600', title: 'Flatten PDF', desc: 'Flatten form fields and annotations.', path: '/flatten-pdf' },
-  { emoji: '🌐', color: 'from-green-600 to-emerald-700', title: 'HTML to PDF', desc: 'Convert web content to PDF documents.', path: '/html-to-pdf' },
-  { emoji: '🖍️', color: 'from-red-600 to-rose-700', title: 'Redact PDF', desc: 'Permanently remove sensitive information.', path: '/redact-pdf' },
-  { emoji: '🧹', color: 'from-purple-600 to-violet-700', title: 'Remove Annotations', desc: 'Clean up comments and markup.', path: '/remove-annotations' },
-  { emoji: '💧', color: 'from-sky-600 to-blue-700', title: 'Remove Watermark', desc: 'Remove watermarks from PDF documents.', path: '/remove-watermark' },
-  { emoji: '🔍', color: 'from-orange-600 to-red-700', title: 'Compare PDF', desc: 'Compare two PDF files side by side.', path: '/compare-pdf' },
-];
-
-const faqs = [
-  { q: 'Is Doczen free to use?', a: 'Yes! Doczen is completely free to use. All PDF tools are available with no hidden charges.' },
-  { q: 'Are my files secure?', a: 'Absolutely. All files are encrypted during upload and automatically deleted from our servers after 24 hours. We never share your data.' },
-  { q: 'What file sizes are supported?', a: 'You can upload files up to 50 MB per document.' },
-  { q: 'How long does processing take?', a: 'Most operations complete within seconds. Complex conversions may take a bit longer, but we optimize everything for speed.' },
-  { q: 'Is there a daily limit?', a: 'No registration needed — guests can process up to 10 files per hour. Create a free account for higher limits and history tracking.' },
-  { q: 'What happens to my data?', a: 'All uploaded files are automatically deleted from our servers within 24 hours. You can also manually delete your history at any time.' },
-];
+import { useLanguage } from '../index';
 
 export default function Home() {
+  const { t } = useLanguage();
+  const tools = [
+    { emoji: '🔗', color: 'from-indigo-500 to-purple-600', title: t('tool.mergePdf', 'Merge PDF'), desc: t('tool.mergePdfDesc', 'Combine multiple PDFs into one file instantly.'), path: '/merge-pdf' },
+    { emoji: '✂️', color: 'from-blue-500 to-cyan-600', title: t('tool.splitPdf', 'Split PDF'), desc: t('tool.splitPdfDesc', 'Split a PDF into separate documents by pages.'), path: '/split-pdf' },
+    { emoji: '📦', color: 'from-emerald-500 to-teal-600', title: t('tool.compressPdf', 'Compress PDF'), desc: t('tool.compressPdfDesc', 'Reduce PDF file size without quality loss.'), path: '/compress-pdf' },
+    { emoji: '🔄', color: 'from-amber-500 to-orange-600', title: t('tool.rotatePdf', 'Rotate PDF'), desc: t('tool.rotatePdfDesc', 'Rotate pages in your PDF to any angle.'), path: '/rotate-pdf' },
+    { emoji: '🔐', color: 'from-red-500 to-rose-600', title: t('tool.protectPdf', 'Protect PDF'), desc: t('tool.protectPdfDesc', 'Add a password to secure your PDF files.'), path: '/protect-pdf' },
+    { emoji: '🔓', color: 'from-green-500 to-lime-600', title: t('tool.unlockPdf', 'Unlock PDF'), desc: t('tool.unlockPdfDesc', 'Remove password protection from PDFs.'), path: '/unlock-pdf' },
+    { emoji: '🔢', color: 'from-violet-500 to-fuchsia-600', title: t('tool.addPageNumbers', 'Add Page Numbers'), desc: t('tool.addPageNumbersDesc', 'Insert page numbers into your PDF document.'), path: '/add-page-numbers' },
+    { emoji: '💧', color: 'from-sky-500 to-indigo-600', title: t('tool.addWatermark', 'Add Watermark'), desc: t('tool.addWatermarkDesc', 'Add text or image watermarks to PDFs.'), path: '/add-watermark' },
+    { emoji: '📝', color: 'from-yellow-500 to-amber-600', title: t('tool.extractText', 'Extract Text'), desc: t('tool.extractTextDesc', 'Extract all text content from a PDF file.'), path: '/extract-text' },
+    { emoji: '📑', color: 'from-pink-500 to-rose-600', title: t('tool.reorderPages', 'Reorder Pages'), desc: t('tool.reorderPagesDesc', 'Arrange PDF pages in the order you need.'), path: '/reorder-pages' },
+    { emoji: '🗑️', color: 'from-gray-500 to-slate-600', title: t('tool.deletePages', 'Delete Pages'), desc: t('tool.deletePagesDesc', 'Remove unwanted pages from your PDF.'), path: '/delete-pages' },
+    { emoji: '🖼️', color: 'from-orange-500 to-red-600', title: t('tool.pdfToJpg', 'PDF to JPG'), desc: t('tool.pdfToJpgDesc', 'Convert PDF pages to high-quality JPG images.'), path: '/pdf-to-jpg' },
+    { emoji: '📄', color: 'from-teal-500 to-emerald-600', title: t('tool.jpgToPdf', 'JPG to PDF'), desc: t('tool.jpgToPdfDesc', 'Convert your images into a PDF document.'), path: '/jpg-to-pdf' },
+    { emoji: '📃', color: 'from-indigo-500 to-blue-600', title: t('tool.pdfToTxt', 'PDF to TXT'), desc: t('tool.pdfToTxtDesc', 'Extract text from PDF into a TXT file.'), path: '/pdf-to-txt' },
+    { emoji: '📘', color: 'from-blue-600 to-indigo-700', title: t('tool.pdfToWord', 'PDF to Word'), desc: t('tool.pdfToWordDesc', 'Convert PDF to editable Word documents.'), path: '/pdf-to-word' },
+    { emoji: '📙', color: 'from-cyan-500 to-blue-600', title: t('tool.wordToPdf', 'Word to PDF'), desc: t('tool.wordToPdfDesc', 'Convert Word documents to PDF format.'), path: '/word-to-pdf' },
+    { emoji: '📊', color: 'from-purple-500 to-violet-600', title: t('tool.pdfToPpt', 'PDF to PPT'), desc: t('tool.pdfToPptDesc', 'Turn your PDF into PowerPoint slides.'), path: '/pdf-to-ppt' },
+    { emoji: '📽️', color: 'from-fuchsia-500 to-purple-600', title: t('tool.pptToPdf', 'PPT to PDF'), desc: t('tool.pptToPdfDesc', 'Convert PowerPoint presentations to PDF.'), path: '/ppt-to-pdf' },
+    { emoji: '📈', color: 'from-green-500 to-emerald-700', title: t('tool.pdfToExcel', 'PDF to Excel'), desc: t('tool.pdfToExcelDesc', 'Extract PDF tables into Excel spreadsheets.'), path: '/pdf-to-excel' },
+    { emoji: '📗', color: 'from-lime-500 to-green-600', title: t('tool.excelToPdf', 'Excel to PDF'), desc: t('tool.excelToPdfDesc', 'Convert Excel spreadsheets to PDF format.'), path: '/excel-to-pdf' },
+    { emoji: '✏️', color: 'from-rose-500 to-pink-600', title: t('tool.editPdf', 'Edit PDF'), desc: t('tool.editPdfDesc', 'Edit text, images, and pages in your PDF.'), path: '/edit-pdf' },
+    { emoji: '✍️', color: 'from-indigo-500 to-purple-700', title: t('tool.signPdf', 'Sign PDF'), desc: t('tool.signPdfDesc', 'Add your digital signature to any document.'), path: '/sign-pdf' },
+    { emoji: '🔧', color: 'from-gray-600 to-slate-700', title: t('tool.repairPdf', 'Repair PDF'), desc: t('tool.repairPdfDesc', 'Fix corrupted or damaged PDF files.'), path: '/repair-pdf' },
+    { emoji: '📜', color: 'from-amber-600 to-yellow-700', title: t('tool.pdfToPdfa', 'PDF to PDF/A'), desc: t('tool.pdfToPdfaDesc', 'Convert PDFs to archival PDF/A format.'), path: '/pdf-to-pdfa' },
+    { emoji: '🏷️', color: 'from-cyan-600 to-teal-700', title: t('tool.pdfMetadata', 'PDF Metadata'), desc: t('tool.pdfMetadataDesc', 'View and edit PDF document properties.'), path: '/pdf-metadata' },
+    { emoji: '📋', color: 'from-blue-500 to-indigo-600', title: t('tool.flattenPdf', 'Flatten PDF'), desc: t('tool.flattenPdfDesc', 'Flatten form fields and annotations.'), path: '/flatten-pdf' },
+    { emoji: '🌐', color: 'from-green-600 to-emerald-700', title: t('tool.htmlToPdf', 'HTML to PDF'), desc: t('tool.htmlToPdfDesc', 'Convert web content to PDF documents.'), path: '/html-to-pdf' },
+    { emoji: '🖍️', color: 'from-red-600 to-rose-700', title: t('tool.redactPdf', 'Redact PDF'), desc: t('tool.redactPdfDesc', 'Permanently remove sensitive information.'), path: '/redact-pdf' },
+    { emoji: '🧹', color: 'from-purple-600 to-violet-700', title: t('tool.removeAnnotations', 'Remove Annotations'), desc: t('tool.removeAnnotationsDesc', 'Clean up comments and markup.'), path: '/remove-annotations' },
+    { emoji: '💧', color: 'from-sky-600 to-blue-700', title: t('tool.removeWatermark', 'Remove Watermark'), desc: t('tool.removeWatermarkDesc', 'Remove watermarks from PDF documents.'), path: '/remove-watermark' },
+    { emoji: '🔍', color: 'from-orange-600 to-red-700', title: t('tool.comparePdf', 'Compare PDF'), desc: t('tool.comparePdfDesc', 'Compare two PDF files side by side.'), path: '/compare-pdf' },
+  ];
+
+  const faqs = [
+    { q: t('faq.q1', 'Is Doczen free to use?'), a: t('faq.a1', 'Yes! Doczen is completely free to use. All PDF tools are available with no hidden charges.') },
+    { q: t('faq.q2', 'Are my files secure?'), a: t('faq.a2', 'Absolutely. All files are encrypted during upload and automatically deleted from our servers after 24 hours. We never share your data.') },
+    { q: t('faq.q3', 'What file sizes are supported?'), a: t('faq.a3', 'You can upload files up to 50 MB per document.') },
+    { q: t('faq.q4', 'How long does processing take?'), a: t('faq.a4', 'Most operations complete within seconds. Complex conversions may take a bit longer, but we optimize everything for speed.') },
+    { q: t('faq.q5', 'Is there a daily limit?'), a: t('faq.a5', 'No registration needed — guests can process up to 10 files per hour. Create a free account for higher limits and history tracking.') },
+    { q: t('faq.q6', 'What happens to my data?'), a: t('faq.a6', 'All uploaded files are automatically deleted from our servers within 24 hours. You can also manually delete your history at any time.') },
+  ];
+
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
   const [visibleSections, setVisibleSections] = useState(new Set());
@@ -87,9 +89,9 @@ export default function Home() {
   return (
     <>
     <SEO
-  title="Free Online PDF Editor - Merge, Split, Compress & Convert PDFs"
-  description="Doczen is a free online PDF editor. Merge PDFs, split PDFs, compress PDF files, convert PDF to Word, JPG, PPT, Excel and more. No registration required for basic tools."
-  keywords="free PDF editor, online PDF tool, merge PDF online, split PDF online, compress PDF, PDF converter, PDF to Word, PDF to JPG, Doczen"
+  title={t('tool.seo.defaultTitle', 'Free Online PDF Editor - Merge, Split, Compress & Convert PDFs')}
+  description={t('tool.seo.defaultDesc', 'Doczen is a free online PDF editor. Merge PDFs, split PDFs, compress PDF files, convert PDF to Word, JPG, PPT, Excel and more. No registration required for basic tools.')}
+  keywords={t('tool.seo.defaultKeywords', 'free PDF editor, online PDF tool, merge PDF online, split PDF online, compress PDF, PDF converter, PDF to Word, PDF to JPG, Doczen')}
   canonical="/"
   image="/og-home.png"
 />
@@ -101,27 +103,26 @@ export default function Home() {
         <div className="relative mx-auto max-w-5xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm text-white/90 backdrop-blur-sm mb-8">
             <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-            Fully online &mdash; no download required
+            {t('nav.hello', 'Fully online — no download required')}
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl">
-            Your PDFs, <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-orange-300">Perfected.</span>
+            {t('hero.title1', 'Your PDFs,')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-orange-300">{t('hero.title2', 'Perfected.')}</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-indigo-100 sm:text-xl">
-            Doczen is the all-in-one PDF workspace. Merge, split, convert, compress, edit, and sign
-            documents &mdash; all in your browser, free and secure.
+            {t('hero.desc', 'Doczen is the all-in-one PDF workspace. Merge, split, convert, compress, edit, and sign documents — all in your browser, free and secure.')}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <button
               onClick={handleTryNow}
               className="rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-indigo-600 shadow-lg shadow-indigo-500/25 hover:bg-indigo-50 transition-all hover:scale-105 active:scale-95 cursor-pointer"
             >
-              Try Merge PDF
+              {t('hero.tryMerge', 'Try Merge PDF')}
             </button>
             <button
               onClick={scrollToTools}
               className="rounded-xl border border-white/30 px-8 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition-all active:scale-95 cursor-pointer"
             >
-              All Tools
+              {t('hero.allTools', 'All Tools')}
             </button>
           </div>
         </div>
@@ -137,10 +138,10 @@ export default function Home() {
             className={`text-center mb-14 transition-all duration-700 ${visibleSections.has('tools-header') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
           >
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
-              Everything You Need
+              {t('tools.header', 'Everything You Need')}
             </h2>
             <p className="mt-4 text-lg text-gray-500 dark:text-gray-400">
-              From quick edits to full conversions &mdash; 31 powerful tools at your fingertips.
+              {t('tools.subtitle', 'From quick edits to full conversions — 31 powerful tools at your fingertips.')}
             </p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -168,7 +169,7 @@ export default function Home() {
             className={`text-center mb-14 transition-all duration-700 ${visibleSections.has('faq-header') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
           >
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
-              Frequently Asked Questions
+              {t('faq.header', 'Frequently Asked Questions')}
             </h2>
           </div>
           <div className="space-y-3">
@@ -215,23 +216,23 @@ export default function Home() {
           className={`mx-auto max-w-3xl text-center transition-all duration-700 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
         >
           <h2 className="text-3xl font-bold text-white sm:text-4xl">
-            Ready to Simplify Your PDF Workflow?
+            {t('cta.header', 'Ready to Simplify Your PDF Workflow?')}
           </h2>
           <p className="mt-4 text-lg text-indigo-100">
-            Start for free &mdash; no credit card needed, no sign up required.
+            {t('cta.desc', 'Start for free — no credit card needed, no sign up required.')}
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <button
               onClick={() => navigate('/merge-pdf')}
               className="rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-indigo-600 shadow-lg shadow-indigo-500/25 hover:bg-indigo-50 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              Start Using Tools
+              {t('cta.start', 'Start Using Tools')}
             </button>
             <button
               onClick={() => navigate('/compress-pdf')}
               className="rounded-xl border border-white/30 px-8 py-3.5 text-sm font-semibold text-white hover:bg-white/10 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              Compress a PDF
+              {t('cta.compress', 'Compress a PDF')}
             </button>
           </div>
         </div>

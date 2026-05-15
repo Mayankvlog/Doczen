@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useLanguage } from '../index';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
@@ -22,6 +23,7 @@ export default function FileUploader({
   label = 'Upload your files',
   progress = null,
 }) {
+  const { t } = useLanguage();
   const [files, setFiles] = useState([]);
   const [error, setError] = useState('');
   const [shakeKey, setShakeKey] = useState(0);
@@ -47,26 +49,26 @@ export default function FileUploader({
 
       const invalid = accepted.filter(f => !isAcceptedFile(f));
       if (invalid.length > 0 || rejected.length > 0) {
-        setError(`Invalid file type. Please upload a valid file.`);
+        setError(t('upload.error.invalidType', 'Invalid file type. Please upload a valid file.'));
         triggerShake();
         return;
       }
 
       const oversized = accepted.filter(f => f.size > MAX_FILE_SIZE);
       if (oversized.length > 0) {
-        setError(`File too large. Maximum size is 50MB. "${oversized[0].name}" is ${formatSize(oversized[0].size)}.`);
+        setError(t('upload.error.fileTooLarge', `File too large. Maximum size is 50MB. "${oversized[0].name}" is ${formatSize(oversized[0].size)}.`));
         triggerShake();
         return;
       }
 
       if (!multiple && accepted.length > 1) {
-        setError('Only one file can be uploaded at a time.');
+        setError(t('upload.error.singleFile', 'Only one file can be uploaded at a time.'));
         triggerShake();
         return;
       }
 
       if (files.length + accepted.length > maxFiles) {
-        setError(`Maximum of ${maxFiles} files allowed.`);
+        setError(t('upload.error.maxFiles', 'Maximum of {maxFiles} files allowed.', { maxFiles }));
         triggerShake();
         return;
       }
@@ -120,10 +122,10 @@ export default function FileUploader({
             </svg>
           )}
           <p className="text-sm font-medium">
-            {isDragActive ? 'Release to upload' : files.length > 0 ? 'Files selected — drop more or click to change' : label}
+            {isDragActive ? t('upload.dragActive', 'Release to upload') : files.length > 0 ? t('upload.filesSelected', 'Files selected — drop more or click to change') : label}
           </p>
           <p className="text-xs text-gray-400">
-            {isDragActive ? 'Great, drop them here!' : files.length > 0 ? `Tap to add more files` : multiple ? `Drag & drop up to ${maxFiles} files here, or click to browse` : 'Drag & drop a file here, or click to browse'}
+            {isDragActive ? t('upload.dropActive', 'Great, drop them here!') : files.length > 0 ? t('upload.tapToAdd', 'Tap to add more files') : multiple ? t('upload.dragMultiple', 'Drag & drop up to {maxFiles} files here, or click to browse', { maxFiles }) : t('upload.dragSingle', 'Drag & drop a file here, or click to browse')}
           </p>
           <span className={`mt-1 px-3 py-1 text-xs font-medium rounded-full transition-colors ${isDragActive ? 'bg-indigo-200 text-indigo-700' : files.length > 0 ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-600'}`}>
             {accept}
@@ -134,7 +136,7 @@ export default function FileUploader({
       {progress !== null && progress < 100 && (
         <div className="mt-4 space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-500 font-medium">Uploading...</span>
+            <span className="text-gray-500 font-medium">{t('upload.uploading', 'Uploading...')}</span>
             <span className="text-indigo-600 font-semibold">{progress}%</span>
           </div>
           <div className="progress-bar-container">
@@ -170,7 +172,7 @@ export default function FileUploader({
                 type="button"
                 onClick={() => removeFile(index)}
                 className="shrink-0 p-1.5 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 hover:scale-110 active:scale-90 transition-all duration-200"
-                title="Remove file"
+                title={t('upload.removeFile', 'Remove file')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

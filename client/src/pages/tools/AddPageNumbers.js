@@ -4,8 +4,10 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function AddPageNumbers() {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [startNumber, setStartNumber] = useState(1);
   const [fontSize, setFontSize] = useState(12);
@@ -17,15 +19,15 @@ export default function AddPageNumbers() {
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file.');
+      setError(t('tool.selectPdfFile', 'Please select a PDF file.'));
       return;
     }
     if (startNumber < 1) {
-      setError('Start number must be at least 1.');
+      setError(t('tool.startNumberMin', 'Start number must be at least 1.'));
       return;
     }
     if (fontSize < 6 || fontSize > 72) {
-      setError('Font size must be between 6 and 72.');
+      setError(t('tool.fontSizeRange', 'Font size must be between 6 and 72.'));
       return;
     }
     setError('');
@@ -41,12 +43,12 @@ export default function AddPageNumbers() {
       formData.append('position', position);
       const data = await handleToolSubmit('/pdf/add-page-numbers', formData, 'numbered.pdf');
       if (!data.blobUrl) {
-        throw new Error(data.message || 'Server did not return a processed file. Please try again.');
+        throw new Error(data.message || t('tool.serverError', 'Server did not return a processed file. Please try again.'));
       }
       setResult(data);
       setDownload(data.blobUrl, data.filename || 'numbered.pdf');
     } catch (err) {
-      setError(err.message || 'Failed to add page numbers. Please try again.');
+      setError(err.message || t('tool.addPageNumbersError', 'Failed to add page numbers. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -54,7 +56,7 @@ export default function AddPageNumbers() {
 
   return (
     <>
-    <SEO title="Add Page Numbers to PDF Online Free" description="Add page numbers to your PDF documents online for free. Customize position, font size, and starting number." keywords="add page numbers to PDF, PDF page numbers, insert page numbers, PDF numbering" canonical="/add-page-numbers" />
+    <SEO title={t('nav.tools.addPageNumbers', 'Add Page Numbers to PDF Online Free')} description={t('tool.addPageNumbersDesc', 'Add page numbers to your PDF documents online for free. Customize position, font size, and starting number.')} keywords={t('tool.addPageNumbersKeywords', 'add page numbers to PDF, PDF page numbers, insert page numbers, PDF numbering')} canonical="/add-page-numbers" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -63,12 +65,12 @@ export default function AddPageNumbers() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2zm0 0l5-5 5 5M7 3h10" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Add Page Numbers</h1>
-          <p className="text-lg text-gray-600 mt-2">Insert page numbers into your PDF document</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.addPageNumbers', 'Add Page Numbers')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.addPageNumbersDesc', 'Insert page numbers into your PDF document')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
@@ -84,10 +86,10 @@ export default function AddPageNumbers() {
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Page Number Settings</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.pageNumberSettings', 'Page Number Settings')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tool.startNumber', 'Start Number')}</label>
               <input
                 type="number"
                 min="1"
@@ -97,7 +99,7 @@ export default function AddPageNumbers() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Font Size</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tool.fontSize', 'Font Size')}</label>
               <input
                 type="number"
                 min="6"
@@ -108,14 +110,14 @@ export default function AddPageNumbers() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tool.position', 'Position')}</label>
               <select
                 value={position}
                 onChange={(e) => setPosition(e.target.value)}
                 className="input-field"
               >
-                <option value="bottom">Bottom Center</option>
-                <option value="top">Top Center</option>
+                <option value="bottom">{t('tool.bottomCenter', 'Bottom Center')}</option>
+                <option value="top">{t('tool.topCenter', 'Top Center')}</option>
               </select>
             </div>
           </div>
@@ -142,7 +144,7 @@ export default function AddPageNumbers() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2zm0 0l5-5 5 5M7 3h10" />
             </svg>
           )}
-          {loading ? 'Adding page numbers...' : 'Add Page Numbers'}
+          {loading ? t('tool.addingPageNumbers', 'Adding page numbers...') : t('tool.addPageNumbers', 'Add Page Numbers')}
         </button>
 
         {loading && (
@@ -153,14 +155,14 @@ export default function AddPageNumbers() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -168,7 +170,7 @@ export default function AddPageNumbers() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="numbered" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.numbered', 'numbered')} />
           </div>
         )}
       </div>

@@ -42,22 +42,24 @@ import RedactPDF from './pages/tools/RedactPDF';
 import RemoveAnnotations from './pages/tools/RemoveAnnotations';
 import ComparePDF from './pages/tools/ComparePDF';
 import RemoveWatermark from './pages/tools/RemoveWatermark';
+import { useLanguage } from './index';
 
 function About() {
+  const { t } = useLanguage();
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold text-gray-900 mb-6">About Doczen</h1>
+      <h1 className="text-4xl font-bold text-gray-900 mb-6">{t('about.title', 'About Doczen')}</h1>
       <div className="prose prose-gray max-w-none space-y-4 text-gray-600">
-        <p>Doczen is a free, powerful online PDF editor designed to make document management simple and accessible for everyone. Whether you need to merge, split, compress, convert, or edit PDFs, Doczen provides all the tools you need right in your browser — no downloads, no installations.</p>
-        <p>Our mission is to democratize PDF editing by offering a comprehensive suite of tools that are completely free to use. We believe that essential document management should not require expensive software subscriptions.</p>
-        <p>Every tool on Doczen is built with modern web technologies to ensure fast, secure, and reliable processing. Your privacy is our priority — all files are encrypted during upload and automatically deleted from our servers within 24 hours.</p>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Why Doczen?</h2>
+        <p>{t('about.p1', 'Doczen is a free, powerful online PDF editor designed to make document management simple and accessible for everyone. Whether you need to merge, split, compress, convert, or edit PDFs, Doczen provides all the tools you need right in your browser — no downloads, no installations.')}</p>
+        <p>{t('about.p2', 'Our mission is to democratize PDF editing by offering a comprehensive suite of tools that are completely free to use. We believe that essential document management should not require expensive software subscriptions.')}</p>
+        <p>{t('about.p3', 'Every tool on Doczen is built with modern web technologies to ensure fast, secure, and reliable processing. Your privacy is our priority — all files are encrypted during upload and automatically deleted from our servers within 24 hours.')}</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('about.whyTitle', 'Why Doczen?')}</h2>
         <ul className="list-disc pl-6 space-y-2">
-          <li><strong>100% Free</strong> — No hidden charges, no credit card required</li>
-          <li><strong>30+ Tools</strong> — From merging to converting, we've got you covered</li>
-          <li><strong>Secure</strong> — Encrypted uploads and automatic file deletion</li>
-          <li><strong>Fast</strong> — Optimized processing for quick results</li>
-          <li><strong>No Registration</strong> — Start using tools immediately</li>
+          <li>{t('about.why1', '<strong>100% Free</strong> — No hidden charges, no credit card required')}</li>
+          <li>{t('about.why2', "<strong>30+ Tools</strong> — From merging to converting, we've got you covered")}</li>
+          <li>{t('about.why3', '<strong>Secure</strong> — Encrypted uploads and automatic file deletion')}</li>
+          <li>{t('about.why4', '<strong>Fast</strong> — Optimized processing for quick results')}</li>
+          <li>{t('about.why5', '<strong>No Registration</strong> — Start using tools immediately')}</li>
         </ul>
       </div>
     </div>
@@ -65,60 +67,62 @@ function About() {
 }
 
 function PrivacyPolicy() {
+  const { t } = useLanguage();
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold text-gray-900 mb-6">Privacy Policy</h1>
+      <h1 className="text-4xl font-bold text-gray-900 mb-6">{t('privacy.title', 'Privacy Policy')}</h1>
       <div className="prose prose-gray max-w-none space-y-4 text-gray-600">
-        <p>Last updated: January 2025</p>
-        <p>Doczen ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.</p>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Information We Collect</h2>
-        <p>We collect minimal information necessary to provide our PDF editing services:</p>
+        <p>{t('privacy.lastUpdated', 'Last updated: January 2025')}</p>
+        <p>{t('privacy.p1', 'Doczen ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.')}</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('privacy.collectTitle', 'Information We Collect')}</h2>
+        <p>{t('privacy.collectIntro', 'We collect minimal information necessary to provide our PDF editing services:')}</p>
         <ul className="list-disc pl-6 space-y-2">
-          <li><strong>Files You Upload:</strong> PDFs and documents you upload for processing are temporarily stored on our servers.</li>
-          <li><strong>Account Information:</strong> If you create an account, we collect your name and email address.</li>
-          <li><strong>Usage Data:</strong> Anonymous usage statistics to improve our service.</li>
+          <li>{t('privacy.collect1', '<strong>Files You Upload:</strong> PDFs and documents you upload for processing are temporarily stored on our servers.')}</li>
+          <li>{t('privacy.collect2', '<strong>Account Information:</strong> If you create an account, we collect your name and email address.')}</li>
+          <li>{t('privacy.collect3', '<strong>Usage Data:</strong> Anonymous usage statistics to improve our service.')}</li>
         </ul>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">How We Handle Your Files</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('privacy.handlingTitle', 'How We Handle Your Files')}</h2>
         <ul className="list-disc pl-6 space-y-2">
-          <li>All uploaded files are encrypted during transmission and at rest.</li>
-          <li>Files are automatically and permanently deleted from our servers within 24 hours.</li>
-          <li>We do not access, view, or share your uploaded documents.</li>
-          <li>Processed files are available for download for a limited time before automatic deletion.</li>
+          <li>{t('privacy.handling1', 'All uploaded files are encrypted during transmission and at rest.')}</li>
+          <li>{t('privacy.handling2', 'Files are automatically and permanently deleted from our servers within 24 hours.')}</li>
+          <li>{t('privacy.handling3', 'We do not access, view, or share your uploaded documents.')}</li>
+          <li>{t('privacy.handling4', 'Processed files are available for download for a limited time before automatic deletion.')}</li>
         </ul>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Cookies</h2>
-        <p>We use essential cookies for authentication and service functionality. We do not use tracking cookies for advertising purposes.</p>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Third-Party Services</h2>
-        <p>We do not sell, trade, or transfer your information to third parties. We may share anonymized data with service providers who assist us in operating our website and improving our service.</p>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Contact</h2>
-        <p>If you have questions about this Privacy Policy, please contact us at support@doczen.com.</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('privacy.cookiesTitle', 'Cookies')}</h2>
+        <p>{t('privacy.cookies', 'We use essential cookies for authentication and service functionality. We do not use tracking cookies for advertising purposes.')}</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('privacy.thirdPartyTitle', 'Third-Party Services')}</h2>
+        <p>{t('privacy.thirdParty', 'We do not sell, trade, or transfer your information to third parties. We may share anonymized data with service providers who assist us in operating our website and improving our service.')}</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('privacy.contactTitle', 'Contact')}</h2>
+        <p>{t('privacy.contact', 'If you have questions about this Privacy Policy, please contact us at support@doczen.com.')}</p>
       </div>
     </div>
   );
 }
 
 function TermsOfService() {
+  const { t } = useLanguage();
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold text-gray-900 mb-6">Terms of Service</h1>
+      <h1 className="text-4xl font-bold text-gray-900 mb-6">{t('terms.title', 'Terms of Service')}</h1>
       <div className="prose prose-gray max-w-none space-y-4 text-gray-600">
-        <p>Last updated: January 2025</p>
-        <p>By using Doczen, you agree to these Terms of Service. If you do not agree, please do not use our service.</p>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Use of Service</h2>
-        <p>Doczen provides free online PDF editing tools for personal and business use. You agree to:</p>
+        <p>{t('terms.lastUpdated', 'Last updated: January 2025')}</p>
+        <p>{t('terms.intro', 'By using Doczen, you agree to these Terms of Service. If you do not agree, please do not use our service.')}</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('terms.useTitle', 'Use of Service')}</h2>
+        <p>{t('terms.useIntro', 'Doczen provides free online PDF editing tools for personal and business use. You agree to:')}</p>
         <ul className="list-disc pl-6 space-y-2">
-          <li>Not upload malicious files or content that violates any law.</li>
-          <li>Not attempt to disrupt or overload our servers.</li>
-          <li>Not use the service for any unlawful purpose.</li>
-          <li>Comply with all applicable laws and regulations.</li>
+          <li>{t('terms.use1', 'Not upload malicious files or content that violates any law.')}</li>
+          <li>{t('terms.use2', 'Not attempt to disrupt or overload our servers.')}</li>
+          <li>{t('terms.use3', 'Not use the service for any unlawful purpose.')}</li>
+          <li>{t('terms.use4', 'Comply with all applicable laws and regulations.')}</li>
         </ul>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Intellectual Property</h2>
-        <p>You retain all rights to your uploaded documents. Doczen claims no ownership over your files. Our software, brand, and website content are protected by applicable intellectual property laws.</p>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Limitation of Liability</h2>
-        <p>Doczen is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the service. We do not guarantee that the service will be uninterrupted or error-free.</p>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">File Storage</h2>
-        <p>Uploaded files are automatically deleted within 24 hours. We recommend downloading your processed files promptly. We are not responsible for data loss.</p>
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Changes to Terms</h2>
-        <p>We reserve the right to modify these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('terms.ipTitle', 'Intellectual Property')}</h2>
+        <p>{t('terms.ip', 'You retain all rights to your uploaded documents. Doczen claims no ownership over your files. Our software, brand, and website content are protected by applicable intellectual property laws.')}</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('terms.liabilityTitle', 'Limitation of Liability')}</h2>
+        <p>{t('terms.liability', 'Doczen is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the service. We do not guarantee that the service will be uninterrupted or error-free.')}</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('terms.storageTitle', 'File Storage')}</h2>
+        <p>{t('terms.storage', 'Uploaded files are automatically deleted within 24 hours. We recommend downloading your processed files promptly. We are not responsible for data loss.')}</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">{t('terms.changesTitle', 'Changes to Terms')}</h2>
+        <p>{t('terms.changes', 'We reserve the right to modify these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.')}</p>
       </div>
     </div>
   );

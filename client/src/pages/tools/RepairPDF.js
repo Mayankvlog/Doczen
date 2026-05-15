@@ -4,8 +4,10 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function RepairPDF() {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -14,7 +16,7 @@ export default function RepairPDF() {
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file to repair.');
+      setError(t('tool.selectPdfRepair', 'Please select a PDF file to repair.'));
       return;
     }
     setError('');
@@ -31,7 +33,7 @@ export default function RepairPDF() {
         setDownload(data.blobUrl, data.filename || 'repaired.pdf');
       }
     } catch (err) {
-      setError(err.message || 'Failed to repair PDF. Please try again.');
+      setError(err.message || t('tool.repairError', 'Failed to repair PDF. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -39,7 +41,7 @@ export default function RepairPDF() {
 
   return (
     <>
-    <SEO title="Repair PDF Online Free - Fix Corrupted PDF Files" description="Repair damaged or corrupted PDF files online for free. Fix PDF errors and recover your documents with Doczen." keywords="repair PDF, fix corrupted PDF, PDF repair tool, recover PDF, restore PDF" canonical="/repair-pdf" />
+    <SEO title={t('tool.repairPdfTitle', 'Repair PDF Online Free - Fix Corrupted PDF Files')} description={t('tool.repairPdfDesc', 'Repair damaged or corrupted PDF files online for free. Fix PDF errors and recover your documents with Doczen.')} keywords={t('tool.repairPdfKeywords', 'repair PDF, fix corrupted PDF, PDF repair tool, recover PDF, restore PDF')} canonical="/repair-pdf" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -48,12 +50,12 @@ export default function RepairPDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Repair PDF</h1>
-          <p className="text-lg text-gray-600 mt-2">Fix corrupted or damaged PDF files and recover your documents</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.repairPdf', 'Repair PDF')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.repairDesc2', 'Fix corrupted or damaged PDF files and recover your documents')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
@@ -69,11 +71,9 @@ export default function RepairPDF() {
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">About PDF Repair</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.aboutRepair', 'About PDF Repair')}</h2>
           <p className="text-sm text-gray-600 leading-relaxed">
-            This tool attempts to repair corrupted or damaged PDF files. It can fix common issues such as
-            truncated files, cross-reference errors, and structural problems. Upload your damaged PDF and
-            we will try to recover as much content as possible.
+            {t('tool.repairDesc', 'This tool attempts to repair corrupted or damaged PDF files. It can fix common issues such as truncated files, cross-reference errors, and structural problems. Upload your damaged PDF and we will try to recover as much content as possible.')}
           </p>
         </div>
 
@@ -98,7 +98,7 @@ export default function RepairPDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           )}
-          {loading ? 'Repairing PDF...' : 'Repair PDF'}
+          {loading ? t('tool.repairing', 'Repairing PDF...') : t('tool.repairPdf', 'Repair PDF')}
         </button>
 
         {loading && (
@@ -109,14 +109,14 @@ export default function RepairPDF() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -124,7 +124,7 @@ export default function RepairPDF() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="repaired" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.repaired', 'repaired')} />
           </div>
         )}
       </div>

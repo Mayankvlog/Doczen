@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '../../index';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
@@ -12,10 +13,11 @@ export default function ExtractText() {
   const [extractedText, setExtractedText] = useState('');
   const [result, setResult] = useState(null);
   const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
+  const { t } = useLanguage();
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file.');
+      setError(t('tool.selectPdfError', 'Please select a PDF file.'));
       return;
     }
     setError('');
@@ -40,7 +42,7 @@ export default function ExtractText() {
         }
       }
     } catch (err) {
-      setError(err.message || 'Failed to extract text. Please try again.');
+      setError(err.message || t('tool.extractTextError', 'Failed to extract text. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -48,7 +50,7 @@ export default function ExtractText() {
 
   return (
     <>
-    <SEO title="Extract Text from PDF Online Free" description="Extract text from PDF files online for free. Copy text from scanned PDFs and documents with Doczen's text extractor." keywords="extract text from PDF, PDF text extractor, copy text from PDF, PDF to text, read PDF" canonical="/extract-text" />
+    <SEO title={t('seo.extractText.title', 'Extract Text from PDF Online Free')} description={t('seo.extractText.desc', 'Extract text from PDF files online for free. Copy text from scanned PDFs and documents with Doczen\'s text extractor.')} keywords={t('seo.extractText.keywords', 'extract text from PDF, PDF text extractor, copy text from PDF, PDF to text, read PDF')} canonical="/extract-text" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -57,12 +59,12 @@ export default function ExtractText() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Extract Text</h1>
-          <p className="text-lg text-gray-600 mt-2">Extract all text content from a PDF document</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.extractText', 'Extract Text')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.extractTextDesc2', 'Extract all text content from a PDF document')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); setExtractedText(''); clearDownload(); }}
@@ -98,7 +100,7 @@ export default function ExtractText() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           )}
-          {loading ? 'Extracting text...' : 'Extract Text'}
+          {loading ? t('tool.extracting', 'Extracting text...') : t('tool.extractText', 'Extract Text')}
         </button>
 
         {loading && (
@@ -109,7 +111,7 @@ export default function ExtractText() {
 
         {extractedText && (
           <div className="mt-6 card">
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">Extracted Text</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">{t('tool.extractedText', 'Extracted Text')}</h2>
             <textarea
               readOnly
               value={extractedText}
@@ -122,21 +124,21 @@ export default function ExtractText() {
               }}
               className="mt-3 btn-secondary text-sm"
             >
-              Copy to Clipboard
+              {t('tool.copyToClipboard', 'Copy to Clipboard')}
             </button>
           </div>
         )}
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>

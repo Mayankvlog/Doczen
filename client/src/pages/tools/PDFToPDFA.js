@@ -4,8 +4,10 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function PDFToPDFA() {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
@@ -18,7 +20,7 @@ export default function PDFToPDFA() {
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file to convert.');
+      setError(t('tool.selectPdf', 'Please select a PDF file to convert.'));
       return;
     }
     setError('');
@@ -39,7 +41,7 @@ export default function PDFToPDFA() {
         setDownload(data.blobUrl, data.filename || 'pdfa.pdf');
       }
     } catch (err) {
-      setError(err.message || 'Failed to convert to PDF/A. Please try again.');
+      setError(err.message || t('tool.pdfToPdfaError', 'Failed to convert to PDF/A. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -47,7 +49,7 @@ export default function PDFToPDFA() {
 
   return (
     <>
-    <SEO title="PDF to PDF/A Converter Online Free" description="Convert PDF files to PDF/A format for long-term archiving. Free PDF/A converter by Doczen." keywords="PDF to PDF/A, PDF/A converter, archive PDF, PDF archiving, PDF standardization" canonical="/pdf-to-pdfa" />
+    <SEO title={t('tool.pdfToPdfaTitle', 'PDF to PDF/A Converter Online Free')} description={t('tool.pdfToPdfaDesc', 'Convert PDF files to PDF/A format for long-term archiving. Free PDF/A converter by Doczen.')} keywords={t('tool.pdfToPdfaKeywords', 'PDF to PDF/A, PDF/A converter, archive PDF, PDF archiving, PDF standardization')} canonical="/pdf-to-pdfa" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -56,12 +58,12 @@ export default function PDFToPDFA() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">PDF to PDF/A</h1>
-          <p className="text-lg text-gray-600 mt-2">Convert your PDF to PDF/A format for long-term archiving</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.pdfToPdfa', 'PDF to PDF/A')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.pdfToPdfaDesc2', 'Convert your PDF to PDF/A format for long-term archiving')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
@@ -77,10 +79,10 @@ export default function PDFToPDFA() {
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Document Information (Optional)</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.documentInfo', 'Document Information (Optional)')}</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tool.title', 'Title')}</label>
               <input
                 type="text"
                 value={title}
@@ -90,7 +92,7 @@ export default function PDFToPDFA() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Author</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tool.author', 'Author')}</label>
               <input
                 type="text"
                 value={author}
@@ -100,7 +102,7 @@ export default function PDFToPDFA() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tool.subject', 'Subject')}</label>
               <input
                 type="text"
                 value={subject}
@@ -110,7 +112,7 @@ export default function PDFToPDFA() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Keywords</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tool.keywords', 'Keywords')}</label>
               <input
                 type="text"
                 value={keywords}
@@ -143,7 +145,7 @@ export default function PDFToPDFA() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
             </svg>
           )}
-          {loading ? 'Converting to PDF/A...' : 'Convert to PDF/A'}
+          {loading ? t('tool.convertingToPdfa', 'Converting to PDF/A...') : t('tool.convertToPdfa', 'Convert to PDF/A')}
         </button>
 
         {loading && (
@@ -154,14 +156,14 @@ export default function PDFToPDFA() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -169,7 +171,7 @@ export default function PDFToPDFA() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="converted to PDF/A" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.convertedToPdfa', 'converted to PDF/A')} />
           </div>
         )}
       </div>

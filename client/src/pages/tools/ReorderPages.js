@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '../../index';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
@@ -12,14 +13,15 @@ export default function ReorderPages() {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
+  const { t } = useLanguage();
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file.');
+      setError(t('tool.selectPdfError', 'Please select a PDF file.'));
       return;
     }
     if (!pageOrder.trim()) {
-      setError('Please enter the desired page order.');
+      setError(t('tool.enterPageOrderError', 'Please enter the desired page order.'));
       return;
     }
 
@@ -30,7 +32,7 @@ export default function ReorderPages() {
       .map((p) => parseInt(p, 10));
 
     if (pages.some((p) => isNaN(p) || p < 1)) {
-      setError('Please enter valid page numbers (positive integers separated by commas).');
+      setError(t('tool.invalidPageNumbers', 'Please enter valid page numbers (positive integers separated by commas).'));
       return;
     }
 
@@ -49,7 +51,7 @@ export default function ReorderPages() {
         setDownload(data.blobUrl, data.filename || 'reordered.pdf');
       }
     } catch (err) {
-      setError(err.message || 'Failed to reorder pages. Please try again.');
+      setError(err.message || t('tool.reorderError', 'Failed to reorder pages. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -57,7 +59,7 @@ export default function ReorderPages() {
 
   return (
     <>
-    <SEO title="Reorder PDF Pages Online Free" description="Rearrange pages in your PDF document online for free. Change PDF page order easily with Doczen." keywords="reorder PDF pages, rearrange PDF, PDF page organizer, change PDF page order" canonical="/reorder-pages" />
+    <SEO title={t('seo.reorderPages.title', 'Reorder PDF Pages Online Free')} description={t('seo.reorderPages.desc', 'Rearrange pages in your PDF document online for free. Change PDF page order easily with Doczen.')} keywords={t('seo.reorderPages.keywords', 'reorder PDF pages, rearrange PDF, PDF page organizer, change PDF page order')} canonical="/reorder-pages" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -66,12 +68,12 @@ export default function ReorderPages() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Reorder Pages</h1>
-          <p className="text-lg text-gray-600 mt-2">Rearrange the order of pages in your PDF document</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.reorderPages', 'Reorder Pages')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.reorderPagesDesc2', 'Rearrange the order of pages in your PDF document')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
@@ -87,20 +89,20 @@ export default function ReorderPages() {
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Page Order</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.pageOrder', 'Page Order')}</h2>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Enter the new page order
+              {t('tool.enterPageOrder', 'Enter the new page order')}
             </label>
             <textarea
               value={pageOrder}
               onChange={(e) => setPageOrder(e.target.value)}
-              placeholder="e.g. 3, 1, 2, 5, 4"
+              placeholder={t('tool.pageOrderPlaceholder', 'e.g. 3, 1, 2, 5, 4')}
               rows={4}
               className="input-field resize-y font-mono"
             />
             <p className="mt-2 text-xs text-gray-500">
-              Enter page numbers separated by commas in the desired order. Example: <span className="font-mono text-primary-600 bg-primary-50 px-1 rounded">3, 1, 2, 5, 4</span>
+              {t('tool.pageOrderHint', 'Enter page numbers separated by commas in the desired order. Example:')} <span className="font-mono text-primary-600 bg-primary-50 px-1 rounded">3, 1, 2, 5, 4</span>
             </p>
           </div>
         </div>
@@ -126,7 +128,7 @@ export default function ReorderPages() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
             </svg>
           )}
-          {loading ? 'Reordering pages...' : 'Reorder Pages'}
+          {loading ? t('tool.reordering', 'Reordering pages...') : t('tool.reorderPages', 'Reorder Pages')}
         </button>
 
         {loading && (
@@ -137,14 +139,14 @@ export default function ReorderPages() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -152,7 +154,7 @@ export default function ReorderPages() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setPageOrder(''); clearDownload(); }} action="reordered" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setPageOrder(''); clearDownload(); }} action={t('tool.reordered', 'reordered')} />
           </div>
         )}
       </div>

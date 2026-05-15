@@ -4,8 +4,10 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function UnlockPDF() {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,11 +17,11 @@ export default function UnlockPDF() {
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file to unlock.');
+      setError(t('tool.selectPdfUnlock', 'Please select a PDF file to unlock.'));
       return;
     }
     if (!password) {
-      setError('Please enter the PDF password.');
+      setError(t('tool.enterPasswordError', 'Please enter the PDF password.'));
       return;
     }
     setError('');
@@ -37,7 +39,7 @@ export default function UnlockPDF() {
         setDownload(data.blobUrl, data.filename || 'unlocked.pdf');
       }
     } catch (err) {
-      setError(err.message || 'Failed to unlock PDF. Please check your password and try again.');
+      setError(err.message || t('tool.unlockError', 'Failed to unlock PDF. Please check your password and try again.'));
     } finally {
       setLoading(false);
     }
@@ -45,7 +47,7 @@ export default function UnlockPDF() {
 
   return (
     <>
-    <SEO title="Unlock PDF Online - Remove PDF Password Free" description="Remove password protection from PDF files online for free. Unlock secured PDF documents with Doczen." keywords="unlock PDF, remove PDF password, decrypt PDF, PDF password remover, unlock protected PDF" canonical="/unlock-pdf" />
+    <SEO title={t('nav.tools.unlock', 'Unlock PDF Online - Remove PDF Password Free')} description={t('tool.unlockDesc', 'Remove password protection from PDF files online for free. Unlock secured PDF documents with Doczen.')} keywords={t('tool.unlockKeywords', 'unlock PDF, remove PDF password, decrypt PDF, PDF password remover, unlock protected PDF')} canonical="/unlock-pdf" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -54,12 +56,12 @@ export default function UnlockPDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Unlock PDF</h1>
-          <p className="text-lg text-gray-600 mt-2">Remove password protection from your PDF documents</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.unlockPdf', 'Unlock PDF')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.unlockDesc', 'Remove password protection from your PDF documents')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
@@ -75,14 +77,14 @@ export default function UnlockPDF() {
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Enter Password</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.enterPassword', 'Enter Password')}</h2>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('tool.currentPassword', 'Current Password')}</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter the PDF password"
+              placeholder={t('tool.enterPdfPassword', 'Enter the PDF password')}
               className="input-field"
             />
           </div>
@@ -109,7 +111,7 @@ export default function UnlockPDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
             </svg>
           )}
-          {loading ? 'Unlocking PDF...' : 'Unlock PDF'}
+          {loading ? t('tool.unlocking', 'Unlocking PDF...') : t('tool.unlockPdf', 'Unlock PDF')}
         </button>
 
         {loading && (
@@ -120,14 +122,14 @@ export default function UnlockPDF() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -135,7 +137,7 @@ export default function UnlockPDF() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setPassword(''); clearDownload(); }} action="unlocked" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setPassword(''); clearDownload(); }} action={t('tool.unlocked', 'unlocked')} />
           </div>
         )}
       </div>

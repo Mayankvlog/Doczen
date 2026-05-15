@@ -4,6 +4,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function RemoveAnnotations() {
   const [file, setFile] = useState(null);
@@ -11,10 +12,11 @@ export default function RemoveAnnotations() {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
+  const { t } = useLanguage();
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file.');
+      setError(t('tool.selectPdfError', 'Please select a PDF file.'));
       return;
     }
     setError('');
@@ -31,7 +33,7 @@ export default function RemoveAnnotations() {
         setDownload(data.blobUrl, data.filename || 'cleaned.pdf');
       }
     } catch (err) {
-      setError(err.message || 'Failed to remove annotations. Please try again.');
+      setError(err.message || t('tool.failedRemoveAnnotations', 'Failed to remove annotations. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -39,7 +41,7 @@ export default function RemoveAnnotations() {
 
   return (
     <>
-    <SEO title="Remove Annotations from PDF Online Free" description="Remove comments, highlights, and markup from PDF files online for free. Clean up your PDF with Doczen." keywords="remove PDF annotations, delete PDF comments, clear PDF markup, PDF cleanup, remove PDF highlights" canonical="/remove-annotations" />
+    <SEO title={t('tool.removeAnnotationsSeoTitle', 'Remove Annotations from PDF Online Free')} description={t('tool.removeAnnotationsSeoDesc', 'Remove comments, highlights, and markup from PDF files online for free. Clean up your PDF with Doczen.')} keywords={t('tool.removeAnnotationsSeoKeywords', 'remove PDF annotations, delete PDF comments, clear PDF markup, PDF cleanup, remove PDF highlights')} canonical="/remove-annotations" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -48,12 +50,12 @@ export default function RemoveAnnotations() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Remove Annotations</h1>
-          <p className="text-lg text-gray-600 mt-2">Remove comments, highlights, and markup from your PDF</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.removeAnnotations', 'Remove Annotations')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.removeAnnotationsDesc2', 'Remove comments, highlights, and markup from your PDF')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
@@ -69,11 +71,9 @@ export default function RemoveAnnotations() {
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">About This Tool</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.aboutAnnotations', 'About This Tool')}</h2>
           <p className="text-sm text-gray-600 leading-relaxed">
-            This tool removes all annotations from your PDF, including comments, highlights,
-            sticky notes, text boxes, and other markup. The document content itself remains
-            untouched. Use this to clean up reviewed documents before final distribution.
+            {t('tool.annotationsDesc', 'This tool removes all annotations from your PDF, including comments, highlights, sticky notes, text boxes, and other markup. The document content itself remains untouched. Use this to clean up reviewed documents before final distribution.')}
           </p>
         </div>
 
@@ -98,7 +98,7 @@ export default function RemoveAnnotations() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
             </svg>
           )}
-          {loading ? 'Removing Annotations...' : 'Remove Annotations'}
+          {loading ? t('tool.removingAnnotations', 'Removing Annotations...') : t('tool.removeAnnotations', 'Remove Annotations')}
         </button>
 
         {loading && (
@@ -109,14 +109,14 @@ export default function RemoveAnnotations() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.fileConvertedSuccess', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -124,7 +124,7 @@ export default function RemoveAnnotations() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="annotations removed" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.annotationsRemoved', 'annotations removed')} />
           </div>
         )}
       </div>

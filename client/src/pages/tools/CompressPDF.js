@@ -5,8 +5,10 @@ import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function CompressPDF() {
+  const { t } = useLanguage();
   const toast = useToast();
   const [file, setFile] = useState(null);
   const [quality, setQuality] = useState(0.5);
@@ -18,8 +20,8 @@ export default function CompressPDF() {
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file to compress.');
-      toast.error('Please select a PDF file to compress.');
+      setError(t('tool.selectPdfCompress', 'Please select a PDF file to compress.'));
+      toast.error(t('tool.selectPdfCompress', 'Please select a PDF file to compress.'));
       return;
     }
     setError('');
@@ -34,12 +36,12 @@ export default function CompressPDF() {
       formData.append('quality', quality);
       const data = await handleToolSubmit('/pdf/compress', formData, 'compressed.pdf');
       setResult(data);
-      toast.success('PDF compressed successfully!');
+      toast.success(t('tool.toast.compressed', 'PDF compressed successfully!'));
       if (data.blobUrl) {
         setDownload(data.blobUrl, data.filename || 'compressed.pdf');
       }
     } catch (err) {
-      const msg = err.message || 'Failed to compress PDF. Please try again.';
+      const msg = err.message || t('tool.compressError', 'Failed to compress PDF. Please try again.');
       setError(msg);
       toast.error(msg);
     } finally {
@@ -50,7 +52,7 @@ export default function CompressPDF() {
 
   return (
     <>
-    <SEO title="Compress PDF Online - Reduce PDF File Size Free" description="Compress PDF files online to reduce file size without losing quality. Free PDF compressor tool by Doczen." keywords="compress PDF, reduce PDF size, PDF compressor, shrink PDF, optimize PDF" canonical="/compress-pdf" />
+    <SEO title={t('nav.tools.compress', 'Compress PDF Online - Reduce PDF File Size Free')} description={t('tool.compressDesc', 'Compress PDF files online to reduce file size without losing quality. Free PDF compressor tool by Doczen.')} keywords={t('tool.compressKeywords', 'compress PDF, reduce PDF size, PDF compressor, shrink PDF, optimize PDF')} canonical="/compress-pdf" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10 animate-fade-in-down">
@@ -59,12 +61,12 @@ export default function CompressPDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Compress PDF</h1>
-          <p className="text-lg text-gray-600 mt-2">Reduce the file size of your PDF without losing quality</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.compressPdf', 'Compress PDF')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.compressDesc', 'Reduce the file size of your PDF without losing quality')}</p>
         </div>
 
         <div className="card mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
@@ -81,10 +83,10 @@ export default function CompressPDF() {
         </div>
 
         <div className="card mb-6 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Quality Settings</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.qualitySettings', 'Quality Settings')}</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">Compression Quality</span>
+              <span className="text-sm font-medium text-gray-700">{t('tool.compressionQuality', 'Compression Quality')}</span>
               <span className="text-sm font-semibold text-primary-600 bg-primary-50 px-3 py-1 rounded-lg">
                 {Math.round(quality * 100)}%
               </span>
@@ -99,8 +101,8 @@ export default function CompressPDF() {
               className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary-600"
             />
             <div className="flex justify-between text-xs text-gray-500">
-              <span>Low (smaller file)</span>
-              <span>High (better quality)</span>
+              <span>{t('tool.lowSmaller', 'Low (smaller file)')}</span>
+              <span>{t('tool.highBetter', 'High (better quality)')}</span>
             </div>
           </div>
         </div>
@@ -127,7 +129,7 @@ export default function CompressPDF() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
           )}
-          {loading ? 'Compressing PDF...' : 'Compress PDF'}
+          {loading ? t('tool.compressing', 'Compressing PDF...') : t('tool.compressPdf', 'Compress PDF')}
         </button>
 
         {loading && !progress && (
@@ -138,14 +140,14 @@ export default function CompressPDF() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -153,7 +155,7 @@ export default function CompressPDF() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="compressed" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.compressed', 'compressed')} />
           </div>
         )}
       </div>

@@ -4,8 +4,10 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function PDFToExcel() {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -26,7 +28,7 @@ export default function PDFToExcel() {
         setDownload(data.blobUrl, data.filename || 'converted.xlsx');
       }
     } catch (err) {
-      const msg = err.message || 'Something went wrong.';
+      const msg = err.message || t('tool.genericError', 'Something went wrong.');
       setError(msg);
     } finally {
       setLoading(false);
@@ -36,19 +38,19 @@ export default function PDFToExcel() {
   
   return (
     <>
-    <SEO title="PDF to Excel Converter Online Free" description="Convert PDF files to editable Excel spreadsheets online for free. Extract tables from PDF to XLSX with Doczen." keywords="PDF to Excel, convert PDF to Excel, PDF to XLSX, extract PDF to Excel, PDF converter" canonical="/pdf-to-excel" />
+    <SEO title={t('tool.pdfToExcelTitle', 'PDF to Excel Converter Online Free')} description={t('tool.pdfToExcelDesc', 'Convert PDF files to editable Excel spreadsheets online for free. Extract tables from PDF to XLSX with Doczen.')} keywords={t('tool.pdfToExcelKeywords', 'PDF to Excel, convert PDF to Excel, PDF to XLSX, extract PDF to Excel, PDF converter')} canonical="/pdf-to-excel" />
     <div className="max-w-3xl mx-auto px-4 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">PDF to Excel</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('tool.pdfToExcel', 'PDF to Excel')}</h1>
         <p className="mt-2 text-gray-600">
-          Convert your PDF data into editable Excel spreadsheets.
+          {t('tool.pdfToExcelDesc2', 'Convert your PDF data into editable Excel spreadsheets.')}
         </p>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <FileUploader
           accept=".pdf"
-          label="Upload PDF file"
+          label={t('tool.uploadPdfFile', 'Upload PDF file')}
           onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); clearDownload(); }}
         />
 
@@ -57,7 +59,7 @@ export default function PDFToExcel() {
             onClick={handleProcess}
             className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
           >
-            Convert to Excel
+            {t('tool.convertToExcel', 'Convert to Excel')}
           </button>
         )}
 
@@ -71,14 +73,14 @@ export default function PDFToExcel() {
 
         {isReady && (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -86,7 +88,7 @@ export default function PDFToExcel() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="converted" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.converted', 'converted')} />
           </div>
         )}
       </div>

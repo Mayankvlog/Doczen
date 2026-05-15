@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '../../index';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
@@ -11,10 +12,11 @@ export default function PDFToJPG() {
   const [result, setResult] = useState(null);
   const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
   const [error, setError] = useState('');
+  const { t } = useLanguage();
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file.');
+      setError(t('tool.selectPdfError', 'Please select a PDF file.'));
       return;
     }
     setLoading(true);
@@ -29,7 +31,7 @@ export default function PDFToJPG() {
         setDownload(data.blobUrl, data.filename || 'pdf_pages.zip');
       }
     } catch (err) {
-      setError(err.message || 'Conversion failed. Try again.');
+      setError(err.message || t('tool.conversionFailed', 'Conversion failed. Try again.'));
     } finally {
       setLoading(false);
     }
@@ -37,19 +39,19 @@ export default function PDFToJPG() {
 
   return (
     <>
-    <SEO title="PDF to JPG Converter Online Free" description="Convert PDF pages to high-quality JPG images online for free. PDF to image converter by Doczen." keywords="PDF to JPG, convert PDF to image, PDF to picture, PDF to JPEG, extract images from PDF" canonical="/pdf-to-jpg" />
+    <SEO title={t('seo.pdfToJpg.title', 'PDF to JPG Converter Online Free')} description={t('seo.pdfToJpg.desc', 'Convert PDF pages to high-quality JPG images online for free. PDF to image converter by Doczen.')} keywords={t('seo.pdfToJpg.keywords', 'PDF to JPG, convert PDF to image, PDF to picture, PDF to JPEG, extract images from PDF')} canonical="/pdf-to-jpg" />
     <div className="max-w-3xl mx-auto px-4 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">PDF to JPG</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('tool.pdfToJpg', 'PDF to JPG')}</h1>
         <p className="mt-2 text-gray-600">
-          Convert each PDF page into a high-quality JPG image.
+          {t('tool.pdfToJpgDesc2', 'Convert each PDF page into a high-quality JPG image.')}
         </p>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <FileUploader
           accept=".pdf"
-          label="Upload PDF file"
+          label={t('tool.uploadPdfFile', 'Upload PDF file')}
           onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); clearDownload(); }}
         />
 
@@ -58,7 +60,7 @@ export default function PDFToJPG() {
             onClick={handleProcess}
             className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
           >
-            Convert to JPG
+            {t('tool.convertToJpg', 'Convert to JPG')}
           </button>
         )}
 
@@ -72,14 +74,14 @@ export default function PDFToJPG() {
 
         {isReady && (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -87,7 +89,7 @@ export default function PDFToJPG() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="converted" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.converted', 'converted')} />
           </div>
         )}
       </div>
@@ -95,4 +97,3 @@ export default function PDFToJPG() {
     </>
   );
 }
-

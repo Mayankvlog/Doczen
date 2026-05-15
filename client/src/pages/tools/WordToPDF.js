@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '../../index';
 import FileUploader from '../../components/FileUploader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
@@ -11,6 +12,7 @@ export default function WordToPDF() {
   const [result, setResult] = useState(null);
   const { downloadUrl, isReady, setDownload, clearDownload, handleDownloadAgain } = useDownloadHandler();
   const [error, setError] = useState('');
+  const { t } = useLanguage();
 
   const handleProcess = async () => {
     if (!file) return;
@@ -26,7 +28,7 @@ export default function WordToPDF() {
         setDownload(data.blobUrl, data.filename || 'converted.pdf');
       }
     } catch (err) {
-      setError(err.message || 'Conversion failed. Please try again.');
+      setError(err.message || t('tool.conversionFailedRetry', 'Conversion failed. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -34,12 +36,12 @@ export default function WordToPDF() {
 
   return (
     <>
-    <SEO title="Word to PDF Converter Online Free" description="Convert Word documents to PDF format online for free. DOCX to PDF converter by Doczen." keywords="Word to PDF, convert Word to PDF, DOCX to PDF, DOC to PDF, document to PDF" canonical="/word-to-pdf" />
+    <SEO title={t('seo.wordToPdf.title', 'Word to PDF Converter Online Free')} description={t('seo.wordToPdf.desc', 'Convert Word documents to PDF format online for free. DOCX to PDF converter by Doczen.')} keywords={t('seo.wordToPdf.keywords', 'Word to PDF, convert Word to PDF, DOCX to PDF, DOC to PDF, document to PDF')} canonical="/word-to-pdf" />
     <div className="max-w-3xl mx-auto px-4 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Word to PDF</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('tool.wordToPdf', 'Word to PDF')}</h1>
         <p className="mt-2 text-gray-600">
-          Convert your Word documents into high-quality PDF files.
+          {t('tool.wordToPdfDesc2', 'Convert your Word documents into high-quality PDF files.')}
         </p>
       </div>
 
@@ -55,7 +57,7 @@ export default function WordToPDF() {
             onClick={handleProcess}
             className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
           >
-            Convert to PDF
+            {t('tool.convertToPdf', 'Convert to PDF')}
           </button>
         )}
 
@@ -69,14 +71,14 @@ export default function WordToPDF() {
 
         {isReady && (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -84,7 +86,7 @@ export default function WordToPDF() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="converted" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.converted', 'converted')} />
           </div>
         )}
       </div>
@@ -92,4 +94,3 @@ export default function WordToPDF() {
     </>
   );
 }
-

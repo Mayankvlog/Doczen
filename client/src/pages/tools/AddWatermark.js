@@ -4,8 +4,10 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function AddWatermark() {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [watermarkText, setWatermarkText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,11 +17,11 @@ export default function AddWatermark() {
 
   const handleProcess = async () => {
     if (!file) {
-      setError('Please select a PDF file.');
+      setError(t('tool.selectPdfFile', 'Please select a PDF file.'));
       return;
     }
     if (!watermarkText.trim()) {
-      setError('Please enter watermark text.');
+      setError(t('tool.enterWatermarkTextError', 'Please enter watermark text.'));
       return;
     }
     setError('');
@@ -37,7 +39,7 @@ export default function AddWatermark() {
         setDownload(data.blobUrl, data.filename || 'watermarked.pdf');
       }
     } catch (err) {
-      setError(err.message || 'Failed to add watermark. Please try again.');
+      setError(err.message || t('tool.addWatermarkError', 'Failed to add watermark. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -45,7 +47,7 @@ export default function AddWatermark() {
 
   return (
     <>
-    <SEO title="Add Watermark to PDF Online Free" description="Add text watermark to PDF files online for free. Protect your documents with custom watermarks using Doczen." keywords="PDF watermark, add watermark to PDF, watermark PDF, text watermark, PDF protection" canonical="/add-watermark" />
+    <SEO title={t('nav.tools.addWatermark', 'Add Watermark to PDF Online Free')} description={t('tool.addWatermarkDesc', 'Add text watermark to PDF files online for free. Protect your documents with custom watermarks using Doczen.')} keywords={t('tool.addWatermarkKeywords', 'PDF watermark, add watermark to PDF, watermark PDF, text watermark, PDF protection')} canonical="/add-watermark" />
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
@@ -54,12 +56,12 @@ export default function AddWatermark() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Add Watermark</h1>
-          <p className="text-lg text-gray-600 mt-2">Add a text watermark to every page of your PDF</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{t('tool.addWatermark', 'Add Watermark')}</h1>
+          <p className="text-lg text-gray-600 mt-2">{t('tool.addWatermarkDesc', 'Add a text watermark to every page of your PDF')}</p>
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload PDF</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.uploadPdf', 'Upload PDF')}</h2>
           <FileUploader
             accept=".pdf"
             onFilesSelected={(selected) => { setFile(selected[0] || null); setError(''); setResult(null); clearDownload(); }}
@@ -75,20 +77,20 @@ export default function AddWatermark() {
         </div>
 
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Watermark Text</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('tool.watermarkText', 'Watermark Text')}</h2>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Enter the watermark text
+              {t('tool.enterWatermarkText', 'Enter the watermark text')}
             </label>
             <input
               type="text"
               value={watermarkText}
               onChange={(e) => setWatermarkText(e.target.value)}
-              placeholder="e.g. CONFIDENTIAL, DRAFT, SAMPLE"
+              placeholder={t('tool.watermarkPlaceholder', 'e.g. CONFIDENTIAL, DRAFT, SAMPLE')}
               className="input-field"
             />
             <p className="mt-2 text-xs text-gray-500">
-              The watermark will be applied diagonally across every page.
+              {t('tool.watermarkHint', 'The watermark will be applied diagonally across every page.')}
             </p>
           </div>
         </div>
@@ -114,7 +116,7 @@ export default function AddWatermark() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
             </svg>
           )}
-          {loading ? 'Adding watermark...' : 'Add Watermark'}
+          {loading ? t('tool.addingWatermark', 'Adding watermark...') : t('tool.addWatermark', 'Add Watermark')}
         </button>
 
         {loading && (
@@ -125,14 +127,14 @@ export default function AddWatermark() {
 
         {isReady && (
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -140,7 +142,7 @@ export default function AddWatermark() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setWatermarkText(''); clearDownload(); }} action="watermarked" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); setWatermarkText(''); clearDownload(); }} action={t('tool.watermarked', 'watermarked')} />
           </div>
         )}
       </div>

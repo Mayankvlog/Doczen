@@ -4,8 +4,10 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import ResultCard from '../../components/ResultCard';
 import { handleToolSubmit, useDownloadHandler } from '../../services/api';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../index';
 
 export default function PDFToPPT() {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -27,7 +29,7 @@ export default function PDFToPPT() {
         setDownload(data.blobUrl, data.filename || 'converted.pptx');
       }
     } catch (err) {
-      const msg = err.message || 'Conversion failed. Please try again.';
+      const msg = err.message || t('tool.convertError', 'Conversion failed. Please try again.');
       setError(msg);
     } finally {
       setLoading(false);
@@ -36,19 +38,19 @@ export default function PDFToPPT() {
 
   return (
     <>
-    <SEO title="PDF to PPT Converter Online Free" description="Convert PDF files to PowerPoint presentations online for free. PDF to PPT converter by Doczen." keywords="PDF to PPT, convert PDF to PowerPoint, PDF to presentation, PDF to slides" canonical="/pdf-to-ppt" />
+    <SEO title={t('tool.pdfToPptTitle', 'PDF to PPT Converter Online Free')} description={t('tool.pdfToPptDesc', 'Convert PDF files to PowerPoint presentations online for free. PDF to PPT converter by Doczen.')} keywords={t('tool.pdfToPptKeywords', 'PDF to PPT, convert PDF to PowerPoint, PDF to presentation, PDF to slides')} canonical="/pdf-to-ppt" />
     <div className="max-w-3xl mx-auto px-4 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">PDF to PowerPoint</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('tool.pdfToPpt', 'PDF to PowerPoint')}</h1>
         <p className="mt-2 text-gray-600">
-          Turn your PDF slides into editable PowerPoint presentations.
+          {t('tool.pdfToPptDesc2', 'Turn your PDF slides into editable PowerPoint presentations.')}
         </p>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <FileUploader
           accept=".pdf"
-          label="Upload PDF file"
+          label={t('tool.uploadPdfFile', 'Upload PDF file')}
           onFilesSelected={(f) => { setFile(f[0] || null); setError(''); setResult(null); clearDownload(); }}
         />
 
@@ -57,7 +59,7 @@ export default function PDFToPPT() {
             onClick={handleProcess}
             className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
           >
-            Convert to PPT
+            {t('tool.convertToPpt', 'Convert to PPT')}
           </button>
         )}
 
@@ -71,14 +73,14 @@ export default function PDFToPPT() {
 
         {isReady && (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
-            <p>File converted successfully. Download started automatically. You can download it again below.</p>
+            <p>{t('tool.success', 'File converted successfully. Download started automatically. You can download it again below.')}</p>
             {downloadUrl && (
               <button
                 type="button"
                 onClick={handleDownloadAgain}
                 className="mt-2 inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Download Again
+                {t('tool.downloadAgain', 'Download Again')}
               </button>
             )}
           </div>
@@ -86,7 +88,7 @@ export default function PDFToPPT() {
 
         {result && !isReady && (
           <div className="mt-6">
-            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action="converted" />
+            <ResultCard result={result} onReset={() => { setResult(null); setFile(null); clearDownload(); }} action={t('tool.converted', 'converted')} />
           </div>
         )}
       </div>
