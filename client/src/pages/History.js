@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { historyAPI } from '../services/api';
 import SEO from '../components/SEO';
+import { useLanguage } from '../index';
 
 const actionLabels = {
   merge: 'Merge PDF',
@@ -28,6 +29,7 @@ const actionLabels = {
 };
 
 export default function History() {
+  const { lang } = useLanguage();
   const [history, setHistory] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -156,7 +158,7 @@ export default function History() {
                       {item.fileName || item.outputFiles?.[0]?.originalName || item.inputFiles?.[0]?.originalName || 'Untitled'}
                     </td>
                     <td className="hidden sm:table-cell px-5 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                      {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-US', {
+                      {item.createdAt ? new Date(item.createdAt).toLocaleDateString(lang || 'en-US', {
                         year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
                       }) : '—'}
                     </td>
