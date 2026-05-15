@@ -86,10 +86,10 @@ exports.login = async (req, res) => {
     }
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    // Reset dailyFileCount to 0 and update lastFileDate
-    user.dailyFileCount = 0;
-    user.lastFileDate = new Date();
-    // Update dailyLimit to 1000 if it has the old value
+    if (!user.lastFileDate || user.lastFileDate < today) {
+      user.dailyFileCount = 0;
+      user.lastFileDate = new Date();
+    }
     if (user.dailyLimit !== 1000) {
       user.dailyLimit = 1000;
     }
@@ -147,10 +147,10 @@ exports.getProfile = async (req, res) => {
     }
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    // Reset dailyFileCount to 0 and update lastFileDate
-    user.dailyFileCount = 0;
-    user.lastFileDate = new Date();
-    // Update dailyLimit to 1000 if it has the old value
+    if (!user.lastFileDate || user.lastFileDate < today) {
+      user.dailyFileCount = 0;
+      user.lastFileDate = new Date();
+    }
     if (user.dailyLimit !== 1000) {
       user.dailyLimit = 1000;
     }
@@ -209,10 +209,10 @@ exports.checkDailyLimit = async (userId) => {
   if (!user) return { allowed: false, reason: 'User not found' };
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  // Reset dailyFileCount to 0 and update lastFileDate
-  user.dailyFileCount = 0;
-  user.lastFileDate = new Date();
-  // Update dailyLimit to 1000 if it has the old value
+  if (!user.lastFileDate || user.lastFileDate < today) {
+    user.dailyFileCount = 0;
+    user.lastFileDate = new Date();
+  }
   if (user.dailyLimit !== 1000) {
     user.dailyLimit = 1000;
   }
