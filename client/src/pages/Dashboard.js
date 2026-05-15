@@ -73,9 +73,6 @@ export default function Dashboard() {
 
   const filesToday = user?.dailyFileCount ?? 0;
   const dailyLimit = user?.dailyLimit ?? 1000;
-  const storageUsed = user?.storageUsed ? Math.round(user.storageUsed / (1024 * 1024)) : 0;
-  const storageLimit = user?.storageLimit ? Math.round(user.storageLimit / (1024 * 1024)) : 500;
-
   return (
     <>
     <SEO
@@ -97,45 +94,23 @@ export default function Dashboard() {
       </div>
 
       {/* Stats */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('dashboard.filesToday', 'Files Today')}</span>
-            <span className="text-xs font-medium text-gray-400">{filesToday}/{dailyLimit}</span>
+      <div className="mb-8 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('dashboard.filesToday', 'Files Today')}</span>
+          <span className="text-xs font-medium text-gray-400">{filesToday}/{dailyLimit}</span>
+        </div>
+        <div className="mt-2">
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-bold text-gray-900 dark:text-white">{filesToday}</span>
+            <span className="text-sm text-gray-400">/ {dailyLimit}</span>
           </div>
-          <div className="mt-2">
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">{filesToday}</span>
-              <span className="text-sm text-gray-400">/ {dailyLimit}</span>
-            </div>
-            <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-gray-800">
-              <div
-                className="h-2 rounded-full bg-indigo-500 transition-all"
-                style={{ width: `${Math.min((filesToday / dailyLimit) * 100, 100)}%` }}
-              />
-            </div>
+          <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-gray-800">
+            <div
+              className="h-2 rounded-full bg-indigo-500 transition-all"
+              style={{ width: `${Math.min((filesToday / dailyLimit) * 100, 100)}%` }}
+            />
           </div>
         </div>
-
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('dashboard.storageUsed', 'Storage Used')}</span>
-            <span className="text-xs font-medium text-gray-400">{storageUsed}MB / {storageLimit}MB</span>
-          </div>
-          <div className="mt-2">
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">{storageUsed}</span>
-              <span className="text-sm text-gray-400">MB</span>
-            </div>
-            <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-gray-800">
-              <div
-                className="h-2 rounded-full bg-emerald-500 transition-all"
-                style={{ width: `${Math.min((storageUsed / storageLimit) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
       </div>
 
       {/* Quick Actions */}
