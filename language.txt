@@ -1,4 +1,4 @@
-LANGUAGES NOT YET TRANSLATED (51 Languages)
+LANGUAGES NOT YET TRANSLATED (34 Languages)
 ============================================
 
 These languages are using English fallback translations and are waiting for complete translations via the auto-translation service:
@@ -37,23 +37,6 @@ These languages are using English fallback translations and are waiting for comp
 32. lt - Lithuanian (Lietuvių)
 33. lv - Latvian (Latvijas)
 34. et - Estonian (Eesti)
-35. is - Icelandic (Íslenska)
-36. eu - Basque (Euskera)
-37. gl - Galician (Galego)
-38. cy - Welsh (Cymraeg)
-39. fil - Filipino (Pilipino)
-40. sw - Swahili (Kiswahili)
-41. ta - Tamil (தமிழ்)
-42. te - Telugu (తెలుగు)
-43. mr - Marathi (मराठी)
-44. gu - Gujarati (ગુજરાતી)
-45. kn - Kannada (ಕನ್ನಡ)
-46. ml - Malayalam (മലയാളം)
-47. pa - Punjabi (ਪੰਜਾਬੀ)
-48. fa - Persian/Farsi (فارسی)
-49. ur - Urdu (اردو)
-50. ne - Nepali (नेपाली)
-51. my - Burmese (မြန်မာ)
 
 CURRENTLY TRANSLATED LANGUAGES (7 Languages)
 =============================================
@@ -64,6 +47,6 @@ CURRENTLY TRANSLATED LANGUAGES (7 Languages)
 5. ar - Arabic (العربية)
 6. bn - Bengali (বাংলা)
 
-Total: 58 languages tracked
-Fully Translated: 6 languages
-Pending Translation: 51 languages
+Total: 41 languages tracked
+Fully Translated: 7 languages
+Pending Translation: 34 languages
