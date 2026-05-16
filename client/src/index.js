@@ -3203,7 +3203,7 @@ addTranslations('tr', {
   'about.p1': 'Doczen, belge yönetimini herkes için basit ve erişilebilir kılmak üzere tasarlanmış ücretsiz, güçlü bir çevrimiçi PDF düzenleyicisidir. PDF\'leri birleştirmeniz, bölmeniz, sıkıştırmanız, dönüştürmeniz veya düzenlemeniz gerekip gerekmediğine bakılmaksızın, Doczen ihtiyacınız olan tüm araçları doğrudan tarayıcınızda sunar — indirme yok, kurulum yok.',
   'about.p2': 'Misyonumuz, tamamen ücretsiz olarak kapsamlı bir araç paketi sunarak PDF düzenlemeyi demokratikleştirmektir. Temel belge yönetiminin pahalı yazılım abonelikleri gerektirmemesi gerektiğine inanıyoruz.',
   'about.p3': 'Doczen\'deki her araç, hızlı, güvenli ve güvenilir işlem sağlamak için modern web teknolojileriyle oluşturulmuştur. Gizliliğiniz önceliğimizdir — tüm dosyalar yükleme sırasında şifrelenir ve 24 saat içinde sunucularımızdan otomatik olarak silinir.',
-  'about.whyTitle': Neden Doczen?',
+  'about.whyTitle': 'Neden Doczen?',
   'about.why1': '%100 Ücretsiz — Gizli ücretler yok, kredi kartı gerekmez',
   'about.why2': '30+ Araç — Birleştirmeden dönüştürmeye kadar her şey mevcut',
   'about.why3': 'Güvenli — Şifreli yüklemeler ve otomatik dosya silme',
